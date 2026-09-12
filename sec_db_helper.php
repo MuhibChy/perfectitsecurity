@@ -1,162 +1,97 @@
 <?php
 /**
  * SEC ASSESSMENT TEST HELPER (synthetic data only — removed after testing).
- * Boots the app and exposes CLI subcommands for seeding/inspecting test state.
+ * Uses raw PDO against the SQLite file. No framework boot.
  * Usage: php sec_db_helper.php <command> [args...]
  */
-define('LARAVEL_START', microtime(true));
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
-$app->boot();
+error_reporting(E_ERROR | E_PARSE);
 
-use App\Models\User;
-use App\Models\Invoice;
-use App\Models\ServiceOrder;
-use App\Models\Payment;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+$dbPath = 'C:/xampp/htdocs/IT Service freelace/techsupport-platform/database/database.sqlite';
+$pdo = new PDO('sqlite:' . $dbPath);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $cmd = $argv[1] ?? 'state';
 
-function testCustomerA() { return User::where('email', 'sec_test_cust_a@example.test')->first(); }
-function testCustomerB() { return User::where('email', 'sec_test_cust_b@example.test')->first(); }
+function nowStr() { return date('Y-m-d H:i:s'); }
+function todayStr() { return date('Y-m-d'); }
+function esc($v) { return $pdo->quote((string) $v); }
+
+function ensureService(): int
+{
+    $row = $pdo->query('SELECT id FROM services ORDER BY id LIMIT 1')->fetch();
+    if ($row) return (int) $row['id'];
+    $pdo->exec("INSERT INTO services (name, slug, short_description, description, is_active, is_demo) VALUES ('SEC Test Service','sec-test-service','synthetic','synthetic',1,0)");
+    return (int) $pdo->lastInsertId();
+}
+
+function ensureCustomer(string $email, string $name): int
+{
+    $row = $pdo->prepare('SELECT id FROM users WHERE email = ?')->execute([$email])->fetch();
+    if ($row) return (int) $row['id'];
+    $hash = password_hash('TestPass123!', PASSWORD_BCRYPT);
+    $pdo->prepare('INSERT INTO users (name, email, email_verified_at, password, role, is_active, two_factor_enabled, verification_status, is_demo, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+        ->execute([$name, $email, nowStr(), $hash, 'customer', 1, 0, 'verified', 0, nowStr(), nowStr()]);
+    return (int) $pdo->lastInsertId();
+}
+
+function createOrderAndInvoice(int $custId, float $amount): array
+{
+    $svc = ensureService();
+    $orderNo = 'SEC-' . strtoupper(bin2hex(random_bytes(4)));
+    $invNo   = 'SEC-INV-' . strtoupper(bin2hex(random_bytes(4)));
+    $t = nowStr(); $d = todayStr(); $due = date('Y-m-d', time() + 14 * 86400);
+    $pdo->prepare('INSERT INTO service_orders (order_number, customer_id, service_id, source, requirements, priority, status, payment_authorization, currency, original_price, final_price, discount_amount, tax_rate, tax_amount, total, amount_paid, amount_due, expected_cost, actual_cost, urgency, price_locked, is_demo, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+        ->execute([$orderNo, $custId, $svc, 'sec_test', 'SYNTHETIC TEST DATA — NOT REAL', 'medium', 'awaiting_payment', 'deposit_required', 'USD', $amount, $amount, 0, 0, 0, $amount, 0, $amount, 0, 0, 'normal', 1, 0, $t, $t]);
+    $oid = (int) $pdo->lastInsertId();
+    $pdo->prepare('INSERT INTO invoices (invoice_number, customer_id, subtotal, discount_amount, discount_type, tax_rate, tax_amount, total, amount_paid, amount_due, status, issued_date, due_date, service_order_id, currency, is_demo, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+        ->execute([$invNo, $custId, $amount, 0, 'fixed', 0, 0, $amount, 0, $amount, 'awaiting_payment', $d, $due, $oid, 'USD', 0, $t, $t]);
+    $iid = (int) $pdo->lastInsertId();
+    return ['order_id' => $oid, 'invoice_id' => $iid, 'amount' => $amount];
+}
 
 switch ($cmd) {
 case 'seed':
-    $a = testCustomerA();
-    if (!$a) {
-        $a = User::create([
-            'name' => 'SEC Test Customer A',
-            'email' => 'sec_test_cust_a@example.test',
-            'password' => Hash::make('TestPass123!'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
-        echo "Created customer A id={$a->id}\n";
-    } else {
-        echo "Customer A exists id={$a->id}\n";
-    }
-    $b = testCustomerB();
-    if (!$b) {
-        $b = User::create([
-            'name' => 'SEC Test Customer B',
-            'email' => 'sec_test_cust_b@example.test',
-            'password' => Hash::make('TestPass123!'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
-        echo "Created customer B id={$b->id}\n";
-    } else {
-        echo "Customer B exists id={$b->id}\n";
-    }
+    $a = ensureCustomer('sec_test_cust_a@example.test', 'SEC Test Customer A');
+    $b = ensureCustomer('sec_test_cust_b@example.test', 'SEC Test Customer B');
+    echo "customer_a=$a customer_b=$b\n";
     break;
 
 case 'webhook-prep':
-    // Create a synthetic order + invoice that would normally result from a
-    // service order awaiting gateway payment.
-    $a = testCustomerA();
-    $order = ServiceOrder::create([
-        'order_number' => 'SEC-' . strtoupper(Str::random(6)),
-        'customer_id' => $a->id,
-        'total' => 100.00,
-        'amount_paid' => 0,
-        'amount_due' => 100.00,
-        'currency' => 'USD',
-        'status' => 'awaiting_payment',
-        'payment_authorization' => 'deposit_required',
-        'source' => 'sec_test',
-    ]);
-    $invoice = Invoice::create([
-        'customer_id' => $a->id,
-        'service_order_id' => $order->id,
-        'number' => 'SEC-INV-' . strtoupper(Str::random(6)),
-        'status' => 'awaiting_payment',
-        'currency' => 'USD',
-        'subtotal' => 100.00,
-        'total' => 100.00,
-        'amount_paid' => 0,
-        'amount_due' => 100.00,
-        'tax_rate' => 0,
-        'discount_amount' => 0,
-        'discount_type' => 'fixed',
-        'issued_date' => now()->toDateString(),
-        'due_date' => now()->addDays(14)->toDateString(),
-    ]);
-    $invoice->stripe_checkout_session_id = null;
-    $invoice->save();
-    echo "webhook target: order_id={$order->id} invoice_id={$invoice->id} status={$invoice->status}\n";
+    $a = (int) $argv[2];
+    $r = createOrderAndInvoice($a, 100.00);
+    echo json_encode($r), "\n";
     break;
 
 case 'webhook-reset':
-    $invId = (int) ($argv[2] ?? 0);
-    $invoice = Invoice::find($invId);
-    if (!$invoice) { echo "invoice not found\n"; break; }
-    Payment::where('invoice_id', $invId)->delete();
-    $invoice->update([
-        'status' => 'awaiting_payment',
-        'amount_paid' => 0,
-        'amount_due' => $invoice->total,
-        'paid_at' => null,
-        'stripe_checkout_session_id' => null,
-    ]);
-    $invoice->serviceOrder()->update(['amount_paid' => 0, 'amount_due' => $invoice->total, 'status' => 'awaiting_payment', 'payment_authorization' => 'deposit_required']);
-    echo "reset invoice {$invId}\n";
+    $iid = (int) $argv[2];
+    $pdo->prepare('DELETE FROM payments WHERE invoice_id = ?')->execute([$iid]);
+    $pdo->prepare('UPDATE invoices SET status = ?, amount_paid = 0, amount_due = total, paid_at = NULL, stripe_checkout_session_id = NULL, stripe_payment_intent_id = NULL WHERE id = ?')->execute(['awaiting_payment', $iid]);
+    $pdo->prepare('UPDATE service_orders SET status = ?, amount_paid = 0, amount_due = total, payment_authorization = ? WHERE id = (SELECT service_order_id FROM invoices WHERE id = ?)')->execute(['awaiting_payment', 'deposit_required', $iid]);
+    echo "reset invoice $iid\n";
     break;
 
 case 'order-for':
-    // order-for <customerEmail> <amount>
     $email = $argv[2];
     $amount = (float) ($argv[3] ?? 100.00);
-    $u = User::where('email', $email)->first();
-    $order = ServiceOrder::create([
-        'order_number' => 'SEC-' . strtoupper(Str::random(6)),
-        'customer_id' => $u->id,
-        'total' => $amount,
-        'amount_paid' => 0,
-        'amount_due' => $amount,
-        'currency' => 'USD',
-        'status' => 'awaiting_payment',
-        'payment_authorization' => 'deposit_required',
-        'source' => 'sec_test',
-    ]);
-    $invoice = Invoice::create([
-        'customer_id' => $u->id,
-        'service_order_id' => $order->id,
-        'number' => 'SEC-INV-' . strtoupper(Str::random(6)),
-        'status' => 'awaiting_payment',
-        'currency' => 'USD',
-        'subtotal' => $amount,
-        'total' => $amount,
-        'amount_paid' => 0,
-        'amount_due' => $amount,
-        'tax_rate' => 0,
-        'discount_amount' => 0,
-        'discount_type' => 'fixed',
-        'issued_date' => now()->toDateString(),
-        'due_date' => now()->addDays(14)->toDateString(),
-    ]);
-    echo "order_id={$order->id} invoice_id={$invoice->id} amount={$amount}\n";
+    $u = $pdo->prepare('SELECT id FROM users WHERE email = ?')->execute([$email])->fetch();
+    $r = createOrderAndInvoice((int) $u['id'], $amount);
+    echo json_encode($r), "\n";
     break;
 
 case 'dump':
-    // dump <orderId>
     $oid = (int) ($argv[2] ?? 0);
-    $order = ServiceOrder::with('invoices', 'payments')->find($oid);
-    if (!$order) { echo "order not found\n"; break; }
-    echo json_encode([
-        'order' => ['id' => $order->id, 'status' => $order->status, 'total' => $order->total, 'amount_paid' => $order->amount_paid, 'amount_due' => $order->amount_due, 'payment_authorization' => $order->payment_authorization],
-        'invoices' => $order->invoices->map(fn($i) => ['id' => $i->id, 'status' => $i->status, 'amount_paid' => $i->amount_paid, 'amount_due' => $i->amount_due, 'total' => $i->total]),
-        'payments' => $order->payments->map(fn($p) => ['id' => $p->id, 'amount' => $p->amount, 'status' => $p->status, 'method' => $p->payment_method, 'txn' => $p->transaction_id, 'stripe_session' => $p->stripe_checkout_session_id, 'paid_at' => $p->paid_at ? $p->paid_at->toDateTimeString() : null]),
-    ], 0), "\n";
+    $o = $pdo->prepare('SELECT id, status, total, amount_paid, amount_due, payment_authorization FROM service_orders WHERE id = ?')->execute([$oid])->fetch();
+    if (!$o) { echo "order not found\n"; break; }
+    $inv = $pdo->prepare('SELECT id, status, total, amount_paid, amount_due, stripe_checkout_session_id AS session FROM invoices WHERE service_order_id = ?')->execute([$oid])->fetchAll();
+    $pay = $pdo->prepare('SELECT id, amount, status, payment_method AS method, transaction_id AS txn, stripe_checkout_session_id AS session FROM payments WHERE service_order_id = ?')->execute([$oid])->fetchAll();
+    echo json_encode(['order' => $o, 'invoices' => $inv, 'payments' => $pay], 0), "\n";
     break;
 
 case 'state':
 default:
-    $users = User::where('email', 'like', 'sec_test_%')->get()->map(fn($u) => ['id' => $u->id, 'email' => $u->email]);
-    echo "Test users: " . json_encode($users) . "\n";
-    $orders = DB::select("SELECT o.id, o.status, o.total, o.amount_paid, o.amount_due FROM service_orders o WHERE o.source='sec_test' ORDER BY o.id");
-    echo "Test orders: " . json_encode($orders) . "\n";
-    $invs = DB::select("SELECT i.id, i.status, i.total, i.amount_paid, i.amount_due, i.stripe_checkout_session_id FROM invoices i JOIN service_orders o ON o.id = i.service_order_id WHERE o.source='sec_test' ORDER BY i.id");
-    echo "Test invoices: " . json_encode($invs) . "\n";
+    $users = $pdo->query("SELECT id, email FROM users WHERE email LIKE 'sec_test_%'")->fetchAll();
+    echo "Test users: ", json_encode($users), "\n";
+    $rows = $pdo->query("SELECT o.id AS order_id, o.status AS o_status, o.total, o.amount_paid, o.amount_due, i.id AS invoice_id, i.status AS i_status FROM service_orders o LEFT JOIN invoices i ON i.service_order_id = o.id WHERE o.source='sec_test' ORDER BY o.id")->fetchAll();
+    echo "Test orders/invoices: ", json_encode($rows), "\n";
     break;
 }
