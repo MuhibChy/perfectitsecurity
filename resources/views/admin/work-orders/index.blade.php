@@ -4,62 +4,34 @@
 @section('content')
 <div class="space-y-6">
     {{-- Header & Quick Create --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Service Work Orders</h1>
-            <p class="text-sm text-gray-500 mt-1">End-to-end traceability: Customer → Service → Agreed Price → Invoice → Payment → Receipt → Ticket → Task → Expenditure → Revenue → Profit</p>
-        </div>
-        <div>
-            <a href="{{ route('admin.work-orders.create') }}" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm inline-flex items-center gap-2">
-                <span>➕</span>
+    <x-page-header title="Service Work Orders" subtitle="End-to-end traceability: Customer → Service → Agreed Price → Invoice → Payment → Receipt → Ticket → Task → Expenditure → Revenue → Profit" sys="OPS://WORK-ORDERS">
+        <x-slot:actions>
+            <a href="{{ route('admin.work-orders.create') }}" class="term-btn term-btn-sm">
+                
                 <span>Create Manual Work Order</span>
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Financial & Operations Metrics --}}
     <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Total Work Orders</span>
-            <div class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ $totalOrders }}</div>
-            <span class="text-xs text-gray-500">All channels</span>
-        </div>
-
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Collected Revenue</span>
-            <div class="mt-1 text-2xl font-bold text-emerald-600">${{ number_format($totalRevenue, 2) }}</div>
-            <span class="text-xs text-emerald-600">Verified receipts</span>
-        </div>
-
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Outstanding Due</span>
-            <div class="mt-1 text-2xl font-bold text-amber-600">${{ number_format($totalOutstanding, 2) }}</div>
-            <span class="text-xs text-amber-600">Uncollected balances</span>
-        </div>
-
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Ready To Start</span>
-            <div class="mt-1 text-2xl font-bold text-teal-600">{{ $readyToStart }}</div>
-            <span class="text-xs text-teal-600">Deposit / auth verified</span>
-        </div>
-
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Awaiting Payment</span>
-            <div class="mt-1 text-2xl font-bold text-blue-600">{{ $awaitingPayment }}</div>
-            <span class="text-xs text-blue-600">Initial or final balance</span>
-        </div>
+        <x-stat-card title="Total Work Orders" :value="$totalOrders" subtitle="ALL CHANNELS" color="blue" />
+        <x-stat-card title="Collected Revenue" :value="'$' . number_format($totalRevenue, 2)" subtitle="VERIFIED RECEIPTS" color="emerald" />
+        <x-stat-card title="Outstanding Due" :value="'$' . number_format($totalOutstanding, 2)" subtitle="UNCOLLECTED BALANCES" color="amber" />
+        <x-stat-card title="Ready To Start" :value="$readyToStart" subtitle="DEPOSIT / AUTH VERIFIED" color="cyan" />
+        <x-stat-card title="Awaiting Payment" :value="$awaitingPayment" subtitle="INITIAL OR FINAL BALANCE" color="purple" />
     </div>
 
     {{-- Filters & Search --}}
-    <div class="glass-card p-4">
+    <div class="term-panel p-4">
         <form method="GET" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search order #, customer, service..."
-                       class="w-full px-3 py-2 text-xs border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                       class="term-input">
             </div>
 
             <div>
-                <select name="source" class="w-full px-3 py-2 text-xs border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                <select name="source" class="term-input">
                     <option value="">-- All Sources --</option>
                     <option value="employee_manual" {{ request('source') === 'employee_manual' ? 'selected' : '' }}>Employee Manual</option>
                     <option value="customer_portal" {{ request('source') === 'customer_portal' ? 'selected' : '' }}>Customer Portal</option>
@@ -67,7 +39,7 @@
             </div>
 
             <div>
-                <select name="status" class="w-full px-3 py-2 text-xs border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                <select name="status" class="term-input">
                     <option value="">-- All Statuses --</option>
                     <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
                     <option value="negotiating" {{ request('status') === 'negotiating' ? 'selected' : '' }}>Negotiating</option>
@@ -80,7 +52,7 @@
             </div>
 
             <div>
-                <select name="payment_auth" class="w-full px-3 py-2 text-xs border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                <select name="payment_auth" class="term-input">
                     <option value="">-- Payment Authorization --</option>
                     <option value="not_authorized" {{ request('payment_auth') === 'not_authorized' ? 'selected' : '' }}>Not Authorized</option>
                     <option value="deposit_required" {{ request('payment_auth') === 'deposit_required' ? 'selected' : '' }}>Deposit Required</option>
@@ -92,16 +64,16 @@
             </div>
 
             <div class="flex gap-2">
-                <button type="submit" class="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl">Filter</button>
-                <a href="{{ route('admin.work-orders.index') }}" class="px-3 py-2 border rounded-xl text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">Reset</a>
+                <button type="submit" class="term-btn term-btn-sm flex-1">Filter</button>
+                <a href="{{ route('admin.work-orders.index') }}" class="term-btn term-btn-sm term-btn-ghost">Reset</a>
             </div>
         </form>
     </div>
 
     {{-- Work Orders Table --}}
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+    <div class="term-panel overflow-hidden">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table w-full text-left border-collapse text-xs term-table">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40 font-semibold uppercase text-gray-500">
                         <th class="py-3 px-4">Order #</th>
@@ -121,74 +93,60 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($orders as $order)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                        <td class="py-3 px-4 font-mono font-bold text-primary-600">
+                        <td class="py-3 px-4 font-mono font-bold text-primary-600" data-label="Order #">
                             <a href="{{ route('admin.work-orders.show', $order->id) }}" class="hover:underline">
                                 {{ $order->order_number }}
                             </a>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-3 px-4" data-label="Customer">
                             <div class="font-medium text-gray-900 dark:text-white">{{ $order->customer->name }}</div>
                             <div class="text-[10px] flex items-center gap-1 mt-0.5">
                                 @if($order->customer->isFullyVerified())
                                     <span class="text-emerald-600 font-semibold">✓ Verified</span>
                                 @else
-                                    <span class="text-amber-600 font-semibold">⚠️ Pending Auth</span>
+                                    <span class="text-amber-600 font-semibold">Pending Auth</span>
                                 @endif
                             </div>
                         </td>
-                        <td class="py-3 px-4">
+                        <td class="py-3 px-4" data-label="Service">
                             <div class="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{{ $order->service->name }}</div>
                             <div class="text-[10px] text-gray-400">{{ $order->created_at->format('M d, Y') }}</div>
                         </td>
-                        <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded-full font-semibold {{ $order->source === 'employee_manual' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' }}">
+                        <td class="py-3 px-4" data-label="Source">
+                            <span class="term-tag">
                                 {{ $order->order_source_label ?: ucfirst(str_replace('_', ' ', $order->source)) }}
                             </span>
                         </td>
-                        <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded-full font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                            </span>
+                        <td class="py-3 px-4" data-label="Status">
+                            <x-status-badge :status="$order->status" />
                         </td>
-                        <td class="py-3 px-4">
-                            @php
-                                $authStyles = [
-                                    'not_authorized' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                                    'deposit_required' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                                    'deposit_received' => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
-                                    'ready_to_start' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-                                    'fully_paid' => 'bg-emerald-100 text-emerald-800 font-bold',
-                                    'manager_override' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-                                ];
-                            @endphp
-                            <span class="px-2 py-0.5 rounded-full font-semibold {{ $authStyles[$order->payment_authorization] ?? 'bg-gray-100 text-gray-700' }}">
-                                {{ ucfirst(str_replace('_', ' ', $order->payment_authorization)) }}
-                            </span>
+                        <td class="py-3 px-4" data-label="Payment Auth">
+                            <x-status-badge :status="match($order->payment_authorization) { 'not_authorized' => 'blocked', 'deposit_required' => 'pending', 'deposit_received' => 'partial', 'ready_to_start' => 'open', 'fully_paid' => 'paid', 'manager_override' => 'review', default => 'draft' }" :label="ucfirst(str_replace('_', ' ', $order->payment_authorization))" />
                         </td>
-                        <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white">
+                        <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white" data-label="Total">
                             {{ $order->currency }} {{ number_format((float)$order->total, 2) }}
                         </td>
-                        <td class="py-3 px-4 font-semibold text-emerald-600">
+                        <td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400" data-label="Paid">
                             {{ $order->currency }} {{ number_format((float)$order->amount_paid, 2) }}
                         </td>
-                        <td class="py-3 px-4 font-semibold {{ (float)$order->amount_due > 0 ? 'text-amber-600' : 'text-gray-400' }}">
+                        <td class="py-3 px-4 font-semibold {{ (float)$order->amount_due > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400' }}" data-label="Due">
                             {{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}
                         </td>
-                        <td class="py-3 px-4 text-gray-500">
+                        <td class="py-3 px-4 text-gray-500 dark:text-gray-400" data-label="Actual Cost">
                             {{ $order->currency }} {{ number_format((float)$order->total_cost, 2) }}
                         </td>
-                        <td class="py-3 px-4 font-bold {{ $order->actual_profit >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                        <td class="py-3 px-4 font-bold {{ $order->actual_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}" data-label="Profit">
                             {{ $order->currency }} {{ number_format((float)$order->actual_profit, 2) }}
                         </td>
-                        <td class="py-3 px-4 text-right">
-                            <a href="{{ route('admin.work-orders.show', $order->id) }}" class="px-2.5 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 hover:bg-primary-100 rounded font-semibold">
+                        <td class="py-3 px-4 text-right" data-label="Action">
+                            <a href="{{ route('admin.work-orders.show', $order->id) }}" class="term-btn term-btn-sm term-btn-ghost">
                                 View →
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="py-8 text-center text-gray-400">No work orders matching criteria.</td>
+                        <td colspan="12" class="py-8 text-center text-gray-500 dark:text-gray-400">No work orders matching criteria.</td>
                     </tr>
                     @endforelse
                 </tbody>

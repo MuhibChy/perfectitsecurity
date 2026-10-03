@@ -122,7 +122,7 @@ class HealthController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('uri', 'like', "%{$search}%")
                   ->orWhere('route_name', 'like', "%{$search}%")
@@ -174,7 +174,7 @@ class HealthController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('message', 'like', "%{$search}%")
                   ->orWhere('route', 'like', "%{$search}%")

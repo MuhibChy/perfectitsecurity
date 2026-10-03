@@ -102,8 +102,16 @@ class AiController extends Controller
     public function settings()
     {
         $settings = AiSetting::pluck('value', 'key')->toArray();
+        // Live provider diagnostics for admins only (never shown to customers).
+        try {
+            $health = \App\Services\Ai\AiProviderFactory::make()->healthCheck();
+        } catch (\Throwable $e) {
+            $health = ['provider' => 'unknown', 'reachable' => false, 'model' => null,
+                'model_available' => false, 'models' => [], 'latency_ms' => null,
+                'checked_at' => now()->toDateTimeString(), 'error' => 'unreachable'];
+        }
 
-        return view('admin.ai.settings', compact('settings'));
+        return view('admin.ai.settings', compact('settings', 'health'));
     }
 
     /**
@@ -130,6 +138,48 @@ class AiController extends Controller
         }
 
         return redirect()->route('admin.ai.settings')->with('success', 'AI settings updated!');
+    }
+
+    /**
+     * AI testing bench: shows skill detection, KB retrieval, and the
+     * internal-vs-Ollama routing decision WITHOUT calling the provider,
+     * so it works offline and never spends generation budget.
+     */
+    public function testBench()
+    {
+        return view('admin.ai.test-bench', ['result' => null]);
+    }
+
+    public function runTestBench(Request $request)
+    {
+        $request->validate(['question' => 'required|string|max:2000']);
+        $question = $request->input('question');
+
+        $skill = app(\App\Services\Ai\AiSkillService::class)->detectSkill($question, auth()->user());
+        $articles = app(\App\Services\Ai\AiKnowledgeService::class)->searchRelevantArticles($question, auth()->user(), 5);
+        $topScore = 0;
+        foreach ($articles as $item) {
+            $topScore = max($topScore, (int) ($item['score'] ?? 0));
+        }
+        $threshold = \App\Services\Ai\AiChatService::INTERNAL_RELEVANCE_THRESHOLD;
+        $internal = $topScore >= $threshold;
+
+        $result = [
+            'question' => $question,
+            'skill' => $skill ? ['name' => $skill->name, 'slug' => $skill->slug] : null,
+            'articles' => array_map(fn ($i) => [
+                'title' => $i['article']->title,
+                'score' => $i['score'],
+                'visibility' => $i['article']->visibility,
+            ], $articles),
+            'top_score' => $topScore,
+            'threshold' => $threshold,
+            'source' => $internal ? 'internal' : 'ollama_general',
+            'ollama_used' => !$internal,
+            'model' => config('ollama.models.default', config('ollama.default_model')),
+        ];
+
+        return view('admin.ai.test-bench', compact('result'));
     }
 
     /**

@@ -94,8 +94,11 @@ class CustomerIsolationTest extends TestCase
             'category' => 'general',
         ]);
 
-        $this->actingAs($a)->get(route('portal.documents.download', $doc))->assertStatus(403);
-        $this->actingAs($a)->delete(route('portal.documents.destroy', $doc))->assertStatus(403);
+        // Oracle-free scoping (same as quotations/orders above): another
+        // customer's document answers 404 (never 403), so customer A
+        // cannot even confirm customer B has a document.
+        $this->actingAs($a)->get(route('portal.documents.download', $doc))->assertStatus(404);
+        $this->actingAs($a)->delete(route('portal.documents.destroy', $doc))->assertStatus(404);
         $this->assertDatabaseHas('customer_documents', ['id' => $doc->id]);
     }
 
@@ -111,7 +114,9 @@ class CustomerIsolationTest extends TestCase
         ]);
         $order = ServiceOrder::create(['customer_id' => $b->id, 'service_id' => $service->id, 'requirements' => 'Isolation probe order', 'status' => 'pending']);
 
-        $this->actingAs($a)->get(route('portal.orders.show', $order->id))->assertStatus(403);
+        // Oracle-free scoping: another customer's order answers 404 (never
+        // 403), so customer A cannot even confirm customer B has an order.
+        $this->actingAs($a)->get(route('portal.orders.show', $order->id))->assertStatus(404);
         $this->actingAs($b)->get(route('portal.orders.show', $order->id))->assertStatus(200);
     }
 

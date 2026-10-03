@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 
 class LoginController extends Controller
 {
@@ -27,16 +28,23 @@ class LoginController extends Controller
         ]);
 
         $email = strtolower(trim($credentials['email']));
-        $lockoutKey = 'login_attempts:' . $email;
-        $attempts = Cache::get($lockoutKey, 0);
+        // Dual throttle: per account+IP (no cross-user DoS: an attacker hammering
+        // victim@example.com from their own IP never locks the victim on other IPs)
+        // plus a global per-IP brake against distributed password spraying.
+        // Generic messages — never confirm whether the email exists.
+        $ip = $request->ip();
+        $accountKey = 'login_attempts:' . sha1($email . '|' . $ip);
+        $ipKey = 'login_ip:' . sha1((string) $ip);
+        abort_if(RateLimiter::tooManyAttempts($ipKey, 30), 429, 'Too many login attempts from this network. Please try again in a few minutes.');
+        $attempts = Cache::get($accountKey, 0);
 
-        // Check if account is locked out
+        // Check if this account+IP pair is locked out
         if ($attempts >= self::MAX_FAILED_ATTEMPTS) {
-            $ttl = Cache::get($lockoutKey . ':ttl', self::LOCKOUT_MINUTES);
-            AuditLog::log('login_locked', 'auth', null, "Login blocked for {$email} — account locked after " . self::MAX_FAILED_ATTEMPTS . " failed attempts.", ['email' => $email]);
+            $ttl = Cache::get($accountKey . ':ttl', self::LOCKOUT_MINUTES);
+            AuditLog::log('login_locked', 'auth', null, "Login throttled — too many failed attempts for this account/network combination.", ['email' => $email]);
 
             return back()->withErrors([
-                'email' => 'Your account has been temporarily locked due to too many failed login attempts. Please try again in ' . $ttl . ' minutes.',
+                'email' => 'Too many failed login attempts. Please try again in ' . $ttl . ' minutes.',
             ])->onlyInput('email');
         }
 
@@ -49,8 +57,9 @@ class LoginController extends Controller
             }
 
             // Clear failed attempts on successful login
-            Cache::forget($lockoutKey);
-            Cache::forget($lockoutKey . ':ttl');
+            Cache::forget($accountKey);
+            Cache::forget($accountKey . ':ttl');
+            RateLimiter::clear($ipKey);
 
             $request->session()->regenerate();
             $user->update([
@@ -66,16 +75,17 @@ class LoginController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        // Increment failed attempts
+        // Increment failed attempts (account+IP scoped) + global IP counter
         $newAttempts = $attempts + 1;
         $remaining = self::MAX_FAILED_ATTEMPTS - $newAttempts;
 
         if ($newAttempts === 1) {
-            Cache::put($lockoutKey, $newAttempts, now()->addMinutes(self::LOCKOUT_MINUTES));
-            Cache::put($lockoutKey . ':ttl', self::LOCKOUT_MINUTES, now()->addMinutes(self::LOCKOUT_MINUTES));
+            Cache::put($accountKey, $newAttempts, now()->addMinutes(self::LOCKOUT_MINUTES));
+            Cache::put($accountKey . ':ttl', self::LOCKOUT_MINUTES, now()->addMinutes(self::LOCKOUT_MINUTES));
         } else {
-            Cache::put($lockoutKey, $newAttempts, now()->addMinutes(self::LOCKOUT_MINUTES));
+            Cache::put($accountKey, $newAttempts, now()->addMinutes(self::LOCKOUT_MINUTES));
         }
+        RateLimiter::hit($ipKey, 900);
 
         AuditLog::log('login_failed', 'auth', null, 'Failed login attempt for ' . $email . ' (' . $newAttempts . '/' . self::MAX_FAILED_ATTEMPTS . ')', ['email' => $email]);
 

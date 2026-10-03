@@ -8,6 +8,7 @@ class Country extends Model
 {
     protected $fillable = [
         'name', 'code', 'currency_code', 'currency_symbol', 'currency_name',
+        'decimal_places', 'region',
         'tax_rate', 'timezone', 'business_hours_start', 'business_hours_end',
         'business_days', 'is_active', 'sort_order',
     ];

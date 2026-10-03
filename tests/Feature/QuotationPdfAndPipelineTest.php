@@ -36,6 +36,8 @@ class QuotationPdfAndPipelineTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $response->getContent());
+        $this->assertStringEndsWith('%%EOF', rtrim($response->getContent()));
     }
 
     /** @test */
@@ -73,6 +75,8 @@ class QuotationPdfAndPipelineTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $response->getContent());
+        $this->assertStringEndsWith('%%EOF', rtrim($response->getContent()));
     }
 
     /** @test */

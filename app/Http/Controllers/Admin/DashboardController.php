@@ -37,7 +37,10 @@ class DashboardController extends Controller
 
             // SLA
             'slaStats' => $slaService->getSlaComplianceStats(),
-            'breachedTickets' => $slaService->getBreachedTickets()->count(),
+            'breachedTickets' => \App\Models\Ticket::where('status', '!=', 'closed')
+                ->where('sla_resolution_deadline', '<', now())
+                ->whereNull('resolved_at')
+                ->count(),
 
             // Tasks
             'pendingTasks' => Task::where('status', 'pending')->count(),
@@ -57,37 +60,43 @@ class DashboardController extends Controller
         return view('admin.dashboard', $data);
     }
 
+    private function monthlySums(string $scope): array
+    {
+        $driver = config('database.default');
+        $expr = $driver === 'mysql'
+            ? "DATE_FORMAT(created_at, '%Y-%m') as ym"
+            : "strftime('%Y-%m', created_at) as ym";
+        return \App\Models\FinancialTransaction::{$scope}()
+            ->where('status', 'completed')
+            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("{$expr}, SUM(amount) as total")
+            ->groupBy('ym')->pluck('total', 'ym')->all();
+    }
+
     private function getMonthlyRevenueChart()
     {
-        $data = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $data[] = [
-                'label' => $month->format('M Y'),
-                'value' => \App\Models\FinancialTransaction::income()
-                    ->where('status', 'completed')
-                    ->whereYear('created_at', $month->year)
-                    ->whereMonth('created_at', $month->month)
-                    ->sum('amount'),
-            ];
-        }
-        return $data;
+        // Two grouped queries (cached 10 min) instead of 24 per-load aggregates.
+        return \Illuminate\Support\Facades\Cache::remember('dashboard:monthly-revenue', 600, function () {
+            $sums = $this->monthlySums('income');
+            $data = [];
+            for ($i = 11; $i >= 0; $i--) {
+                $month = now()->subMonths($i);
+                $data[] = ['label' => $month->format('M Y'), 'value' => (float) ($sums[$month->format('Y-m')] ?? 0)];
+            }
+            return $data;
+        });
     }
 
     private function getMonthlyExpenseChart()
     {
-        $data = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $data[] = [
-                'label' => $month->format('M Y'),
-                'value' => \App\Models\FinancialTransaction::expenses()
-                    ->where('status', 'completed')
-                    ->whereYear('created_at', $month->year)
-                    ->whereMonth('created_at', $month->month)
-                    ->sum('amount'),
-            ];
-        }
-        return $data;
+        return \Illuminate\Support\Facades\Cache::remember('dashboard:monthly-expenses', 600, function () {
+            $sums = $this->monthlySums('expenses');
+            $data = [];
+            for ($i = 11; $i >= 0; $i--) {
+                $month = now()->subMonths($i);
+                $data[] = ['label' => $month->format('M Y'), 'value' => (float) ($sums[$month->format('Y-m')] ?? 0)];
+            }
+            return $data;
+        });
     }
 }

@@ -14,12 +14,13 @@ class KbArticle extends Model
         'category_id', 'author_id', 'title', 'slug', 'content', 'excerpt',
         'meta_title', 'meta_description', 'keywords', 'visibility', 'language',
         'difficulty', 'helpful_count', 'not_helpful_count',
-        'views_count', 'is_published', 'is_featured',
+        'views_count', 'is_published', 'is_featured', 'ai_readable',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'ai_readable' => 'boolean',
     ];
 
     public function category() { return $this->belongsTo(KbCategory::class, 'category_id'); }

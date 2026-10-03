@@ -47,7 +47,9 @@ class CurrencyService
             return (float) $toUsd->rate / (float) $fromUsd->rate;
         }
 
-        return 1.0;
+        // Fail closed: a silent 1:1 fallback would mis-price cross-currency
+        // payments. Callers must seed rates via refreshRates() first.
+        throw new \RuntimeException("No exchange rate available for {$from} to {$to}.");
     }
 
     public function convert(float $amount, string $from, string $to): float
@@ -57,9 +59,7 @@ class CurrencyService
 
     public function format(float $amount, string $currency): string
     {
-        $country = Country::where('currency_code', strtoupper($currency))->first();
-        $symbol = $country?->currency_symbol ?? strtoupper($currency) . ' ';
-        return $symbol . number_format($amount, 2);
+        return Money::format($amount, $currency);
     }
 
     public function setSessionCurrency(string $currency): void
@@ -81,6 +81,14 @@ class CurrencyService
             'GBP' => 0.79,
             'BDT' => 110.0,
             'EUR' => 0.92,
+            // Gulf pegs (static; refreshed from Frankfurter when remote allowed).
+            'AED' => 3.6725,
+            'SAR' => 3.75,
+            'QAR' => 3.64,
+            'KWD' => 0.31,
+            'BHD' => 0.376,
+            'OMR' => 0.3845,
+            'JOD' => 0.71,
             'USD' => 1.0,
         ];
 

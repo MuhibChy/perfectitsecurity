@@ -35,7 +35,7 @@ class ServiceRequestController extends Controller
         ]);
 
         $user = auth()->user();
-        $country = $validated['country_id'] ? Country::find($validated['country_id']) : null;
+        $country = ($validated['country_id'] ?? null) ? Country::find($validated['country_id']) : null;
 
         ServiceRequest::create([
             'user_id' => $user->id,

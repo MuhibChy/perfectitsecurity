@@ -22,15 +22,39 @@ class ReportController extends Controller
         return view('admin.reports.index');
     }
 
+    /** Service-detail HTML report: full lifecycle of one order (staff boundary; owners use the portal twin). */
+    public function serviceOrder(Request $request, $id = null)
+    {
+        if ($id === null) {
+            $number = trim((string) $request->get('order_number', ''));
+            abort_if($number === '', 422, 'Provide an order number.');
+            $order = \App\Models\ServiceOrder::where('order_number', $number)->firstOrFail();
+            return redirect()->route('admin.reports.service', $order->id);
+        }
+        $report = app(\App\Services\ReportExportService::class)->build('service', ['order_id' => (int) $id], auth()->user());
+        $order = \App\Models\ServiceOrder::with(['customer', 'service', 'tasks.assignee', 'payments', 'invoices'])->findOrFail((int) $id);
+        $timeline = \App\Services\ServiceTrackingService::serviceTimeline($order->id, null, false)->map(fn ($e) => [
+            'at' => $e->created_at,
+            'label' => ucfirst(str_replace('_', ' ', $e->action)),
+            'detail' => trim(($e->comment ?? '') . ($e->actor ? ' — by ' . $e->actor->name : '')) ?: ucfirst(str_replace('_', ' ', $e->action)),
+            'url' => null,
+        ]);
+        $statusHistory = \App\Services\TraceabilityService::statusHistory(\App\Models\ServiceOrder::class, $order->id);
+        return view('reports.service', compact('report', 'order', 'timeline', 'statusHistory'));
+    }
+
     public function exportFinancial(Request $request)
     {
+        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date|after_or_equal:from']);
         $fs = app(FinancialService::class);
         $from = $request->from ? Carbon::parse($request->from) : now()->startOfMonth();
         $to = $request->to ? Carbon::parse($request->to) : now()->endOfMonth();
+        abort_if($from->diffInDays($to) > 366, 422, 'Export date range must not exceed 366 days.');
 
         $transactions = \App\Models\FinancialTransaction::whereBetween('created_at', [$from, $to])
             ->with('creator')
             ->latest()
+            ->limit(5000)
             ->get();
 
         $headers = [
@@ -47,12 +71,12 @@ class ReportController extends Controller
             foreach ($transactions as $transaction) {
                 fputcsv($handle, [
                     $transaction->created_at->format('Y-m-d H:i'),
-                    ucfirst($transaction->type),
-                    $transaction->category,
-                    $transaction->description,
+                    ReportExportController::csvCell(ucfirst($transaction->type)),
+                    ReportExportController::csvCell($transaction->category),
+                    ReportExportController::csvCell(mb_substr((string) $transaction->description, 0, 200)),
                     number_format($transaction->amount, 2),
                     ucfirst($transaction->status),
-                    $transaction->creator->name ?? 'System',
+                    ReportExportController::csvCell($transaction->creator->name ?? 'System'),
                 ]);
             }
 
@@ -64,12 +88,15 @@ class ReportController extends Controller
 
     public function exportTickets(Request $request)
     {
+        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date|after_or_equal:from']);
         $from = $request->from ? Carbon::parse($request->from) : now()->startOfMonth();
         $to = $request->to ? Carbon::parse($request->to) : now()->endOfMonth();
+        abort_if($from->diffInDays($to) > 366, 422, 'Export date range must not exceed 366 days.');
 
         $tickets = Ticket::with('customer', 'assignee', 'category')
             ->whereBetween('created_at', [$from, $to])
             ->latest()
+            ->limit(5000)
             ->get();
 
         $headers = [
@@ -89,13 +116,13 @@ class ReportController extends Controller
                 }
 
                 fputcsv($handle, [
-                    $ticket->ticket_number,
-                    $ticket->subject,
-                    $ticket->customer->name ?? 'Unknown',
-                    $ticket->category->name ?? 'Uncategorized',
+                    ReportExportController::csvCell($ticket->ticket_number),
+                    ReportExportController::csvCell(mb_substr((string) $ticket->subject, 0, 200)),
+                    ReportExportController::csvCell($ticket->customer->name ?? 'Unknown'),
+                    ReportExportController::csvCell($ticket->category->name ?? 'Uncategorized'),
                     ucfirst($ticket->priority),
                     ucfirst(str_replace('_', ' ', $ticket->status)),
-                    $ticket->assignee->name ?? 'Unassigned',
+                    ReportExportController::csvCell($ticket->assignee->name ?? 'Unassigned'),
                     $ticket->created_at->format('Y-m-d H:i'),
                     $ticket->resolved_at ? $ticket->resolved_at->format('Y-m-d H:i') : '',
                     $resolutionTime,

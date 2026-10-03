@@ -84,7 +84,49 @@ class FinancialService
             'net_loss' => $netLoss,
             'period_from' => $from->format('Y-m-d'),
             'period_to' => $to->format('Y-m-d'),
+            // Multi-currency: per-code totals. Different currencies are NEVER
+            // summed together; convert explicitly via CurrencyService instead.
+            'revenue_by_currency' => $this->getRevenueByCurrency($from, $to),
+            'expenses_by_currency' => $this->getExpensesByCurrency($from, $to),
         ];
+    }
+
+    /**
+     * Net revenue grouped by transaction currency (income minus refunds).
+     *
+     * @return array<string, float>
+     */
+    public function getRevenueByCurrency(Carbon $from = null, Carbon $to = null): array
+    {
+        if (!$from) $from = Carbon::now()->startOfMonth();
+        if (!$to) $to = Carbon::now()->endOfMonth();
+        $income = FinancialTransaction::income()->where('status', 'completed')
+            ->whereBetween('created_at', [$from, $to])
+            ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')
+            ->pluck('total', 'currency')->all();
+        $refunds = FinancialTransaction::where('type', 'refund')->where('status', 'completed')
+            ->whereBetween('created_at', [$from, $to])
+            ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')
+            ->pluck('total', 'currency')->all();
+        $out = [];
+        foreach (array_unique(array_merge(array_keys($income), array_keys($refunds))) as $code) {
+            $out[strtoupper($code)] = round((float) ($income[$code] ?? 0) - (float) ($refunds[$code] ?? 0), 2);
+        }
+        return $out;
+    }
+
+    /**
+     * @return array<string, float>
+     */
+    public function getExpensesByCurrency(Carbon $from = null, Carbon $to = null): array
+    {
+        if (!$from) $from = Carbon::now()->startOfMonth();
+        if (!$to) $to = Carbon::now()->endOfMonth();
+        return FinancialTransaction::expenses()->where('status', 'completed')
+            ->whereBetween('created_at', [$from, $to])
+            ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->mapWithKeys(fn ($v, $k) => [strtoupper($k) => round((float) $v, 2)])->all();
     }
 
     public function recordIncome(float $amount, string $category, string $description, array $related = []): FinancialTransaction
@@ -154,7 +196,9 @@ class FinancialService
 
     public function getPendingPayments(): float
     {
-        return (float) Invoice::whereIn('status', ['sent', 'viewed', 'overdue'])->sum('amount_due');
+        // Outstanding = issued-but-unpaid + overdue + partially paid dues.
+        // (Previously partially_paid was excluded, under-reporting pending.)
+        return (float) Invoice::whereIn('status', ['sent', 'viewed', 'overdue', 'partially_paid'])->sum('amount_due');
     }
 
     public function getOutstandingInvoices(): int

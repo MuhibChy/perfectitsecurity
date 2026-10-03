@@ -4,13 +4,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <x-page-header
+    <x-page-header sys="FINANCE://QUOTATIONS"
         title="Quotations Management"
         subtitle="Author, send, and convert formal commercial estimates and engineering proposals."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Quotations' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('admin.quotations.create') }}" class="btn-primary btn-sm">
+            <a href="{{ route('admin.quotations.create') }}" class="term-btn term-btn-sm">
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Draft New Quotation
             </a>
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="glass-card p-4 rounded-2xl flex items-center gap-2 overflow-x-auto scrollbar-none">
+    <div class="term-panel p-4 flex items-center gap-2 overflow-x-auto scrollbar-none">
         @php $currStatus = request('status'); @endphp
         <a href="{{ route('admin.quotations.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {{ !$currStatus ? 'bg-primary-600 text-white' : 'bg-surface-100 dark:bg-navy-800 text-gray-600 dark:text-gray-300' }}">
             All Quotations
@@ -59,10 +59,10 @@
     </div>
 
     {{-- Quotations Table --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($quotations->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table term-table">
                 <thead>
                     <tr>
                         <th>Quote Ref</th>
@@ -77,41 +77,41 @@
                 <tbody>
                     @foreach($quotations as $quote)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
+                        <td data-label="Quote Ref">
                             <a href="{{ route('admin.quotations.show', $quote) }}" class="font-mono font-bold text-primary-600 dark:text-primary-400 hover:underline">
                                 {{ $quote->quotation_number ?? 'QUO-' . str_pad($quote->id, 5, '0', STR_PAD_LEFT) }}
                             </a>
                         </td>
-                        <td>
+                        <td data-label="Client / Organization">
                             <div class="font-semibold text-gray-900 dark:text-white">{{ $quote->customer->name ?? 'Direct Client' }}</div>
                             <div class="text-xs text-gray-500">{{ $quote->customer->email ?? '' }}</div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$quote->status" />
                         </td>
-                        <td class="font-mono text-gray-600 dark:text-gray-300">
+                        <td class="font-mono text-gray-600 dark:text-gray-300" data-label="Subtotal">
                             ${{ number_format($quote->subtotal ?? 0, 2) }}
                         </td>
-                        <td class="font-mono font-bold text-gray-900 dark:text-white">
+                        <td class="font-mono font-bold text-gray-900 dark:text-white" data-label="Total Value">
                             ${{ number_format($quote->total ?? 0, 2) }}
                         </td>
-                        <td class="text-xs {{ $quote->valid_until && $quote->valid_until->isPast() ? 'text-rose-500 font-semibold' : 'text-gray-500' }}">
+                        <td class="text-xs {{ $quote->valid_until && $quote->valid_until->isPast() ? 'text-rose-500 font-semibold' : 'text-gray-500' }}" data-label="Valid Until">
                             {{ $quote->valid_until ? $quote->valid_until->format('M d, Y') : 'Open' }}
                         </td>
-                        <td class="text-right">
+                        <td class="text-right" data-label="Actions">
                             <div class="inline-flex items-center gap-1.5">
-                                <a href="{{ route('admin.quotations.show', $quote) }}" class="btn-ghost btn-sm text-xs">
+                                <a href="{{ route('admin.quotations.show', $quote) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     View
                                 </a>
                                 @if(in_array($quote->status, ['draft', 'sent']))
-                                <a href="{{ route('admin.quotations.edit', $quote) }}" class="btn-secondary btn-sm text-xs">
+                                <a href="{{ route('admin.quotations.edit', $quote) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     Edit
                                 </a>
                                 @endif
                                 @if($quote->status === 'accepted')
                                 <form action="{{ route('admin.quotations.convert', $quote) }}" method="POST" class="inline" onsubmit="return confirm('Generate invoice from this accepted quotation?')">
                                     @csrf
-                                    <button type="submit" class="btn-primary btn-sm text-xs bg-emerald-600 hover:bg-emerald-700">
+                                    <button type="submit" class="term-btn term-btn-sm">
                                         Convert to Invoice
                                     </button>
                                 </form>

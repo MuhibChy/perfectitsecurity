@@ -172,9 +172,9 @@ class OrderPaymentE2ETest extends TestCase
         $invoice->update(['stripe_checkout_session_id' => 'cs_e2e_123']);
 
         $payload = json_encode(['id' => 'evt_e2e', 'type' => 'checkout.session.completed', 'data' => ['object' => [
-            'id' => 'cs_e2e_123', 'payment_intent' => 'pi_e2e_123',
-            'amount_total' => 75000, 'currency' => 'usd',
-            'metadata' => ['invoice_id' => $invoice->id],
+            'id' => 'cs_e2e_123', 'payment_intent' => 'pi_e2e_123', 'payment_status' => 'paid',
+            'amount_total' => 75000, 'currency' => 'usd', 'customer_email' => $customer->email,
+            'metadata' => ['invoice_id' => $invoice->id, 'customer_id' => $customer->id],
         ]]]);
 
         // First delivery → paid.
@@ -278,7 +278,7 @@ class OrderPaymentE2ETest extends TestCase
         $orderA = $this->placeOrder($alpha, $service);
         $invoiceA = $orderA->invoices()->firstOrFail();
 
-        $this->actingAs($beta)->get(route('portal.orders.show', $orderA->id))->assertStatus(403);
+        $this->actingAs($beta)->get(route('portal.orders.show', $orderA->id))->assertStatus(404);
         $this->actingAs($beta)->get(route('portal.invoices.show', $invoiceA->id))->assertStatus(404);
         $this->actingAs($alpha)->get(route('portal.orders.show', $orderA->id))->assertStatus(200);
     }
@@ -301,3 +301,4 @@ class OrderPaymentE2ETest extends TestCase
         $this->actingAs($finance)->get(route('admin.financials.index'))->assertStatus(200);
     }
 }
+

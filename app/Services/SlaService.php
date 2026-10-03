@@ -92,11 +92,17 @@ class SlaService
             if ($deadline->isPast() && !$ticket->sla_breached_at) {
                 $ticket->update(['sla_breached_at' => now(), 'status' => 'escalated']);
                 $this->notifySlaOwners($ticket, 'sla_breached', 'SLA breach', "Ticket {$ticket->ticket_number} has exceeded its resolution deadline.");
+                // Additive ITSM ledger: persistent breach record (idempotent).
+                try { app(ItsmService::class)->recordBreach($ticket->fresh(), 'resolution'); } catch (\Throwable $e) { report($e); }
                 $breachCount++;
             } elseif (!$ticket->sla_warning_sent_at && now()->diffInMinutes($deadline, false) <= 120) {
                 $ticket->update(['sla_warning_sent_at' => now()]);
                 $this->notifySlaOwners($ticket, 'sla_warning', 'SLA warning', "Ticket {$ticket->ticket_number} is within two hours of its resolution deadline.");
                 $warningCount++;
+            }
+            // Additive: response-breach ledger entry (no status change — existing behaviour preserved).
+            if ($ticket->sla_response_deadline && !$ticket->first_response_at && $ticket->sla_response_deadline->isPast()) {
+                try { app(ItsmService::class)->recordBreach($ticket, 'response'); } catch (\Throwable $e) { report($e); }
             }
         }
 

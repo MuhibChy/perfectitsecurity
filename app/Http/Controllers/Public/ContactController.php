@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContactController extends Controller
 {
@@ -18,7 +19,7 @@ class ContactController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
+            'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:30',
             'company' => 'nullable|string|max:255',
             'subject' => 'required|string|max:255',
@@ -31,7 +32,8 @@ class ContactController extends Controller
             'budget' => 'nullable|numeric|min:0',
         ]);
 
-        $serviceRequest = ServiceRequest::create([
+        $serviceRequest = DB::transaction(function () use ($validated) {
+            $serviceRequest = ServiceRequest::create([
             'user_id' => auth()->id(),
             'service_id' => $validated['service_id'] ?? null,
             'country_id' => $validated['country_id'] ?? null,
@@ -47,7 +49,7 @@ class ContactController extends Controller
             'timeline' => $validated['timeline'] ?? null,
             'lead_source' => 'contact',
             'status' => 'new',
-            'review_status' => 'inbound',
+            'review_status' => 'new',
         ]);
 
         Lead::create([
@@ -63,6 +65,22 @@ class ContactController extends Controller
             'estimated_value' => $validated['budget'] ?? null,
             'country_id' => $validated['country_id'] ?? null,
         ]);
+
+            return $serviceRequest;
+        });
+
+        // Staff alert: contact enquiries must reach a human (in-app notification).
+        $staff = \App\Models\User::whereIn('role', ['super_admin', 'admin', 'support_manager'])
+            ->where('is_active', true)->limit(10)->get();
+        foreach ($staff as $member) {
+            \App\Models\Notification::create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => 'contact_enquiry',
+                'notifiable_type' => \App\Models\User::class,
+                'notifiable_id' => $member->id,
+                'data' => ['title' => 'New contact enquiry', 'message' => "{$validated['name']} ({$validated['email']}): {$validated['subject']}", 'service_request_id' => $serviceRequest->id],
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Your message has been sent. We will get back to you shortly!');
     }

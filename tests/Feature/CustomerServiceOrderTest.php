@@ -134,6 +134,7 @@ class CustomerServiceOrderTest extends TestCase
         $anotherCustomer = User::factory()->create(['role' => 'customer']);
 
         $response = $this->actingAs($anotherCustomer)->get(route('portal.orders.show', $order->id));
-        $response->assertStatus(403);
+        // Oracle-free scoping: cross-customer access answers 404, never 403.
+        $response->assertStatus(404);
     }
 }

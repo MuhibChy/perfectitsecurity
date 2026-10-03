@@ -4,13 +4,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <x-page-header
+    <x-page-header sys="SYSTEM://USERS"
         title="User & Staff Management"
         subtitle="Manage user accounts, enforce role-based access control (RBAC), and review identity verification statuses."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Users' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('admin.users.create') }}" class="btn-primary btn-sm">
+            <a href="{{ route('admin.users.create') }}" class="term-btn term-btn-sm">
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                 Create New User
             </a>
@@ -18,7 +18,7 @@
     </x-page-header>
 
     {{-- Filter & Search Card --}}
-    <div class="glass-card p-4 rounded-2xl">
+    <div class="term-panel p-4">
         <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
                 @php $currentRole = request('role'); @endphp
@@ -27,16 +27,25 @@
                     All Users
                 </a>
                 @foreach(['admin' => 'Admins', 'support_agent' => 'Support', 'project_manager' => 'PMs', 'finance_manager' => 'Finance', 'employee' => 'Employees', 'customer' => 'Customers', 'freelancer' => 'Freelancers'] as $rKey => $rLabel)
-                <a href="{{ route('admin.users.index', array_filter(['role' => $rKey, 'search' => request('search')])) }}"
+                <a href="{{ route('admin.users.index', array_filter(['role' => $rKey, 'search' => request('search'), 'status' => request('status')])) }}"
                    class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {{ $currentRole === $rKey ? 'bg-primary-600 text-white' : 'bg-surface-100 dark:bg-navy-800 text-gray-600 dark:text-gray-300 hover:bg-surface-200' }}">
                     {{ $rLabel }}
+                </a>
+                @endforeach
+            </div>
+            <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+                @php $currentStatus = request('status'); @endphp
+                @foreach(['' => 'All Statuses', 'pending' => 'Pending Approval', 'approved' => 'Approved', 'suspended' => 'Suspended'] as $sKey => $sLabel)
+                <a href="{{ route('admin.users.index', array_filter(['role' => request('role'), 'search' => request('search'), 'status' => $sKey])) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {{ $currentStatus === $sKey || (!$currentStatus && $sKey === '') ? 'bg-amber-600 text-white' : 'bg-surface-100 dark:bg-navy-800 text-gray-600 dark:text-gray-300 hover:bg-surface-200' }}">
+                    {{ $sLabel }}
                 </a>
                 @endforeach
             </div>
 
             <div class="relative w-full md:w-72">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..."
-                       class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-navy-800 border border-surface-200 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                       class="term-input pl-9 pr-4">
                 <div class="absolute left-3 top-2.5 text-gray-400">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
@@ -45,10 +54,10 @@
     </div>
 
     {{-- Users Table --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($users->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table term-table">
                 <thead>
                     <tr>
                         <th>User</th>
@@ -63,9 +72,9 @@
                 <tbody>
                     @foreach($users as $u)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
+                        <td data-label="User">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-cyber-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
+                                <div class="w-9 h-9 bg-gradient-to-br from-primary-500 to-cyber-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
                                     {{ substr($u->name, 0, 1) }}
                                 </div>
                                 <div>
@@ -76,35 +85,43 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Assigned Role">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-surface-100 dark:bg-navy-800 text-gray-700 dark:text-gray-300">
                                 {{ ucfirst(str_replace('_', ' ', $u->role)) }}
                             </span>
                         </td>
-                        <td class="text-xs text-gray-600 dark:text-gray-300">
+                        <td class="text-xs text-gray-600 dark:text-gray-300" data-label="Organization">
                             {{ $u->company->name ?? $u->company_name ?? '—' }}
                         </td>
-                        <td>
+                        <td data-label="Account Status">
                             <x-status-badge :status="$u->is_active ? 'active' : 'inactive'" />
                         </td>
-                        <td>
+                        <td data-label="Verification">
                             @if($u->isFullyVerified())
                                 <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">✓ Verified</span>
                             @else
                                 <span class="text-xs font-semibold text-amber-600 dark:text-amber-400">Pending</span>
                             @endif
                         </td>
-                        <td class="text-xs text-gray-500">
+                        <td class="text-xs text-gray-500" data-label="Last Login">
                             {{ $u->last_login_at ? $u->last_login_at->diffForHumans() : 'Never' }}
                         </td>
-                        <td class="text-right">
+                        <td class="text-right" data-label="Actions">
                             <div class="inline-flex items-center gap-1.5">
-                                <a href="{{ route('admin.users.show', $u) }}" class="btn-ghost btn-sm text-xs">
+                                <a href="{{ route('admin.users.show', $u) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     View
                                 </a>
-                                <a href="{{ route('admin.users.edit', $u) }}" class="btn-secondary btn-sm text-xs">
+                                <a href="{{ route('admin.users.edit', $u) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     Edit
                                 </a>
+                                @if(!$u->is_active && is_null($u->approved_at))
+                                <form method="POST" action="{{ route('admin.users.approve', $u) }}" class="inline">@csrf<button class="term-btn term-btn-sm" onclick="return confirm('Approve this user?')">Approve</button></form>
+                                <form method="POST" action="{{ route('admin.users.reject', $u) }}" class="inline">@csrf<button class="term-btn term-btn-ghost term-btn-sm text-red-600" onclick="return confirm('Reject this user?')">Reject</button></form>
+                                @elseif($u->is_active && $u->id !== auth()->id())
+                                <form method="POST" action="{{ route('admin.users.suspend', $u) }}" class="inline">@csrf<button class="term-btn term-btn-ghost term-btn-sm text-amber-600" onclick="return confirm('Suspend this user? History is preserved.')">Suspend</button></form>
+                                @elseif(!$u->is_active && $u->id !== auth()->id())
+                                <form method="POST" action="{{ route('admin.users.approve', $u) }}" class="inline">@csrf<button class="term-btn term-btn-ghost term-btn-sm">Reactivate</button></form>
+                                @endif
                             </div>
                         </td>
                     </tr>

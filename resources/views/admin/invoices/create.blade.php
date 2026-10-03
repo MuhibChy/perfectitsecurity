@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6" x-data="invoiceBuilder()">
-    <x-page-header
+    <x-page-header sys="FINANCE://INVOICES"
         title="Create Client Invoice"
         subtitle="Generate itemized billing for delivered IT support, cybersecurity audits, or retainer services."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Invoices' => route('admin.invoices.index'), 'New' => null]"
@@ -14,13 +14,13 @@
         @csrf
 
         {{-- Client & Due Date --}}
-        <div class="glass-card p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 space-y-5">
+        <div class="term-panel p-6 lg:p-8 shadow-xl border border-white/10 space-y-5">
             <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">1. Client & Schedule</h3>
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Billed Customer</label>
-                    <select name="customer_id" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <label class="term-field-label">Billed Customer</label>
+                    <select name="customer_id" required class="term-input">
                         <option value="">Select a client...</option>
                         @foreach($customers as $c)
                         <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
@@ -28,30 +28,30 @@
                         </option>
                         @endforeach
                     </select>
-                    @error('customer_id') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    @error('customer_id') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Payment Due Date</label>
+                    <label class="term-field-label">Payment Due Date</label>
                     <input type="date" name="due_date" value="{{ old('due_date', now()->addDays(14)->format('Y-m-d')) }}" required
-                           class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    @error('due_date') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                           class="term-input">
+                    @error('due_date') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
 
         {{-- Itemized Line Items --}}
-        <div class="glass-card p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 space-y-5">
+        <div class="term-panel p-6 lg:p-8 shadow-xl border border-white/10 space-y-5">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">2. Itemized Deliverables</h3>
-                <button type="button" @click="addItem()" class="btn-secondary btn-sm">
+                <button type="button" @click="addItem()" class="term-btn term-btn-ghost term-btn-sm">
                     + Add Line Item
                 </button>
             </div>
 
             <div class="space-y-3">
                 <template x-for="(item, index) in items" :key="index">
-                    <div class="p-4 rounded-xl bg-surface-50 dark:bg-navy-800/50 border border-surface-200 dark:border-white/5 grid grid-cols-12 gap-3 items-center">
+                    <div class="p-4 bg-surface-50 dark:bg-navy-800/50 border border-surface-200 dark:border-white/5 grid grid-cols-12 gap-3 items-center">
                         <div class="col-span-12 sm:col-span-5">
                             <label class="block text-[11px] font-semibold text-gray-500 mb-1">Service Description</label>
                             <input type="text" :name="'items[' + index + '][description]'" x-model="item.description" required placeholder="e.g. SOC Monitoring — Monthly"
@@ -86,37 +86,37 @@
         </div>
 
         {{-- Tax & Discount --}}
-        <div class="glass-card p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 space-y-5">
+        <div class="term-panel p-6 lg:p-8 shadow-xl border border-white/10 space-y-5">
             <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">3. Tax & Payment Terms</h3>
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Discount Amount ($)</label>
+                    <label class="term-field-label">Discount Amount ($)</label>
                     <input type="number" step="0.01" min="0" name="discount_amount" x-model.number="discount"
-                           class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white">
+                           class="term-input">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Tax Rate (%)</label>
+                    <label class="term-field-label">Tax Rate (%)</label>
                     <input type="number" step="0.01" min="0" max="100" name="tax_rate" x-model.number="taxRate"
-                           class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white">
+                           class="term-input">
                 </div>
             </div>
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Client Notes</label>
-                    <textarea name="notes" rows="3" placeholder="Notes for the customer..." class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white"></textarea>
+                    <label class="term-field-label">Client Notes</label>
+                    <textarea name="notes" rows="3" placeholder="Notes for the customer..." class="term-input"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Payment Terms</label>
-                    <textarea name="terms" rows="3" placeholder="Wire transfer details, Net 14..." class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white"></textarea>
+                    <label class="term-field-label">Payment Terms</label>
+                    <textarea name="terms" rows="3" placeholder="Wire transfer details, Net 14..." class="term-input"></textarea>
                 </div>
             </div>
 
             {{-- Summary Totals Strip --}}
-            <div class="p-4 rounded-xl bg-surface-100 dark:bg-navy-800/80 flex flex-wrap items-center justify-between text-sm">
+            <div class="p-4 bg-surface-100 dark:bg-navy-800/80 flex flex-wrap items-center justify-between text-sm">
                 <div>
                     <span class="text-gray-500">Subtotal:</span>
                     <strong class="font-mono ml-1" x-text="'$' + subtotal().toFixed(2)"></strong>
@@ -132,8 +132,8 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                <a href="{{ route('admin.invoices.index') }}" class="btn-ghost btn-sm">Cancel</a>
-                <button type="submit" class="btn-primary btn-sm px-8">Save & Create Invoice</button>
+                <a href="{{ route('admin.invoices.index') }}" class="term-btn term-btn-ghost term-btn-sm">Cancel</a>
+                <button type="submit" class="term-btn term-btn-sm">Save & Create Invoice</button>
             </div>
         </div>
     </form>

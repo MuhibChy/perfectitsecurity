@@ -2,18 +2,20 @@
 @section('page-title', $service->name)
 
 @section('content')
+
+    <x-page-header title="Services" sys="OPS://SERVICES" />
 <div class="max-w-4xl space-y-6">
     <div class="flex justify-between items-start">
         <div>
             <a href="{{ route('admin.services.index') }}" class="text-blue-600 hover:underline text-sm">← Back to Services</a>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{{ $service->name }}</h1>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">{{ $service->name }}</h2>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ $service->category->name ?? '-' }} · {{ ucfirst($service->complexity_level ?? 'standard') }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('admin.services.edit', $service->id) }}" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm">Edit</a>
+            <a href="{{ route('admin.services.edit', $service->id) }}" class="term-btn term-btn-sm term-btn-ghost">Edit</a>
             <form method="POST" action="{{ route('admin.services.destroy', $service->id) }}" onsubmit="return confirm('Delete this service?')">
                 @csrf @method('DELETE')
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">Delete</button>
+                <button type="submit" class="btn btn-destructive term-btn-sm">Delete</button>
             </form>
         </div>
     </div>
@@ -21,20 +23,20 @@
     <!-- Status Badges -->
     <div class="flex gap-2">
         @if($service->is_active)
-            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full font-medium">Active</span>
+            <span class="term-tag">Active</span>
         @else
-            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs rounded-full font-medium">Inactive</span>
+            <span class="term-tag">Inactive</span>
         @endif
         @if($service->is_featured)
-            <span class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs rounded-full font-medium">Featured</span>
+            <span class="term-tag">Featured</span>
         @endif
         @if($service->allows_custom_quote)
-            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs rounded-full font-medium">Custom Quote Allowed</span>
+            <span class="term-tag">Custom Quote Allowed</span>
         @endif
     </div>
 
     <!-- Description -->
-    <div class="glass-card p-6">
+    <div class="term-panel p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Description</h2>
         <p class="text-gray-600 dark:text-gray-400">{{ $service->short_description }}</p>
         @if($service->description)
@@ -43,8 +45,8 @@
     </div>
 
     <!-- Country Pricing -->
-    <div class="glass-card p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">🌍 Country-Specific Pricing</h2>
+    <div class="term-panel p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Country-Specific Pricing</h2>
         <div class="grid md:grid-cols-3 gap-4">
             @forelse($service->countryPrices as $cp)
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
@@ -64,8 +66,8 @@
                 </div>
                 <div class="text-xs text-gray-500 mt-1">{{ $cp->country->name }} · {{ ucfirst($cp->pricing_type) }}</div>
                 @if($cp->discount_price && $cp->discount_valid_until && \Carbon\Carbon::parse($cp->discount_valid_until)->isFuture())
-                    <div class="mt-2 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs rounded-full inline-block">
-                        Discount: {{ $cp->country->currency_symbol }}{{ number_format($cp->discount_price, 0) }} until {{ $cp->discount_valid_until->format('M d, Y') }}
+                    <div class="mt-2 term-alert term-alert-err text-xs inline-flex">
+                        <span class="term-alert-tag">DISCOUNT</span><span>Discount: {{ $cp->country->currency_symbol }}{{ number_format($cp->discount_price, 0) }} until {{ $cp->discount_valid_until->format('M d, Y') }}</span>
                     </div>
                 @endif
             </div>
@@ -78,8 +80,8 @@
     <!-- Details -->
     <div class="grid md:grid-cols-2 gap-6">
         @if($service->deliverables && count($service->deliverables) > 0)
-        <div class="glass-card p-6">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">📋 Deliverables</h3>
+        <div class="term-panel p-6">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Deliverables</h3>
             <ul class="space-y-2">
                 @foreach($service->deliverables as $item)
                     <li class="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
@@ -91,7 +93,7 @@
         @endif
 
         @if($service->features && count($service->features) > 0)
-        <div class="glass-card p-6">
+        <div class="term-panel p-6">
             <h3 class="font-semibold text-gray-900 dark:text-white mb-3">⚡ Features</h3>
             <ul class="space-y-2">
                 @foreach($service->features as $item)
@@ -105,8 +107,8 @@
     </div>
 
     <!-- Meta -->
-    <div class="glass-card p-6">
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">⚙️ Metadata</h3>
+    <div class="term-panel p-6">
+        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">⚙ Metadata</h3>
         <div class="grid md:grid-cols-3 gap-4 text-sm">
             <div><span class="text-gray-500">Slug:</span> <span class="text-gray-900 dark:text-white">{{ $service->slug }}</span></div>
             <div><span class="text-gray-500">Estimated Delivery:</span> <span class="text-gray-900 dark:text-white">{{ $service->estimated_completion ?? 'N/A' }}</span></div>

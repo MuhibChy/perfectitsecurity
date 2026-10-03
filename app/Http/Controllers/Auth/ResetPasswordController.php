@@ -32,6 +32,14 @@ class ResetPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                // A reset proves control of the inbox — kill every other
+                // session so a stolen session cannot survive the reset.
+                try {
+                    \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                } catch (\Throwable $e) {
+                    // Session driver may be file/array in local/testing.
+                }
+
                 event(new PasswordReset($user));
             }
         );

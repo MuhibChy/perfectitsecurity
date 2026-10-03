@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>Invoice #{{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
+        body { font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 25px; }
         .logo { font-size: 24px; font-weight: bold; color: #1e293b; }
         .invoice-title { font-size: 20px; font-weight: bold; color: #2563eb; text-align: right; }
@@ -75,15 +75,15 @@
                     <strong>{{ $item->description ?? $item->name }}</strong>
                 </td>
                 <td style="text-align: center;">{{ $item->quantity ?? 1 }}</td>
-                <td style="text-align: right;">${{ number_format($item->unit_price ?? $item->price ?? 0, 2) }}</td>
-                <td style="text-align: right;">${{ number_format($item->total ?? (($item->quantity ?? 1) * ($item->unit_price ?? 0)), 2) }}</td>
+                <td style="text-align: right;">{{ \App\Services\Money::format($item->unit_price ?? $item->price ?? 0, $invoice->currency) }}</td>
+                <td style="text-align: right;">{{ \App\Services\Money::format($item->total ?? (($item->quantity ?? 1) * ($item->unit_price ?? 0)), $invoice->currency) }}</td>
             </tr>
             @empty
             <tr>
                 <td><strong>IT Professional Services</strong></td>
                 <td style="text-align: center;">1</td>
-                <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
-                <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+                <td style="text-align: right;">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
+                <td style="text-align: right;">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
             </tr>
             @endforelse
         </tbody>
@@ -92,23 +92,23 @@
     <table class="totals">
         <tr>
             <td>Subtotal:</td>
-            <td style="text-align: right;">${{ number_format($invoice->subtotal ?? $invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->subtotal ?? $invoice->total ?? 0, $invoice->currency) }}</td>
         </tr>
         @if(isset($invoice->tax_amount) && $invoice->tax_amount > 0)
         <tr>
             <td>Tax:</td>
-            <td style="text-align: right;">${{ number_format($invoice->tax_amount, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->tax_amount, $invoice->currency) }}</td>
         </tr>
         @endif
         @if(isset($invoice->discount_amount) && $invoice->discount_amount > 0)
         <tr>
             <td>Discount:</td>
-            <td style="text-align: right;">-${{ number_format($invoice->discount_amount, 2) }}</td>
+            <td style="text-align: right;">-{{ \App\Services\Money::format($invoice->discount_amount, $invoice->currency) }}</td>
         </tr>
         @endif
         <tr class="grand-total">
             <td>Total:</td>
-            <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
         </tr>
     </table>
 

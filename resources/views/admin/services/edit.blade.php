@@ -2,10 +2,12 @@
 @section('page-title', 'Edit Service')
 
 @section('content')
+
+    <x-page-header title="Edit Service" sys="OPS://SERVICES" />
 <div class="max-w-4xl">
     <div class="mb-6">
         <a href="{{ route('admin.services.index') }}" class="text-blue-600 hover:underline text-sm">← Back to Services</a>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">Edit: {{ $service->name }}</h1>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">Edit: {{ $service->name }}</h2>
     </div>
 
     <form method="POST" action="{{ route('admin.services.update', $service->id) }}" class="space-y-6">
@@ -13,15 +15,15 @@
         @method('PUT')
 
         <!-- Basic Info -->
-        <div class="glass-card p-6">
+        <div class="term-panel p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Service Name *</label>
+                    <label class="term-field-label">Service Name *</label>
                     <input type="text" name="name" value="{{ old('name', $service->name) }}" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
+                    <label class="term-field-label">Category *</label>
                     <select name="category_id" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ old('category_id', $service->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->icon }} {{ $cat->name }}</option>
@@ -29,11 +31,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                    <label class="term-field-label">Subcategory</label>
                     <input type="text" name="subcategory" value="{{ old('subcategory', $service->subcategory) }}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complexity Level</label>
+                    <label class="term-field-label">Complexity Level</label>
                     <select name="complexity_level" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                         @foreach(['basic', 'standard', 'advanced', 'enterprise'] as $level)
                             <option value="{{ $level }}" {{ old('complexity_level', $service->complexity_level) == $level ? 'selected' : '' }}>{{ ucfirst($level) }}</option>
@@ -41,7 +43,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price Type *</label>
+                    <label class="term-field-label">Price Type *</label>
                     <select name="price_type" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                         @foreach(['fixed' => 'Fixed Price', 'hourly' => 'Hourly Rate', 'monthly' => 'Monthly', 'custom' => 'Custom Quote'] as $val => $label)
                             <option value="{{ $val }}" {{ old('price_type', $service->price_type) == $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -49,22 +51,22 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estimated Delivery</label>
+                    <label class="term-field-label">Estimated Delivery</label>
                     <input type="text" name="estimated_completion" value="{{ old('estimated_completion', $service->estimated_completion) }}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Short Description</label>
+                    <label class="term-field-label">Short Description</label>
                     <input type="text" name="short_description" value="{{ old('short_description', $service->short_description) }}" maxlength="500" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Description</label>
+                    <label class="term-field-label">Full Description</label>
                     <textarea name="description" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('description', $service->description) }}</textarea>
                 </div>
             </div>
         </div>
 
         <!-- Country Pricing -->
-        <div class="glass-card p-6">
+        <div class="term-panel p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">🌍 Country-Specific Pricing</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Independent prices per market. Existing prices are pre-filled.</p>
             <div class="space-y-4">
@@ -82,7 +84,7 @@
                     </div>
                     <div class="grid md:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Pricing Type</label>
+                            <label class="term-field-label">Pricing Type</label>
                             <select name="country_prices[{{ $country->id }}][pricing_type]" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                                 @foreach(['fixed' => 'Fixed Price', 'starting_from' => 'Starting From', 'hourly' => 'Hourly', 'daily' => 'Daily', 'monthly' => 'Monthly', 'recurring' => 'Recurring', 'custom_quote' => 'Custom Quote'] as $val => $label)
                                     <option value="{{ $val }}" {{ ($existingPrice->pricing_type ?? 'fixed') == $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -90,11 +92,11 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Price ({{ $country->currency_code }})</label>
+                            <label class="term-field-label">Price ({{ $country->currency_code }})</label>
                             <input type="number" name="country_prices[{{ $country->id }}][price]" step="0.01" min="0" value="{{ $existingPrice->price ?? 0 }}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Country ID</label>
+                            <label class="term-field-label">Country ID</label>
                             <input type="hidden" name="country_prices[{{ $country->id }}][country_id]" value="{{ $country->id }}">
                             <div class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400">{{ $country->code }}</div>
                         </div>
@@ -105,46 +107,46 @@
         </div>
 
         <!-- Deliverables & Scope -->
-        <div class="glass-card p-6">
+        <div class="term-panel p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Deliverables & Scope</h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deliverables (one per line)</label>
+                    <label class="term-field-label">Deliverables (one per line)</label>
                     <textarea name="deliverables" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('deliverables', $service->deliverables) }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Features (one per line)</label>
+                    <label class="term-field-label">Features (one per line)</label>
                     <textarea name="features" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('features', $service->features) }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scope</label>
+                    <label class="term-field-label">Scope</label>
                     <textarea name="scope" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('scope', $service->scope) }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Exclusions</label>
+                    <label class="term-field-label">Exclusions</label>
                     <textarea name="exclusions" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('exclusions', $service->exclusions) }}</textarea>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags (one per line)</label>
+                    <label class="term-field-label">Tags (one per line)</label>
                     <textarea name="tags" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('tags', $service->tags) }}</textarea>
                 </div>
             </div>
         </div>
 
         <!-- SEO & Settings -->
-        <div class="glass-card p-6">
+        <div class="term-panel p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">SEO & Settings</h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO Title</label>
+                    <label class="term-field-label">SEO Title</label>
                     <input type="text" name="seo_title" value="{{ old('seo_title', $service->seo_title) }}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icon</label>
+                    <label class="term-field-label">Icon</label>
                     <input type="text" name="icon" value="{{ old('icon', $service->icon) }}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO Description</label>
+                    <label class="term-field-label">SEO Description</label>
                     <textarea name="seo_description" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('seo_description', $service->seo_description) }}</textarea>
                 </div>
                 <div class="md:col-span-2 flex gap-6">
@@ -162,7 +164,7 @@
                     </label>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort Order</label>
+                    <label class="term-field-label">Sort Order</label>
                     <input type="number" name="sort_order" value="{{ old('sort_order', $service->sort_order) }}" min="0" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
             </div>

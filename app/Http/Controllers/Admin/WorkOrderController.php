@@ -146,9 +146,13 @@ class WorkOrderController extends Controller
         ])->findOrFail($id);
 
         $employees = User::staff()->orderBy('name')->get();
+        $schedules = \App\Models\OrderPaymentSchedule::where('order_id', $order->id)->orderBy('sort_order')->get();
         $minDeposit = round((float) $order->total * (ServiceOrderWorkflowService::MIN_DEPOSIT_PERCENTAGE / 100), 2);
+        // Closure readiness (same rules as closeOrder): incomplete tasks + outstanding due.
+        $openTasksCount = $order->tasks()->where('status', '!=', 'completed')->count();
+        $canClose = ($order->task_completed_at || $openTasksCount === 0) && (float) $order->amount_due <= 0;
 
-        return view('admin.work-orders.show', compact('order', 'employees', 'minDeposit'));
+        return view('admin.work-orders.show', compact('order', 'employees', 'minDeposit', 'schedules', 'openTasksCount', 'canClose'));
     }
 
     public function proposePrice(Request $request, $id)
@@ -183,9 +187,40 @@ class WorkOrderController extends Controller
             'payment_method' => ['required', 'string'],
             'transaction_id' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
+            'schedule_id' => ['nullable', 'exists:order_payment_schedules,id'],
         ]);
 
         $result = $this->workflowService->recordPayment($order, $request->all(), auth()->user());
+        $payment = $result['payment'];
+
+        // Cash memo: document header for cash payments, same transaction.
+        if (strtolower((string) $request->payment_method) === 'cash') {
+            \App\Models\CashMemo::firstOrCreate(
+                ['payment_id' => $payment->id],
+                ['issued_by' => auth()->id(), 'issued_at' => now()]
+            );
+        }
+
+        // Apply to a payment schedule row when selected. Serialized under a
+        // row lock so concurrent payments cannot double-count paid_amount.
+        if ($request->filled('schedule_id')) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $order, $payment) {
+                $schedule = \App\Models\OrderPaymentSchedule::where('id', $request->schedule_id)->where('order_id', $order->id)->lockForUpdate()->first();
+                if ($schedule && $schedule->status !== 'waived') {
+                    $schedule->paid_amount = round((float) $schedule->paid_amount + (float) $payment->amount, 2);
+                    $schedule->status = $schedule->paid_amount >= (float) $schedule->expected_amount ? 'paid' : 'partial';
+                    $schedule->save();
+                    $payment->update(['schedule_id' => $schedule->id]);
+                }
+            });
+        }
+
+        \App\Services\ServiceTrackingService::record([
+            'entity_type' => \App\Models\ServiceOrder::class, 'entity_id' => $order->id,
+            'order_id' => $order->id, 'customer_id' => $order->customer_id,
+            'action' => 'progress_updated', 'comment' => "Payment {$payment->payment_number} ({$payment->payment_method}) recorded.",
+            'visible' => true,
+        ]);
 
         return back()->with('success', "Payment of {$order->currency} {$request->amount} recorded. Receipt {$result['receipt']->receipt_number} issued.");
     }
@@ -222,10 +257,59 @@ class WorkOrderController extends Controller
         return back()->with('success', "Expense {$expense->expense_number} recorded successfully.");
     }
 
-    public function close(Request $request, $id)
+    /** Define a planned stage payment. Sum of active rows may not exceed the order total. */
+    public function storeSchedule(Request $request, $id)
     {
         $order = ServiceOrder::findOrFail($id);
-        $this->workflowService->closeOrder($order, auth()->user(), $request->closure_notes);
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'milestone_id' => 'nullable|exists:project_milestones,id',
+            'expected_amount' => 'required|numeric|min:0.01',
+            'due_at' => 'nullable|date',
+        ]);
+        $planned = (float) \App\Models\OrderPaymentSchedule::where('order_id', $order->id)->where('status', '!=', 'waived')->sum('expected_amount');
+        if (round($planned + (float) $data['expected_amount'], 2) > round((float) $order->total, 2)) {
+            return back()->with('error', 'Payment schedule exceeds the order total. Record an approved scope change first.');
+        }
+        \App\Models\OrderPaymentSchedule::create($data + [
+            'order_id' => $order->id, 'created_by' => auth()->id(),
+            'sort_order' => \App\Models\OrderPaymentSchedule::where('order_id', $order->id)->count(),
+        ]);
+        \App\Services\ServiceTrackingService::record([
+            'entity_type' => \App\Models\ServiceOrder::class, 'entity_id' => $order->id,
+            'order_id' => $order->id, 'customer_id' => $order->customer_id,
+            'action' => 'progress_updated', 'comment' => "Payment schedule '{$data['title']}' planned.",
+            'visible' => false,
+        ]);
+        return back()->with('success', 'Stage payment scheduled.');
+    }
+
+    public function rejectPrice(Request $request, $id)
+    {
+        $order = ServiceOrder::findOrFail($id);
+        $data = $request->validate(['reason' => 'required|string|max:1000', 'revision_id' => 'nullable|integer']);
+        $this->workflowService->rejectPrice($order, auth()->user(), $data['revision_id'] ?? null, $data['reason']);
+        return back()->with('success', 'Price proposal rejected.');
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $order = ServiceOrder::findOrFail($id);
+        $data = $request->validate(['reason' => 'required|string|max:1000']);
+        $this->workflowService->cancelOrder($order, auth()->user(), $data['reason']);
+        return back()->with('success', "Service Order {$order->order_number} cancelled; history preserved.");
+    }
+
+    public function close(Request $request, $id)
+    {        $order = ServiceOrder::findOrFail($id);
+        $data = $request->validate(['closure_notes' => 'nullable|string|max:2000']);
+        $this->workflowService->closeOrder($order, auth()->user(), $data['closure_notes'] ?? null);
+        \App\Services\ServiceTrackingService::record([
+            'entity_type' => ServiceOrder::class, 'entity_id' => $order->id,
+            'order_id' => $order->id, 'customer_id' => $order->customer_id,
+            'action' => 'completed', 'comment' => $data['closure_notes'] ?? null,
+            'reason' => 'Order closed', 'visible' => true,
+        ]);
 
         return back()->with('success', "Service Order {$order->order_number} has been officially closed.");
     }

@@ -4,22 +4,22 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto space-y-6" x-data="{ paymentModal: false }">
-    <x-page-header
+    <x-page-header sys="FINANCE://INVOICES"
         :title="'Invoice ' . $invoice->invoice_number"
         subtitle="Manage invoice lifecycle, payment settlements, and customer notifications."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Invoices' => route('admin.invoices.index'), 'Details' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('admin.invoices.index') }}" class="btn-ghost btn-sm">
+            <a href="{{ route('admin.invoices.index') }}" class="term-btn term-btn-ghost term-btn-sm">
                 &larr; Back
             </a>
-            <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" class="btn-secondary btn-sm">
+            <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" class="term-btn term-btn-ghost term-btn-sm">
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 PDF Receipt
             </a>
 
             @if(in_array($invoice->status, ['draft', 'sent', 'viewed', 'overdue', 'partially_paid']))
-            <button type="button" @click="paymentModal = true" class="btn-primary btn-sm bg-emerald-600 hover:bg-emerald-700">
+            <button type="button" @click="paymentModal = true" class="term-btn term-btn-sm">
                 + Record Payment
             </button>
             @endif
@@ -27,7 +27,7 @@
             @if($invoice->status === 'draft')
             <form action="{{ route('admin.invoices.send', $invoice) }}" method="POST" class="inline" onsubmit="return confirm('Dispatch invoice notification to client email?')">
                 @csrf
-                <button type="submit" class="btn-primary btn-sm">
+                <button type="submit" class="term-btn term-btn-sm">
                     Send to Client
                 </button>
             </form>
@@ -35,15 +35,14 @@
         </x-slot:actions>
     </x-page-header>
 
-    @if(session('success'))
-    <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-3">
+    @if(session('success'))<div class="term-alert term-alert-ok"><span class="term-alert-tag">SYS.OK</span><span>
         <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         <span>{{ session('success') }}</span>
     </div>
     @endif
 
     {{-- Invoice Sheet --}}
-    <div class="glass-card p-8 lg:p-12 rounded-2xl shadow-xl border border-white/10 space-y-8">
+    <div class="term-panel p-8 lg:p-12 shadow-xl border border-white/10 space-y-8">
         {{-- Header Info --}}
         <div class="flex flex-col sm:flex-row justify-between items-start gap-6 pb-8 border-b border-gray-100 dark:border-white/5">
             <div>
@@ -65,8 +64,8 @@
         {{-- Line Items --}}
         <div>
             <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Itemized Deliverables</h4>
-            <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
-                <table class="data-table">
+            <div class="overflow-x-auto border border-gray-100 dark:border-white/5 term-table-wrap">
+                <table class="data-table term-table">
                     <thead>
                         <tr>
                             <th>Description</th>
@@ -78,10 +77,10 @@
                     <tbody>
                         @foreach($invoice->items as $item)
                         <tr>
-                            <td class="font-medium text-gray-900 dark:text-white">{{ $item->description }}</td>
-                            <td class="text-center font-mono">{{ $item->quantity }}</td>
-                            <td class="text-right font-mono text-gray-600 dark:text-gray-300">${{ number_format($item->unit_price, 2) }}</td>
-                            <td class="text-right font-mono font-bold text-gray-900 dark:text-white">${{ number_format($item->total, 2) }}</td>
+                            <td class="font-medium text-gray-900 dark:text-white" data-label="Description">{{ $item->description }}</td>
+                            <td class="text-center font-mono" data-label="Quantity">{{ $item->quantity }}</td>
+                            <td class="text-right font-mono text-gray-600 dark:text-gray-300" data-label="Rate">{{ \App\Services\Money::format($item->unit_price, $invoice->currency) }}</td>
+                            <td class="text-right font-mono font-bold text-gray-900 dark:text-white" data-label="Line Total">{{ \App\Services\Money::format($item->total, $invoice->currency) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -106,28 +105,28 @@
                 @endif
             </div>
 
-            <div class="w-full sm:w-80 p-5 rounded-xl bg-surface-50 dark:bg-navy-800/60 border border-surface-200 dark:border-white/10 space-y-2.5 text-sm">
+            <div class="w-full sm:w-80 p-5 bg-surface-50 dark:bg-navy-800/60 border border-surface-200 dark:border-white/10 space-y-2.5 text-sm">
                 <div class="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>Subtotal:</span>
-                    <span class="font-mono font-medium">${{ number_format($invoice->subtotal ?? 0, 2) }}</span>
+                    <span class="font-mono font-medium">{{ \App\Services\Money::format($invoice->subtotal ?? 0, $invoice->currency) }}</span>
                 </div>
                 @if($invoice->tax_amount > 0)
                 <div class="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>Tax ({{ $invoice->tax_rate ?? 0 }}%):</span>
-                    <span class="font-mono font-medium">${{ number_format($invoice->tax_amount, 2) }}</span>
+                    <span class="font-mono font-medium">{{ \App\Services\Money::format($invoice->tax_amount, $invoice->currency) }}</span>
                 </div>
                 @endif
                 <div class="pt-3 border-t border-gray-200 dark:border-white/10 flex justify-between text-base font-bold text-gray-900 dark:text-white">
                     <span>Total Billed:</span>
-                    <span class="font-mono text-primary-600 dark:text-primary-400">${{ number_format($invoice->total, 2) }}</span>
+                    <span class="font-mono text-primary-600 dark:text-primary-400">{{ \App\Services\Money::format($invoice->total, $invoice->currency) }}</span>
                 </div>
                 <div class="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
                     <span>Amount Paid:</span>
-                    <span class="font-mono font-medium">-${{ number_format($invoice->amount_paid ?? 0, 2) }}</span>
+                    <span class="font-mono font-medium">-{{ \App\Services\Money::format($invoice->amount_paid ?? 0, $invoice->currency) }}</span>
                 </div>
                 <div class="flex justify-between text-base font-bold {{ $invoice->amount_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-700 dark:text-gray-300' }}">
                     <span>Outstanding Due:</span>
-                    <span class="font-mono">${{ number_format($invoice->amount_due ?? 0, 2) }}</span>
+                    <span class="font-mono">{{ \App\Services\Money::format($invoice->amount_due ?? 0, $invoice->currency) }}</span>
                 </div>
             </div>
         </div>
@@ -136,7 +135,7 @@
         @if($invoice->payments && $invoice->payments->count() > 0)
         <div class="pt-8 border-t border-gray-100 dark:border-white/5">
             <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Recorded Payment Receipts</h4>
-            <div class="divide-y divide-gray-100 dark:divide-white/5 rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden">
+            <div class="divide-y divide-gray-100 dark:divide-white/5 border border-gray-100 dark:border-white/5 overflow-hidden">
                 @foreach($invoice->payments as $p)
                 <div class="p-4 flex items-center justify-between text-xs">
                     <div>
@@ -154,8 +153,8 @@
                     </div>
                     <div class="text-right flex items-center gap-3">
                         <div>
-                            <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ number_format($p->amount, 2) }}</span>
-                            <div class="text-[10px] text-gray-400">{{ $p->created_at->format('M d, Y') }}</div>
+                            <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ \App\Services\Money::format($p->amount, $invoice->currency) }}</span>
+                            <div class="text-[10px] text-slate-500 dark:text-gray-400">{{ $p->created_at->format('M d, Y') }}</div>
                         </div>
                         @if($p->status === 'completed' && ($p->amount - $p->refunded_amount) > 0)
                         <form action="{{ route('admin.payments.refund', $p) }}" method="POST" class="flex items-center gap-1" onsubmit="return confirm('Record a refund for this payment?')">
@@ -176,26 +175,26 @@
     </div>
 
     {{-- Record Payment Modal --}}
-    <div x-show="paymentModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div @click.away="paymentModal = false" class="glass-card max-w-md w-full p-6 rounded-2xl shadow-2xl border border-white/10">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-bold text-gray-900 dark:text-white">Record Client Payment</h3>
+    <div x-show="paymentModal" x-cloak @keydown.escape.window="paymentModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div @click.away="paymentModal = false" class="term-modal max-w-md w-full">
+            <div class="term-modal-head">
+                <span class="term-modal-title">Record Client Payment</span>
                 <button type="button" @click="paymentModal = false" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
 
-            <form method="POST" action="{{ route('admin.payments.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.payments.store') }}" class="space-y-4 p-6">
                 @csrf
                 <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Amount to Record ($)</label>
+                    <label class="term-field-label">Amount to Record ($)</label>
                     <input type="number" step="0.01" min="0.01" max="{{ $invoice->amount_due }}" name="amount" value="{{ $invoice->amount_due }}" required
-                           class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm font-mono text-gray-900 dark:text-white">
+                           class="term-input">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Payment Method</label>
-                    <select name="payment_method" required class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white">
+                    <label class="term-field-label">Payment Method</label>
+                    <select name="payment_method" required class="term-input">
                         <option value="wire_transfer">Wire / Bank Transfer</option>
                         <option value="credit_card">Credit Card (Stripe)</option>
                         <option value="check">Company Check</option>
@@ -205,18 +204,18 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Transaction Ref #</label>
-                    <input type="text" name="transaction_id" placeholder="e.g. WIRE-882190" class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white">
+                    <label class="term-field-label">Transaction Ref #</label>
+                    <input type="text" name="transaction_id" placeholder="e.g. WIRE-882190" class="term-input">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Internal Note</label>
-                    <textarea name="notes" rows="2" placeholder="Optional settlement note..." class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white"></textarea>
+                    <label class="term-field-label">Internal Note</label>
+                    <textarea name="notes" rows="2" placeholder="Optional settlement note..." class="term-input"></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" @click="paymentModal = false" class="btn-ghost btn-sm">Cancel</button>
-                    <button type="submit" class="btn-primary btn-sm bg-emerald-600 hover:bg-emerald-700">Confirm Payment</button>
+                    <button type="button" @click="paymentModal = false" class="term-btn term-btn-ghost term-btn-sm">Cancel</button>
+                    <button type="submit" class="term-btn term-btn-sm">Confirm Payment</button>
                 </div>
             </form>
         </div>

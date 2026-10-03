@@ -1,48 +1,72 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Reset Password — TechSupport Solutions</title>
+    <meta name="theme-color" content="#050807">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Reset Password — PerfectITSecurity</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const dark = saved ? saved === 'dark' : prefersDark;
+                document.documentElement.classList.toggle('dark', dark);
+            } catch (e) { document.documentElement.classList.add('dark'); }
+        })();
+    </script>
 </head>
-<body class="bg-surface-50 dark:bg-[#020617] min-h-screen flex items-center justify-center px-6">
-    {{-- Global solar-system universe (one instance) --}}
-    <x-global-space-background />
-    <div class="w-full max-w-sm relative z-10">
-        <div class="flex items-center gap-3 mb-10">
-            <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-navy-900 dark:bg-white rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white dark:text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <span class="font-bold text-navy-900 dark:text-white">TechSupport</span>
-            </a>
+<body class="bg-term-0 text-term-950 min-h-screen flex items-center justify-center p-4 sm:p-6 relative" data-lights="auth">
+    <a href="#email" class="skip-link">Skip to email field</a>
+    <x-terminal-background />
+    <x-global-3d-scene />
+    <x-global-hud-frame />
+
+    <div class="w-full max-w-md relative z-10">
+        <div class="flex items-center justify-between mb-4 font-mono text-[11px] tracking-[0.18em] uppercase">
+            <a href="{{ route('home') }}" class="text-term-700 hover:text-accent-soft transition-colors">← SYSTEM://HOME</a>
+            <span class="term-status"><span class="term-status-dot"></span>ONLINE</span>
         </div>
 
-        <h2 class="heading-md mb-2">Reset password</h2>
-        <p class="body-sm mb-8">Enter your email and we'll send you a link to reset your password.</p>
+        <div class="auth-term p-7 sm:p-9">
+            <span class="auth-term-corner tl" aria-hidden="true"></span>
+            <span class="auth-term-corner br" aria-hidden="true"></span>
 
-        @if(session('status'))
-        <div class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-lg text-sm mb-6">{{ session('status') }}</div>
-        @endif
+            <div class="font-mono text-[10px] tracking-[0.28em] text-accent-soft uppercase mb-4">AUTH://RECOVERY</div>
+            <h1 class="font-display font-extrabold text-2xl tracking-tight text-white">Reset Password</h1>
+            <p class="text-sm text-term-800 mt-1.5 mb-6">Enter your email and we will send a reset link.</p>
 
-        <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
-            @csrf
-            <div>
-                <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Email</label>
-                <input type="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800/50 text-navy-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors placeholder-surface-400" placeholder="you@company.com">
+            @if(session('status'))
+            <div class="term-alert term-alert-ok mb-5" role="status">
+                <span class="term-alert-tag">SYS://OK</span>
+                <span class="text-term-950">{{ session('status') }}</span>
             </div>
-            <button type="submit" class="w-full btn-primary py-3 text-sm">Send Reset Link</button>
-        </form>
+            @endif
+            @if($errors->any())
+            <div class="term-alert term-alert-err mb-5" role="alert">
+                <span class="term-alert-tag">SYS://ERR</span>
+                <span class="text-term-950">{{ $errors->first() }}</span>
+            </div>
+            @endif
 
-        <p class="mt-8 text-center text-sm text-surface-500">
-            <a href="{{ route('login') }}" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium">← Back to sign in</a>
-        </p>
+            <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+                @csrf
+                <div>
+                    <label for="email" class="term-field-label">Email</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email" class="term-input" placeholder="you@company.com">
+                </div>
+                <button type="submit" class="term-btn w-full !py-3.5">SEND RESET LINK →</button>
+            </form>
+
+            <p class="mt-6 text-center">
+                <a href="{{ route('login') }}" class="term-link font-mono text-[11px] tracking-[0.14em] uppercase">← Back to sign in</a>
+            </p>
+        </div>
     </div>
 </body>
 </html>

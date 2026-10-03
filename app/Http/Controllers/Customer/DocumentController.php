@@ -11,6 +11,10 @@ class DocumentController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate([
+            'category' => 'nullable|in:general,project,ticket,invoice,contract,other',
+            'search' => 'nullable|string|max:100',
+        ]);
         $query = CustomerDocument::where('user_id', auth()->id());
 
         if ($request->category) {
@@ -18,9 +22,10 @@ class DocumentController extends Controller
         }
 
         if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('original_name', 'like', "%{$request->search}%");
+            $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('original_name', 'like', "%{$s}%");
             });
         }
 
@@ -62,9 +67,9 @@ class DocumentController extends Controller
         return redirect()->back()->with('success', 'Document uploaded successfully!');
     }
 
-    public function download(CustomerDocument $document)
+    public function download($id)
     {
-        abort_unless($document->user_id === auth()->id(), 403);
+        $document = CustomerDocument::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
         // Consistently serve via the private disk (confined to its root),
         // never via raw storage_path() concatenation.
@@ -73,14 +78,11 @@ class DocumentController extends Controller
         return \Illuminate\Support\Facades\Storage::disk('private')->download($document->path, $document->original_name);
     }
 
-    public function destroy(CustomerDocument $document)
+    public function destroy($id)
     {
-        abort_unless($document->user_id === auth()->id(), 403);
+        $document = CustomerDocument::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
-        $fullPath = storage_path('app/' . $document->path);
-        if (file_exists($fullPath)) {
-            \Illuminate\Support\Facades\Storage::disk('private')->delete($document->path);
-        }
+        \Illuminate\Support\Facades\Storage::disk('private')->delete($document->path);
 
         $document->delete();
 

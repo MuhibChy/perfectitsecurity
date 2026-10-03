@@ -123,19 +123,19 @@ class HeroScene {
         const ambient = new THREE.AmbientLight(0x0d1a33, 1.2);
         this.scene.add(ambient);
 
-        // Core cyan spot/point light
+        // Core white key light
         const cyanKey = new THREE.PointLight(0x06b6d4, 6, 25);
         cyanKey.position.set(3.5, 2.5, 4);
         this.scene.add(cyanKey);
         this.objects.cyanKey = cyanKey;
 
-        // Violet-magenta rim light
+        // Soft grey rim light
         const violetRim = new THREE.PointLight(0xa855f7, 5, 22);
         violetRim.position.set(-4, -2, 3);
         this.scene.add(violetRim);
         this.objects.violetRim = violetRim;
 
-        // Deep blue atmospheric backlight
+        // Neutral atmospheric backlight
         const blueBack = new THREE.DirectionalLight(0x3b82f6, 2.5);
         blueBack.position.set(5, 5, -5);
         this.scene.add(blueBack);

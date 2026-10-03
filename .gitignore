@@ -1,33 +1,89 @@
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/framework/cache/data/
-/storage/framework/sessions/
-/storage/framework/views/
-/storage/logs/
-/storage/app/backups/
-/storage/app/documents/
-/storage/app/private/
-/bootstrap/cache/*.php
-/vendor
-.env
-.env.*
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment configurations & local secrets
+/.env
+/.env.*
 !.env.example
-.phpunit.cache
-.phpunit.result.cache
+user and password for testing.txt
+*credentials*.txt
+*password*.txt
+
+# Local SQLite databases
+*.sqlite
+*.sqlite*
+/database/*.sqlite
+/database/*.sqlite*
+/database/*.sqlite.bak
+
+# Backups & dumps (never commit archives or local backups)
+/backups/
+/storage/backups/
+/storage/app/backups/
+/storage/app/safety-checkpoints/
+*.sql
+*.dump
+*.bak
+*.backup
+*.zip
+
+# Keys and certificates
+*.key
+*.pem
+/storage/*.key
 Homestead.json
 Homestead.yaml
 auth.json
-npm-debug.log
+
+# Storage and logs
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/app/private/
+/storage/app/public/
+/storage/app/documents/
+/storage/app/ticket-attachments/
+/storage/app/avatars/
+/storage/app/*.json
+/storage/app/*.txt
+/storage/audit_ui.php
+*.log
+
+# Bootstrap cache
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+
+# Public generated assets
+/public/build
+/public/hot
+/public/storage
+
+# Testing, coverage, and caches
+.phpunit.result.cache
+/.phpunit.cache/
+/coverage/
+/playwright-report/
+/test-results/
+/playwright/.cache/
+/tests/browser/artifacts/
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-coverage/
-.idea/
-.vscode/
-.fleet/
+
+# Editor and OS files
+/.fleet
+/.idea
+/.vscode
 .DS_Store
 Thumbs.db
-*.log
+
+# Local AI / IDE agent temporary folders
+.commandcode/
+.freebuff/
+.kilo/
+.kilocode/
+.opencode/

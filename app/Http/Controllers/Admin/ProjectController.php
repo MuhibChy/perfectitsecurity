@@ -102,8 +102,19 @@ class ProjectController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $project = Project::findOrFail($id);
-        $request->validate(['status' => 'required']);
+        $request->validate(['status' => 'required|in:pending,planning,in_progress,on_hold,review,completed,cancelled']);
+        $old = $project->status;
         $project->update(['status' => $request->status]);
+        if ($old !== $request->status) {
+            \App\Services\ServiceTrackingService::record([
+                'entity_type' => Project::class, 'entity_id' => $project->id,
+                'project_id' => $project->id, 'customer_id' => $project->customer_id,
+                'action' => $request->status === 'completed' ? 'completed' : 'status_changed',
+                'old' => $old, 'new' => $request->status,
+                'reason' => $request->input('reason'),
+                'visible' => in_array($request->status, ['in_progress', 'review', 'completed'], true),
+            ]);
+        }
         return redirect()->back()->with('success', 'Project status updated!');
     }
 }

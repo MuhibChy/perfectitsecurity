@@ -7,11 +7,12 @@
     <x-page-header
         title="Service Quotations"
         subtitle="Review, approve, or decline commercial estimates and formal service proposals from our engineering staff."
+        sys="ORDER://QUOTES"
+        num="11"
         :breadcrumbs="['Customer Portal' => route('portal.dashboard'), 'Quotations' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('portal.service-request.create') }}" class="btn-primary btn-sm">
-                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <a href="{{ route('portal.service-request.create') }}" class="term-btn term-btn-sm">
                 Request New Quote
             </a>
         </x-slot:actions>
@@ -46,49 +47,49 @@
     </div>
 
     {{-- Quotations Table Card --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($quotations->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="term-table-wrap !border-0">
+            <table class="data-table term-table term-table-cards">
                 <thead>
                     <tr>
-                        <th>Quote #</th>
+                        <th>Quote</th>
                         <th>Status</th>
                         <th>Subtotal</th>
-                        <th>Discount / Tax</th>
-                        <th>Final Total</th>
-                        <th>Valid Until</th>
+                        <th>Tax</th>
+                        <th>Total</th>
+                        <th>Valid</th>
                         <th class="text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($quotations as $quote)
-                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
-                            <a href="{{ route('portal.quotations.show', $quote->id) }}" class="font-mono font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+                    <tr>
+                        <td data-label="Quote">
+                            <a href="{{ route('portal.quotations.show', $quote->id) }}" class="font-mono font-semibold text-accent-soft hover:underline">
                                 {{ $quote->quotation_number ?? 'QUO-' . str_pad($quote->id, 5, '0', STR_PAD_LEFT) }}
                             </a>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$quote->status" />
                         </td>
-                        <td class="font-mono text-gray-600 dark:text-gray-300">
+                        <td data-label="Subtotal" class="font-mono tabular-nums">
                             ${{ number_format($quote->subtotal ?? 0, 2) }}
                         </td>
-                        <td class="text-xs text-gray-500">
+                        <td data-label="Tax" class="font-mono text-[11px] text-slate-600 dark:text-term-800">
                             @if($quote->discount_amount > 0)
-                                <span class="text-emerald-600">-${{ number_format($quote->discount_amount, 2) }}</span> /
+                                <span class="fin-tag fin-tag-income">-${{ number_format($quote->discount_amount, 2) }}</span> /
                             @endif
                             Tax {{ $quote->tax_rate ?? 0 }}%
                         </td>
-                        <td class="font-mono font-bold text-gray-900 dark:text-white">
+                        <td data-label="Total" class="font-mono font-bold tabular-nums">
                             ${{ number_format($quote->total ?? 0, 2) }}
                         </td>
-                        <td class="text-xs {{ $quote->valid_until && $quote->valid_until->isPast() ? 'text-rose-500 font-semibold' : 'text-gray-500' }}">
+                        <td data-label="Valid" class="font-mono text-[11px] {{ $quote->valid_until && $quote->valid_until->isPast() ? 'text-red-400 font-semibold' : 'text-slate-600 dark:text-term-800' }}">
                             {{ $quote->valid_until ? $quote->valid_until->format('M d, Y') : 'Indefinite' }}
                         </td>
-                        <td class="text-right">
-                            <a href="{{ route('portal.quotations.show', $quote->id) }}" class="btn-secondary btn-sm">
+                        <td data-label="Action" class="text-right">
+                            <a href="{{ route('portal.quotations.show', $quote->id) }}" class="term-btn term-btn-ghost term-btn-sm">
                                 View Details &rarr;
                             </a>
                         </td>
@@ -97,7 +98,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-100 dark:border-white/5">
+        <div class="px-6 py-4 border-t border-white/10">
             {{ $quotations->links() }}
         </div>
         @else

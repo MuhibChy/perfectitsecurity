@@ -119,6 +119,36 @@ class AiAgentService
             ])->all();
     }
 
+    public function getCustomerServices(User $customer, int $limit = 5): array
+    {
+        return ServiceOrder::where('customer_id', $customer->id)
+            ->whereNotIn('status', ['cancelled'])
+            ->with('service')
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(fn ($o) => [
+                'order_number' => $o->order_number,
+                'service' => $o->service?->name ?? 'Custom Service',
+                'status' => $o->status,
+                'started_at' => $o->created_at?->format('Y-m-d'),
+            ])->all();
+    }
+
+    public function getCustomerQuotes(User $customer, int $limit = 5): array
+    {
+        return Quotation::where('customer_id', $customer->id)
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(fn ($q) => [
+                'number' => $q->quotation_number,
+                'total' => $q->total,
+                'status' => $q->status,
+                'valid_until' => $q->valid_until?->format('Y-m-d'),
+            ])->all();
+    }
+
     public function getCustomerInvoiceStatus(User $customer, int $limit = 5): array
     {
         return Invoice::where('customer_id', $customer->id)->latest()->limit($limit)->get()
@@ -159,13 +189,26 @@ class AiAgentService
             ->where(function ($q) use ($safe) {
                 $q->where('name', 'like', "%{$safe}%")->orWhere('short_description', 'like', "%{$safe}%");
             })->with('category')->limit($limit)->get()
-            ->map(fn ($s) => ['name' => $s->name, 'category' => $s->category?->name,
-                'price_type' => $s->price_type, 'starting_price' => $s->starting_price])->all();
+            ->map(fn ($s) => ['id' => $s->id, 'name' => $s->name, 'category' => $s->category?->name,
+                'price_type' => $s->price_type, 'starting_price' => $s->starting_price,
+                'short_description' => $s->short_description])->all();
     }
 
     public function searchKnowledgeBase(string $query, ?User $user, int $limit = 5): array
     {
         return $this->knowledge->searchRelevantArticles($query, $user, $limit);
+    }
+
+    public function searchCompanyInformation(): array
+    {
+        return [
+            'name' => \App\Models\Setting::get('company_name', config('app.name')),
+            'email' => \App\Models\Setting::get('company_email', 'support@perfectitsecurity.test'),
+            'phone' => \App\Models\Setting::get('company_phone', '+1 (800) 555-0199'),
+            'currency' => \App\Models\Setting::get('currency', 'USD'),
+            'hours' => '24/7/365 Continuous Security & IT Support',
+            'headquarters' => 'Global Remote & Regional Support Centers',
+        ];
     }
 
     // ------------------------------------------------------------ creation
@@ -178,7 +221,7 @@ class AiAgentService
         return $validator->validated();
     }
 
-    /** Customer-owned ticket with SLA + audit. Never assigns critical incidents to arbitrary staff. */
+    /** Customer-owned ticket with SLA + audit + notification. */
     public function createSupportTicket(User $customer, array $data): Ticket
     {
         $v = $this->validate($data, [
@@ -201,10 +244,14 @@ class AiAgentService
         ]);
         app(SlaService::class)->applySla($ticket);
         AuditLog::log('ai.ticket_created', 'tickets', $ticket, "AI-agent ticket {$ticket->ticket_number} for customer {$customer->id}.");
+
+        // Customer notification
+        $this->notifyUser($customer, 'ticket_created', 'Ticket Created', "Your support ticket #{$ticket->ticket_number} has been created via AI Assistant.", ['ticket_id' => $ticket->id]);
+
         return $ticket;
     }
 
-    /** Customer-owned service request (+ CRM lead). Amounts/pricing never accepted from chat. */
+    /** Customer-owned service request (+ CRM lead + notification). */
     public function createServiceRequest(User $customer, array $data): ServiceRequest
     {
         $v = $this->validate($data, [
@@ -230,6 +277,10 @@ class AiAgentService
             'notes' => 'Created via AI agent after explicit confirmation.',
         ]);
         AuditLog::log('ai.service_request_created', 'service_requests', $sr, "AI-agent request for customer {$customer->id}.");
+
+        // Notify customer & staff
+        $this->notifyUser($customer, 'service_request_created', 'Service Request Received', "Your service request #{$sr->id} has been received and is being reviewed.", ['service_request_id' => $sr->id]);
+
         return $sr;
     }
 
@@ -248,6 +299,9 @@ class AiAgentService
             'lead_source' => 'ai-quote',
         ]);
         AuditLog::log('ai.quote_request_created', 'service_requests', $sr, "AI-agent quote request for customer {$customer->id}.");
+
+        $this->notifyUser($customer, 'quote_request_submitted', 'Quotation Request Submitted', "Your quotation request #{$sr->id} has been submitted. Our sales engineers will prepare your estimate.", ['service_request_id' => $sr->id]);
+
         return $sr->fresh();
     }
 
@@ -269,15 +323,27 @@ class AiAgentService
     // ---------------------------------------------------------- escalation
     public function escalateToEmployee(AiConversation $conversation, ?User $user, string $reason): AiEscalation
     {
+        return $this->requestHumanSupport($conversation, $user, $reason);
+    }
+
+    public function requestHumanSupport(AiConversation $conversation, ?User $user, string $reason): AiEscalation
+    {
         $v = $this->validate(['reason' => $reason], ['reason' => 'required|string|max:500']);
-        $conversation->escalate($v['reason']);
-        $escalation = AiEscalation::create([
-            'conversation_id' => $conversation->id,
-            'reason' => $v['reason'],
+        // Single escalation record (AiConversation::escalate persists status +
+        // AiEscalation row with DB-default 'pending'); enrich with recent context.
+        $escalation = $conversation->escalate($v['reason']);
+        $escalation->update([
             'context_summary' => mb_substr($conversation->messages()->latest()->limit(5)->get()->pluck('content')->join(' | '), 0, 1000),
             'status' => 'pending',
         ]);
         AuditLog::log('ai.escalated', 'ai', $conversation, 'AI conversation escalated to human support.');
+
+        // Notify staff of escalation
+        $staffUsers = User::whereIn('role', ['admin', 'super_admin', 'support_manager', 'support_agent'])->active()->limit(5)->get();
+        foreach ($staffUsers as $staff) {
+            $this->notifyUser($staff, 'ai_escalation', 'AI Chat Escalation', "Conversation #{$conversation->id} escalated: {$v['reason']}", ['conversation_id' => $conversation->id]);
+        }
+
         return $escalation;
     }
 
@@ -287,7 +353,12 @@ class AiAgentService
         abort_unless($user->isStaff(), 403, 'Staff access required.');
     }
 
-    /** Tickets assigned to the employee or unassigned (never other agents' private scope beyond role). */
+    private function requireAdmin(User $user): void
+    {
+        abort_unless($user->isAdmin(), 403, 'Administrator access required.');
+    }
+
+    /** Tickets assigned to the employee or unassigned. */
     public function getAssignedTickets(User $employee, int $limit = 10): array
     {
         $this->requireStaff($employee);
@@ -308,7 +379,7 @@ class AiAgentService
                 'status' => $t->status, 'priority' => $t->priority])->all();
     }
 
-    /** Authorized customer summary for staff: counts + recent subjects only, no unrelated customers. */
+    /** Authorized customer summary for staff. */
     public function summarizeCustomerIssues(User $employee, int $customerId): array
     {
         $this->requireStaff($employee);
@@ -325,7 +396,68 @@ class AiAgentService
         return $summary;
     }
 
-    // ------------------------------------------------------- ownership guard
+    // ------------------------------------------------------- admin workspace
+    public function getOperationalSummary(User $admin): array
+    {
+        $this->requireAdmin($admin);
+        $summary = [
+            'open_tickets' => Ticket::open()->count(),
+            'unassigned_tickets' => Ticket::open()->whereNull('assigned_to')->count(),
+            'new_service_requests' => ServiceRequest::where('status', 'new')->count(),
+            'pending_escalations' => AiEscalation::where('status', 'pending')->count(),
+            'active_orders' => ServiceOrder::whereNotIn('status', ['closed', 'cancelled'])->count(),
+            'active_conversations_today' => AiConversation::whereDate('created_at', today())->count(),
+        ];
+        AuditLog::log('ai.operational_summary', 'system', null, "Admin {$admin->id} viewed operational summary.");
+        return $summary;
+    }
+
+    public function getUnresolvedRequests(User $admin, int $limit = 10): array
+    {
+        $this->requireAdmin($admin);
+        $requests = ServiceRequest::where('status', 'new')
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'email' => $r->email,
+                'subject' => $r->subject,
+                'created_at' => $r->created_at?->format('Y-m-d H:i'),
+            ])->all();
+        return $requests;
+    }
+
+    public function getServiceEnquiryTrends(User $admin): array
+    {
+        $this->requireAdmin($admin);
+        return ServiceCategory::withCount('services')
+            ->orderByDesc('services_count')
+            ->limit(5)
+            ->get()
+            ->map(fn ($c) => [
+                'category' => $c->name,
+                'services_count' => $c->services_count,
+            ])->all();
+    }
+
+    // ------------------------------------------------------- helpers
+    private function notifyUser(User $user, string $type, string $title, string $message, array $extra = []): void
+    {
+        try {
+            \App\Models\Notification::create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => $type,
+                'notifiable_type' => User::class,
+                'notifiable_id' => $user->id,
+                'data' => array_merge(['title' => $title, 'message' => $message], $extra),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('AI Agent notification creation failed: ' . $e->getMessage());
+        }
+    }
+
     private function assertOwnCustomer(User $actor, User $customer): void
     {
         abort_unless($actor->id === $customer->id || $actor->isStaff(), 403);

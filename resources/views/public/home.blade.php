@@ -1,562 +1,590 @@
 @extends('layouts.public')
 
-@section('title', config('app.name') . ' — Secure Your Business. Build Smarter Technology. Grow Without Limits.')
-@section('description', 'Enterprise IT support, cybersecurity, cloud solutions, and managed services. Trusted by 250+ organisations worldwide. 24/7 monitoring, fast response, zero-compromise security.')
+@section('title', 'PerfectITSecurity — Secure Your Digital World')
+@section('description', 'Managed IT support, cybersecurity, penetration testing, secure software development, and cloud/server management. Security operations active.')
 
 @section('content')
 
 {{-- ═══════════════════════════════════════════════════════════════
-     HERO — Full-Width Cinematic 3D Cosmic Experience
+     HERO — SYS://PERFECTITSECURITY
+     Subtle CSS-only technical environment (grid is global via
+     terminal-background). No canvas, no WebGL, no heavy JS.
      ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative min-h-screen w-full flex items-center overflow-hidden bg-[#030712]">
-
-    {{-- Cinematic 3D scene (global reusable component; same implementation everywhere) --}}
-    <x-hero-scene />
-
-    {{-- Cosmic Atmospheric Overlays --}}
-    <div class="absolute inset-0 bg-cyber-grid opacity-15 pointer-events-none"></div>
-    <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse 80% 60% at 75% 45%, rgba(37,99,235,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 70% at 20% 60%, rgba(92,124,250,0.1) 0%, transparent 60%), radial-gradient(circle 500px at 50% 10%, rgba(168,85,247,0.08) 0%, transparent 70%);"></div>
-    <div class="absolute inset-0 bg-gradient-to-r from-[#030712]/90 via-[#030712]/40 to-transparent pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#030712] via-[#030712]/70 to-transparent pointer-events-none"></div>
-
-    {{-- Scan line effect --}}
-    <div class="scan-line opacity-25" aria-hidden="true"></div>
-
-    {{-- Main Content Container (Full Width Expansive) --}}
-    <div class="relative z-10 w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 xl:px-20 pt-28 pb-20 min-h-screen flex items-center">
-        <div class="w-full grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-
-            {{-- Left Column: High-Impact Typography & Action Suite --}}
-            <div class="lg:col-span-7 xl:col-span-7 space-y-8">
-
-                {{-- Eyebrow badge --}}
-                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-cyan-400/30 bg-cyan-950/40 backdrop-blur-xl animate-fade-in shadow-[0_0_20px_rgba(37,99,235,0.2)]">
-                    <span class="relative flex h-2.5 w-2.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
-                    </span>
-                    <span class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Next-Gen Cybersecurity & Cloud Infrastructure</span>
-                </div>
-
-                {{-- Main headline --}}
-                <h1 class="text-4xl sm:text-6xl lg:text-7xl xl:text-[80px] font-black tracking-tight leading-[1.04] text-white animate-slide-up">
-                    Secure Your Business.<br>
-                    <span class="gradient-text-cyber drop-shadow-[0_0_35px_rgba(37,99,235,0.35)]">Build Smarter</span><br>
-                    Technology.
-                </h1>
-
-                {{-- Sub-headline --}}
-                <p class="text-lg sm:text-xl text-slate-300/90 leading-relaxed max-w-2xl font-normal animate-slide-up" style="animation-delay: 0.15s;">
-                    Enterprise-grade IT support, proactive cyber defense, and high-performance cloud architecture. We engineer and protect mission-critical environments with 24/7/365 active monitoring and instant SLA response.
-                </p>
-
-                {{-- CTAs --}}
-                <div class="flex flex-wrap items-center gap-4 pt-2 animate-slide-up" style="animation-delay: 0.25s;">
-                    <a href="{{ route('contact') }}"
-                       class="btn btn-lg text-white rounded-2xl text-base px-8 py-4 font-semibold transition-all duration-300 hover:scale-105"
-                       style="background: linear-gradient(135deg, #16A34A, #2563EB); box-shadow: 0 10px 35px rgba(37,99,235,0.45);">
-                        Get Free Security Consultation
-                        <svg class="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                    </a>
-                    <a href="{{ route('services.index') }}"
-                       class="btn btn-lg btn-glass rounded-2xl text-base px-8 py-4 font-semibold border-white/20 hover:border-cyan-400/50 hover:bg-white/10 transition-all duration-300">
-                        Explore All Solutions
-                    </a>
-                </div>
-
-                {{-- Trust indicators --}}
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-white/10 animate-fade-in" style="animation-delay: 0.4s;">
-                    @foreach([
-                        ['icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'label' => 'ISO 27001 Aligned', 'sub' => 'Security Standard'],
-                        ['icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => '24/7/365 SOC', 'sub' => 'Continuous Watch'],
-                        ['icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'label' => '< 15min Response', 'sub' => 'Critical Incident SLA'],
-                        ['icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064', 'label' => 'Global Coverage', 'sub' => 'Multi-Region Support'],
-                    ] as $trust)
-                    <div class="flex items-start gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $trust['icon'] }}"/></svg>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-white tracking-tight">{{ $trust['label'] }}</div>
-                            <div class="text-[11px] text-slate-400">{{ $trust['sub'] }}</div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Right Column: Interactive 3D Cyber HUD & Live Telemetry Panel --}}
-            <div class="lg:col-span-5 xl:col-span-5 flex flex-col items-center lg:items-end justify-center space-y-4">
-                
-                {{-- Live Cyber Command Widget (floating over 3D planet & shield) --}}
-                <div class="w-full max-w-md cosmic-glass p-6 rounded-3xl border border-white/10 backdrop-blur-2xl shadow-2xl relative overflow-hidden group hover:border-cyan-400/40 transition-all duration-500">
-                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                    
-                    {{-- Widget Header --}}
-                    <div class="flex items-center justify-between pb-4 border-b border-white/10">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-white">Live Infrastructure Telemetry</span>
-                        </div>
-                        <span class="text-[10px] font-mono px-2 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">SOC-1 ONLINE</span>
-                    </div>
-
-                    {{-- Metrics Grid --}}
-                    <div class="grid grid-cols-2 gap-3.5 my-4">
-                        <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                            <div class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Global Threat Level</div>
-                            <div class="text-lg font-bold text-emerald-400 flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                DEFCON 5 (SECURE)
-                            </div>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                            <div class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Uptime SLA</div>
-                            <div class="text-lg font-bold text-cyan-300">99.998%</div>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                            <div class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Encrypted Endpoints</div>
-                            <div class="text-lg font-bold text-violet-300">14,280+</div>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                            <div class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Mean Response</div>
-                            <div class="text-lg font-bold text-amber-300">4.2 min</div>
-                        </div>
-                    </div>
-
-                    {{-- Activity Stream --}}
-                    <div class="space-y-2 pt-2 text-xs">
-                        <div class="flex items-center justify-between text-slate-300 py-1 px-2.5 rounded-lg bg-black/30 font-mono text-[11px]">
-                            <span class="flex items-center gap-1.5 text-cyan-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                                Cloud Firewall Sync
-                            </span>
-                            <span class="text-slate-500">2s ago</span>
-                        </div>
-                        <div class="flex items-center justify-between text-slate-300 py-1 px-2.5 rounded-lg bg-black/30 font-mono text-[11px]">
-                            <span class="flex items-center gap-1.5 text-emerald-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                Zero-Trust Token Re-Auth
-                            </span>
-                            <span class="text-slate-500">8s ago</span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Fast Security Scan Banner --}}
-                <div class="w-full max-w-md p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-xl flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-300">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-white">Need Urgent IT Assistance?</div>
-                            <div class="text-[11px] text-cyan-300/80">Direct dispatch line active 24/7</div>
-                        </div>
-                    </div>
-                    <a href="{{ route('contact') }}" class="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-cyan-500 text-black hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/30">
-                        Call SOC
-                    </a>
-                </div>
-
-            </div>
-        </div>
+<section class="relative w-full overflow-hidden" aria-labelledby="hero-heading" data-3d-state="hero">
+    <div class="absolute inset-0 bg-cyber-grid opacity-60 pointer-events-none" aria-hidden="true"></div>
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" aria-hidden="true"></div>
+    {{-- faint system coordinates --}}
+    <div class="absolute top-20 right-6 lg:right-12 font-mono text-[10px] tracking-[0.2em] text-term-700/60 uppercase hidden md:block pointer-events-none select-none" aria-hidden="true">
+        LAT 51.5072 // LON -0.1276<br>NODE: EDGE-01
+    </div>
+    <div class="absolute bottom-24 left-6 lg:left-12 font-mono text-[10px] tracking-[0.2em] text-term-700/60 uppercase hidden md:block pointer-events-none select-none" aria-hidden="true">
+        SESSION: TLS-SECURED
     </div>
 
-    {{-- Scroll indicator --}}
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-70 z-20 pointer-events-none" aria-hidden="true">
-        <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-cyan-400">Explore Platform</span>
-        <div class="w-5 h-8 rounded-full border border-cyan-400/40 flex items-start justify-center pt-1.5 bg-black/40 backdrop-blur-sm">
-            <div class="w-1 h-2 rounded-full bg-cyan-400 animate-bounce"></div>
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════════════
-     STATS RIBBON — Full-Width Glassmorphism Metrics
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full border-y border-white/10 bg-[#040816]/90 backdrop-blur-2xl py-12 z-20">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
-            @foreach([
-                ['value' => '500', 'suffix' => '+', 'label' => 'Enterprise Deployments', 'desc' => 'Projects successfully delivered globally', 'color' => 'text-cyan-400', 'border' => 'border-cyan-500/20'],
-                ['value' => '99.99', 'suffix' => '%', 'label' => 'Guaranteed SLA Uptime', 'desc' => 'High-availability failover architecture', 'color' => 'text-emerald-400', 'border' => 'border-emerald-500/20'],
-                ['value' => '250', 'suffix' => '+', 'label' => 'Retained Enterprise Clients', 'desc' => 'Across healthcare, finance & technology', 'color' => 'text-violet-400', 'border' => 'border-violet-500/20'],
-                ['value' => '100', 'suffix' => '+', 'label' => 'Standardized IT Services', 'desc' => 'Fixed-scope and customizable catalog', 'color' => 'text-blue-400', 'border' => 'border-blue-500/20'],
-            ] as $stat)
-            <div class="p-6 rounded-2xl bg-white/[0.03] border {{ $stat['border'] }} hover:bg-white/[0.06] transition-all duration-300">
-                <div class="text-3xl sm:text-4xl lg:text-5xl font-black {{ $stat['color'] }} tracking-tight mb-2">
-                    {{ $stat['value'] }}<span class="text-2xl lg:text-3xl">{{ $stat['suffix'] }}</span>
-                </div>
-                <div class="text-sm font-bold text-white mb-1">{{ $stat['label'] }}</div>
-                <div class="text-xs text-slate-400 leading-relaxed">{{ $stat['desc'] }}</div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════════════
-     SERVICES — Full-Width 3D Cosmic Service Cards
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full py-24 lg:py-32 overflow-hidden bg-space-deep z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-
-        {{-- Section Header --}}
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
-            <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
-                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-cyan-300">Comprehensive Solutions Matrix</span>
-                </div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-                    End-to-End Technology & Cyber Defense for Tomorrow's Enterprise.
-                </h2>
-                <p class="text-base sm:text-lg text-slate-400 mt-4 leading-relaxed">
-                    Explore our integrated service catalog engineered for enterprise stability, rapid incident containment, and frictionless cloud scalability.
-                </p>
-            </div>
-            <a href="{{ route('services.index') }}" class="btn btn-lg btn-glass rounded-2xl whitespace-nowrap self-start lg:self-end text-sm">
-                View Complete 100+ Catalog
-                <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </a>
-        </div>
-
-        {{-- Service category cards --}}
-        @php
-            $serviceCategories = App\Models\ServiceCategory::where('is_active', true)->orderBy('sort_order')->take(6)->get();
-            $categoryIcons = [
-                'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-                'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-                'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z',
-                'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4',
-                'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
-                'M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z',
-            ];
-            $categoryGlows = [
-                ['color' => '#22C55E', 'accent' => 'rgba(34, 197, 94, 0.15)', 'tag' => 'SOC 2 & ISO Ready'],
-                ['color' => '#3B82F6', 'accent' => 'rgba(59, 130, 246, 0.15)', 'tag' => '24/7 Remote & Onsite'],
-                ['color' => '#a855f7', 'accent' => 'rgba(168, 85, 247, 0.15)', 'tag' => 'AWS & Azure Native'],
-                ['color' => '#10b981', 'accent' => 'rgba(16, 185, 129, 0.15)', 'tag' => 'Zero Downtime'],
-                ['color' => '#f59e0b', 'accent' => 'rgba(245, 158, 11, 0.15)', 'tag' => 'Full-Stack Scalable'],
-                ['color' => '#ef4444', 'accent' => 'rgba(239, 68, 68, 0.15)', 'tag' => 'Growth & Conversion'],
-            ];
-        @endphp
-
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            @if($serviceCategories->isNotEmpty())
-                @foreach($serviceCategories as $i => $cat)
-                @php $glow = $categoryGlows[$i % count($categoryGlows)]; @endphp
-                <div class="cosmic-card p-8 flex flex-col justify-between group h-full">
-                    <div>
-                        {{-- Card Header: Icon & Tag --}}
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                                 style="background: {{ $glow['accent'] }}; border: 1px solid {{ $cat->color ?? $glow['color'] }}40; box-shadow: 0 0 20px {{ $glow['accent'] }};">
-                                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: {{ $cat->color ?? $glow['color'] }}">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $categoryIcons[$i % count($categoryIcons)] }}"/>
-                                </svg>
-                            </div>
-                            <span class="text-[11px] font-mono px-3 py-1 rounded-full border border-white/10 text-slate-300 bg-white/5">
-                                {{ $glow['tag'] }}
-                            </span>
-                        </div>
-
-                        {{-- Title & Description --}}
-                        <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                            {{ $cat->name }}
-                        </h3>
-                        <p class="text-sm text-slate-400 leading-relaxed line-clamp-3 mb-6">
-                            {{ $cat->description ?? 'Enterprise-grade ' . $cat->name . ' services tailored to ensure peak operational resilience, security compliance, and maximum cost efficiency.' }}
-                        </p>
-                    </div>
-
-                    {{-- Actions Row --}}
-                    <div class="pt-5 border-t border-white/10 flex items-center justify-between mt-auto">
-                        <a href="{{ route('services.index') }}?category={{ $cat->slug }}"
-                           class="text-sm font-semibold text-cyan-400 hover:text-white flex items-center gap-1.5 transition-colors">
-                            View Category
-                            <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
-                        <a href="{{ route('contact') }}?service={{ $cat->slug }}"
-                           class="text-xs font-bold px-3.5 py-1.5 rounded-xl border border-cyan-400/40 text-cyan-300 hover:bg-cyan-500 hover:text-black transition-all">
-                            Consult Now
-                        </a>
-                    </div>
-                </div>
-                @endforeach
-            @else
-                {{-- Fallback services --}}
-                @foreach([
-                    ['name' => 'Enterprise Cybersecurity', 'desc' => 'Continuous threat detection, incident triage, penetration auditing, and proactive security architecture.', 'color' => '#16A34A', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-                    ['name' => 'Managed IT Infrastructure', 'desc' => 'High-reliability network administration, active hardware monitoring, and comprehensive 24/7 helpdesk.', 'color' => '#3B82F6', 'icon' => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
-                    ['name' => 'Cloud Architecture & DevOps', 'desc' => 'Multi-cloud migration, automated Kubernetes orchestration, disaster recovery replication, and FinOps.', 'color' => '#a855f7', 'icon' => 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z'],
-                    ['name' => 'Network & Zero-Trust Defense', 'desc' => 'SD-WAN topology, next-gen hardware firewalls, micro-segmentation, and high-throughput VPN tunnels.', 'color' => '#10b981', 'icon' => 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4'],
-                    ['name' => 'Enterprise Web Applications', 'desc' => 'Mission-critical portals, customer billing ecosystems, custom microservices, and high-load APIs.', 'color' => '#f59e0b', 'icon' => 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'],
-                    ['name' => 'Data Protection & Compliance', 'desc' => 'Automated immutable backups, GDPR/HIPAA compliance readiness, and rapid ransomware rollback.', 'color' => '#ef4444', 'icon' => 'M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z'],
-                ] as $svc)
-                <div class="cosmic-card p-8 flex flex-col justify-between group h-full">
-                    <div>
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-                             style="background: {{ $svc['color'] }}15; border: 1px solid {{ $svc['color'] }}40;">
-                            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: {{ $svc['color'] }}">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $svc['icon'] }}"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">{{ $svc['name'] }}</h3>
-                        <p class="text-sm text-slate-400 leading-relaxed mb-6">{{ $svc['desc'] }}</p>
-                    </div>
-                    <div class="pt-5 border-t border-white/10 flex items-center justify-between mt-auto">
-                        <a href="{{ route('services.index') }}" class="text-sm font-semibold text-cyan-400 hover:text-white flex items-center gap-1.5">
-                            Learn More <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
-                    </div>
-                </div>
-                @endforeach
-            @endif
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════════════
-     WHY CHOOSE US — Full-Width Deep Space Showcase
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full py-24 lg:py-32 bg-[#020617] border-y border-white/10 overflow-hidden z-10">
-    <div class="absolute inset-0 bg-cyber-grid opacity-15 pointer-events-none"></div>
-    <div class="absolute top-1/3 -left-32 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-
-            {{-- Left: Enterprise Features --}}
-            <div class="lg:col-span-7 space-y-8">
-                <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold uppercase tracking-widest text-cyan-400 mb-4">
-                        Enterprise Advantage
-                    </div>
-                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-                        Discipline, Precision, and <span class="gradient-text-cyber">Zero-Compromise Security.</span>
-                    </h2>
-                    <p class="text-base sm:text-lg text-slate-400 mt-4 leading-relaxed">
-                        We don't provide generic ticketing. Every deployment is managed by certified cybersecurity architects, AWS/Azure specialists, and seasoned infrastructure engineers dedicated to your uptime.
-                    </p>
-                </div>
-
-                <div class="grid sm:grid-cols-2 gap-4">
-                    @foreach([
-                        ['title' => 'Predictive Threat Hunting', 'desc' => 'AI-driven heuristic detection uncovers zero-day vectors before attackers strike.', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'color' => 'text-cyan-400'],
-                        ['title' => 'Rapid Containment SLA', 'desc' => 'Critical security incidents isolated in under 15 minutes by live SOC engineers.', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'color' => 'text-blue-400'],
-                        ['title' => 'Predictable Fixed Scope', 'desc' => 'Zero surprise invoices. Transparent work orders with approved price milestones.', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'text-emerald-400'],
-                        ['title' => 'Compliance Governance', 'desc' => 'Built-in audit trails, ISO 27001, GDPR, and HIPAA compliance verification.', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'color' => 'text-violet-400'],
-                    ] as $feat)
-                    <div class="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-3">
-                            <svg class="w-5 h-5 {{ $feat['color'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $feat['icon'] }}"/></svg>
-                        </div>
-                        <div class="font-bold text-white text-base mb-1">{{ $feat['title'] }}</div>
-                        <div class="text-xs text-slate-400 leading-relaxed">{{ $feat['desc'] }}</div>
-                    </div>
-                    @endforeach
-                </div>
+    <div class="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-24 sm:pt-28 lg:pt-36 pb-14 lg:pb-20 grid lg:grid-cols-2 gap-10 lg:gap-6 items-center">
+        <div class="max-w-4xl">
+            {{-- monospace status --}}
+            <div class="flex flex-wrap items-center gap-2.5 mb-7 reveal">
+                <span class="term-tag term-tag-accent">SYS://PERFECTITSECURITY</span>
+                <span class="term-status text-emerald-700 dark:text-accent-soft"><span class="term-status-dot" aria-hidden="true"></span>Status: Online</span>
+                <span class="term-tag">Security operations active</span>
             </div>
 
-            {{-- Right: Visual Architecture Topology --}}
-            <div class="lg:col-span-5 flex justify-center">
-                <div class="w-full max-w-lg cosmic-glass p-8 rounded-3xl border border-cyan-500/20 relative">
-                    <div class="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-4 pb-3 border-b border-white/10 flex items-center justify-between">
-                        <span>Multi-Cloud Security Perimeter</span>
-                        <span class="text-emerald-400">ENFORCED</span>
-                    </div>
+            <h1 id="hero-heading" class="font-display font-extrabold tracking-tight leading-[1.02] text-4xl sm:text-6xl lg:text-7xl text-navy-900 dark:text-white text-balance reveal">
+                SECURE YOUR<br>
+                DIGITAL WORLD<span class="term-cursor" aria-hidden="true"></span>
+            </h1>
 
-                    <div class="space-y-4">
-                        <div class="p-4 rounded-xl bg-black/40 border border-cyan-500/30 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-300">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-bold text-white">Zero Trust Gateway</div>
-                                    <div class="text-[11px] text-slate-400">Contextual MFA & Geo-Fencing</div>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold text-cyan-300">ACTIVE</span>
-                        </div>
-
-                        <div class="p-4 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-300">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-bold text-white">Hybrid Cloud Mesh</div>
-                                    <div class="text-[11px] text-slate-400">AWS / Azure / On-Premise Encrypted</div>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold text-blue-300">SYNCED</span>
-                        </div>
-
-                        <div class="p-4 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-bold text-white">Immutable Backup Vault</div>
-                                    <div class="text-[11px] text-slate-400">Air-Gapped Ransomware Safe</div>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold text-purple-300">LOCKED</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between">
-                        <span class="text-xs text-slate-400">Telemetry Sampling Rate</span>
-                        <span class="text-xs font-mono text-cyan-400">100ms real-time</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════════════
-     12-STEP PROCESS — Full-Width Operational Sequence
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full py-24 lg:py-32 bg-[#030712] z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold uppercase tracking-widest text-cyan-400 mb-4">
-                Structured Lifecycle
-            </div>
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-                Our Proven 12-Step Delivery Framework.
-            </h2>
-            <p class="text-base sm:text-lg text-slate-400 mt-4 leading-relaxed">
-                Every project and ticket follows strict enterprise lifecycle stages with transparent customer checkpoints, verified deliverables, and formal sign-offs.
+            <p class="mt-6 text-base sm:text-lg lg:text-xl leading-relaxed text-surface-600 dark:text-term-800 max-w-2xl reveal delay-100">
+                PerfectITSecurity provides managed IT support, cybersecurity and penetration
+                testing, secure software development, cloud and server management, web
+                development, and dependable digital solutions — built, secured, and operated
+                by one engineering team.
             </p>
+
+            <div class="mt-9 flex flex-col sm:flex-row flex-wrap gap-3 reveal delay-200">
+                <a href="{{ route('get-quote') }}" class="term-btn term-btn-lg">
+                    Get IT Support
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="{{ auth()->check() ? route('portal.service-request.create') : route('get-quote') }}" class="term-btn term-btn-lg term-btn-ghost">
+                    Request a Service
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="{{ route('contact') }}" class="term-btn term-btn-lg term-btn-ghost">
+                    Contact Us
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+            </div>
+            <p class="mt-5 font-mono text-[11px] tracking-[0.18em] uppercase text-slate-500 dark:text-term-700 reveal delay-300">
+                Reliable IT Support <span class="text-accent mx-1" aria-hidden="true">•</span> Fast Response <span class="text-accent mx-1" aria-hidden="true">•</span> Professional Solutions
+            </p>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-ai-chat'))"
+               class="mt-5 inline-flex items-center gap-2 font-mono text-xs tracking-[0.14em] uppercase text-slate-600 hover:text-emerald-700 dark:text-term-700 dark:hover:text-accent-soft transition-colors reveal delay-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                <span class="underline underline-offset-4">Ask the AI assistant</span>
+            </button>
+
+            {{-- technical metadata strip (no statistics — capability markers only) --}}
+            <dl class="mt-12 pt-6 border-t border-term-300 dark:border-term-400/60 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 font-mono reveal delay-300">
+                @foreach([
+                    ['k' => 'SUPPORT', 'v' => '24/7 available'],
+                    ['k' => 'APPROACH', 'v' => 'Security first'],
+                    ['k' => 'DELIVERY', 'v' => 'Global remote service'],
+                    ['k' => 'READY', 'v' => 'Enterprise workflows'],
+                ] as $m)
+                <div class="min-w-0">
+                    <dt class="text-[10px] tracking-[0.24em] text-term-700 uppercase">{{ $m['k'] }}</dt>
+                    <dd class="mt-1 text-[13px] tracking-wide text-navy-800 dark:text-term-950 truncate">{{ $m['v'] }}</dd>
+                </div>
+                @endforeach
+            </dl>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            @foreach([
-                ['step' => '01', 'title' => 'Consultation', 'desc' => 'Discovery & strategic objectives alignment.'],
-                ['step' => '02', 'title' => 'Tech Audit', 'desc' => 'Vulnerability & architecture inspection.'],
-                ['step' => '03', 'title' => 'Quotation', 'desc' => 'Transparent fixed price & defined milestones.'],
-                ['step' => '04', 'title' => 'Agreement', 'desc' => 'Proposal approval & digital sign-off.'],
-                ['step' => '05', 'title' => 'Escrow Auth', 'desc' => 'Secure deposit & receipt issuance.'],
-                ['step' => '06', 'title' => 'IT Ticket', 'desc' => 'Automated ticket creation with SLA clock.'],
-                ['step' => '07', 'title' => 'Lead Assign', 'desc' => 'Certified specialist dedicated to task.'],
-                ['step' => '08', 'title' => 'Execution', 'desc' => 'Work carried out with live portal updates.'],
-                ['step' => '09', 'title' => 'QA & Security', 'desc' => 'Penetration check & regression testing.'],
-                ['step' => '10', 'title' => 'Client Signoff', 'desc' => 'Acceptance testing and formal handover.'],
-                ['step' => '11', 'title' => 'Reconciliation', 'desc' => 'Final invoice, balance & financial receipt.'],
-                ['step' => '12', 'title' => '24/7 Monitoring', 'desc' => 'Continuous telemetry & SOC supervision.'],
-            ] as $step)
-            <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all flex flex-col justify-between group">
-                <div>
-                    <span class="text-xs font-mono font-bold text-cyan-400 block mb-2">STAGE {{ $step['step'] }}</span>
-                    <h4 class="text-base font-bold text-white mb-1.5 group-hover:text-cyan-300 transition-colors">{{ $step['title'] }}</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">{{ $step['desc'] }}</p>
+        {{-- Spacer: the HUD visual now lives in the fixed global HUD frame
+             (<x-global-hud-frame />); this column reserves its space so the
+             headline never slides underneath it. --}}
+        <div class="hidden lg:block" aria-hidden="true"></div>
+    </div>
+</section>
+
+{{-- ═══════════ 01 / SERVICES://CORE ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28" aria-labelledby="services-heading" id="services" data-3d-state="services">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="01" label="SERVICES://CORE"
+            title="Four disciplines. One accountable team."
+            desc="Every engagement is delivered through the same ticketed, tracked, and documented workflow — request a service, follow its progress, and keep the full record." />
+        <span id="services-heading" class="sr-only">Core services</span>
+
+        <div class="mt-10 lg:mt-14 grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4 overflow-hidden">
+            @forelse($serviceCategories as $i => $cat)
+            <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-{{ $cat->id }}">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">{{ str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) }} / {{ strtoupper($cat->name) }}</span>
+                    <span class="term-tag">{{ $cat->services->count() }} module{{ $cat->services->count() === 1 ? '' : 's' }}</span>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-end">
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400/40 group-hover:bg-cyan-400"></span>
+                <h3 id="svc-{{ $cat->id }}" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    {{ $cat->name }}
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    {{ $cat->description ?? 'Scoped, priced, and delivered through the client portal with full service history.' }}
+                </p>
+                @if($cat->services->isNotEmpty())
+                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in {{ $cat->name }}">
+                    @foreach($cat->services->take(8) as $svc)
+                    <li><a href="{{ route('services.show', $svc->slug) }}" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">{{ $svc->name }}</a></li>
+                    @endforeach
+                </ul>
+                @endif
+                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="{{ route('services.index') }}?category={{ $cat->slug }}" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="{{ auth()->check() ? route('portal.service-request.create') : route('get-quote') }}" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
                 </div>
+            </article>
+            @empty
+            <div class="term-panel p-8 text-sm text-term-800 md:col-span-2 xl:col-span-4">
+                The service catalogue is managed by administrators.
+                <a href="{{ route('services.index') }}" class="term-link ml-2">Browse services →</a>
             </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 02 / WHY://OPERATE ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="why-heading" data-3d-state="features">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="02" label="WHY://OPERATE"
+            title="Complexity is the risk. Discipline is the answer."
+            desc="Digital systems become increasingly complex. We counter that with one operating model across IT, security, and engineering." />
+        <span id="why-heading" class="sr-only">Why PerfectITSecurity</span>
+
+        <div class="mt-10 lg:mt-14 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+            @foreach([
+                ['n' => '01', 't' => 'THE PROBLEM', 'd' => 'Websites, servers, cloud accounts, devices, and vendors multiply. Nobody owns the full picture, and small gaps go unnoticed.'],
+                ['n' => '02', 't' => 'THE RISK', 'd' => 'Security gaps, downtime, poor infrastructure, and uncontrolled access turn into data loss, outages, and unexpected cost.'],
+                ['n' => '03', 't' => 'OUR APPROACH', 'd' => 'We combine IT operations, cybersecurity, and software engineering in one ticketed workflow with documented scope and sign-off.'],
+                ['n' => '04', 't' => 'THE RESULT', 'd' => 'A more secure, maintainable, and reliable digital environment — with a complete record you can audit at any time.'],
+            ] as $c)
+            <article class="term-panel p-6 sm:p-7 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft mb-4">{{ $c['n'] }}</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white">{{ $c['t'] }}</h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">{{ $c['d'] }}</p>
+            </article>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════════
-     TESTIMONIALS & TRUST — Full-Width Customer Verification
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full py-24 lg:py-32 bg-[#020617] border-y border-white/10 z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
-            <div>
-                <div class="text-xs font-semibold uppercase tracking-widest text-cyan-400 mb-2">Verified Testimonials</div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">Trusted by Industry Leaders Worldwide.</h2>
-            </div>
-            <div class="flex items-center gap-2 text-amber-400 text-sm font-semibold">
-                <span>★ 4.98 / 5.0 Enterprise Trust Score</span>
-            </div>
-        </div>
+{{-- ═══════════ 03 / SECURITY://OPERATIONS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="security-heading" id="security">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="03" label="SECURITY://OPERATIONS"
+            title="Authorized testing. Documented findings. Verified fixes."
+            desc="All security work is performed exclusively on systems you own or are explicitly authorized to test, under agreed scope, with written findings and remediation guidance." />
+        <span id="security-heading" class="sr-only">Security operations</span>
 
-        <div class="grid md:grid-cols-3 gap-8">
-            @foreach([
-                ['name' => 'Sarah Johnson', 'role' => 'CTO, Nexus Financial Group', 'text' => 'TechSupport Solutions completely fortified our transaction pipelines. Their team detected subtle zero-day vulnerabilities in our legacy core that multiple previous audits missed. Their 15-minute response SLA has saved us hours of potential downtime.', 'avatar' => 'SJ', 'tag' => 'FinTech'],
-                ['name' => 'Dr. Marcus Chen', 'role' => 'Director of IT, Apex Healthcare Systems', 'text' => 'Zero security compromises in over two years of high-volume patient data management. Their proactive multi-layered cloud backup gave us complete ransomware peace of mind. Truly a tier-1 technology partner.', 'avatar' => 'MC', 'tag' => 'Healthcare'],
-                ['name' => 'Emily Rodriguez', 'role' => 'VP of Engineering, CloudScale Commerce', 'text' => 'We scaled from 50,000 to over 2 million daily transactions with zero server hiccups. Their DevOps engineers designed an auto-healing Kubernetes cluster that reduced our cloud overhead by 34%.', 'avatar' => 'ER', 'tag' => 'E-Commerce'],
-            ] as $testimonial)
-            <div class="cosmic-glass p-8 rounded-3xl border border-white/10 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex text-amber-400 gap-1">
-                            @for($s=0;$s<5;$s++)
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            @endfor
-                        </div>
-                        <span class="text-xs font-mono text-cyan-400 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-                            {{ $testimonial['tag'] }}
-                        </span>
-                    </div>
-                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 font-normal">
-                        "{{ $testimonial['text'] }}"
+        <div class="mt-10 lg:mt-14 grid lg:grid-cols-12 gap-4 sm:gap-5">
+            <div class="lg:col-span-7 term-panel p-6 sm:p-8 reveal">
+                <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5">Assessment scope // authorized systems only</div>
+                <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-3.5 text-sm">
+                    @foreach(['Penetration Testing','Vulnerability Assessment','Web Application Security','API Security','Network Security','Cloud Security','Security Hardening','Security Monitoring','Security Consulting','Security Documentation'] as $s)
+                    <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>{{ $s }}
+                    </li>
+                    @endforeach
+                </ul>
+                <div class="mt-7 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap gap-x-6 gap-y-3">
+                    <a href="{{ route('get-quote') }}" class="term-link">Request Assessment
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                    <a href="{{ route('contact') }}" class="term-link">Discuss Scope
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+                </div>
+            </div>
+            <div class="lg:col-span-5 flex flex-col gap-4 sm:gap-5">
+                @foreach([
+                    ['k' => 'TARGET', 'v' => 'YOUR WEB APPLICATION'],
+                    ['k' => 'STATUS', 'v' => 'ASSESSMENT READY'],
+                    ['k' => 'SCOPE', 'v' => 'AUTHORIZED SYSTEM'],
+                ] as $row)
+                <div class="term-panel-2 px-5 py-4 flex items-center justify-between gap-4 reveal">
+                    <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">{{ $row['k'] }}</span>
+                    <span class="font-mono text-xs tracking-[0.12em] text-accent-soft text-right">{{ $row['v'] }}</span>
+                </div>
+                @endforeach
+                <div class="term-panel-2 p-5 sm:p-6 reveal">
+                    <p class="font-mono text-[11px] leading-relaxed tracking-wider text-term-800">
+                        $ scope --verify-authorization<br>
+                        <span class="text-accent-soft">✓ ownership confirmed → assessment unlocked</span>
                     </p>
+                    <p class="mt-3 text-xs leading-relaxed text-term-700">No testing begins without written authorization and a defined scope. You receive findings, severity ratings, and remediation steps.</p>
                 </div>
-                <div class="pt-5 border-t border-white/10 flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-sm">
-                        {{ $testimonial['avatar'] }}
-                    </div>
-                    <div>
-                        <div class="text-sm font-bold text-white">{{ $testimonial['name'] }}</div>
-                        <div class="text-xs text-slate-400">{{ $testimonial['role'] }}</div>
-                    </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 04 / IT_SUPPORT://OPERATIONS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="itsupport-heading" id="it-support">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="04" label="IT_SUPPORT://OPERATIONS"
+            title="Support tickets you can open, track, and audit."
+            desc="One queue for every request — hardware, software, accounts, email, network, or server — with status tracking and a full communication record in your portal." />
+        <span id="itsupport-heading" class="sr-only">IT support operations</span>
+
+        <div class="mt-10 lg:mt-14 grid lg:grid-cols-12 gap-4 sm:gap-5">
+            <div class="lg:col-span-8 term-panel p-6 sm:p-8 reveal">
+                <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3.5 text-sm">
+                    @foreach(['Ticket Management','Remote Support','Hardware Support','Software Support','Microsoft 365','Windows','Linux','Network','Server','User Accounts','Email','Endpoints','IT Asset Management'] as $s)
+                    <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>{{ $s }}
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="lg:col-span-4 term-panel p-6 sm:p-8 flex flex-col justify-between gap-6 reveal delay-100">
+                <div>
+                    <div class="term-status text-accent-soft mb-3"><span class="term-status-dot" aria-hidden="true"></span>Queue: monitored</div>
+                    <p class="text-sm leading-relaxed text-surface-600 dark:text-term-800">Open a request in minutes. Track assignment, replies, and resolution — every step timestamped.</p>
                 </div>
+                <div class="flex flex-col gap-2.5">
+                    <a href="{{ auth()->check() ? route('portal.tickets.create') : route('login') }}" class="term-btn w-full">Open Support Request
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                    <a href="{{ route('login') }}" class="term-btn term-btn-ghost w-full">Client Portal →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 05 / PORTAL://ACCESS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="portal-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div class="lg:col-span-7">
+            <x-section-head num="05" label="PORTAL://ACCESS"
+                title="Your IT. Your security. Your record."
+                desc="Customers work independently in the portal using the platform's existing authentication — no second login, no parallel system. Your tickets, services, finances, and documents stay in one auditable place." />
+            <span id="portal-heading" class="sr-only">Customer portal</span>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 reveal">
+                <a href="{{ route('login') }}" class="term-btn">Access Client Portal
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                <a href="{{ route('register') }}" class="term-btn term-btn-ghost">Create Account →</a>
+            </div>
+        </div>
+        <div class="lg:col-span-5 term-panel p-6 sm:p-7 reveal delay-100" aria-label="What the portal contains">
+            <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-4">$ portal --list-records</div>
+            <ul class="space-y-2.5 text-sm text-navy-800 dark:text-term-900">
+                @foreach(['Support tickets','Service history','Invoices & payments','Documents & reports','Security assessments','Task progress','Communication history'] as $r)
+                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>{{ $r }}</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 06 / OPS://PLATFORM ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="ops-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="06" label="OPS://PLATFORM"
+            title="An internal service-management platform behind every order."
+            desc="Staff operate from the same system you see — tasks, tickets, customer history, time tracking, assets, reporting, finance, and documentation stay connected. No private employee data is exposed publicly." />
+        <span id="ops-heading" class="sr-only">Operations platform</span>
+        <div class="mt-10 grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            @foreach([
+                ['t' => 'TASK MANAGEMENT', 'd' => 'Scoped work with assignment and approval.'],
+                ['t' => 'TICKET MANAGEMENT', 'd' => 'SLA-tracked queue with full thread history.'],
+                ['t' => 'CUSTOMER HISTORY', 'd' => 'Every order, invoice, and message in one view.'],
+                ['t' => 'SERVICE TRACKING', 'd' => 'Live progress with customer-visible updates.'],
+                ['t' => 'TIME TRACKING', 'd' => 'Recorded effort attached to tickets and tasks.'],
+                ['t' => 'REPORTING & FINANCE', 'd' => 'Invoices, payments, and reports from one ledger.'],
+            ] as $c)
+            <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">{{ $c['t'] }}</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">{{ $c['d'] }}</p>
             </div>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════════
-     FINAL SUPERNOVA CTA — Full-Width Planetary Glow Experience
-     ═══════════════════════════════════════════════════════════════ --}}
-<section class="relative w-full py-32 lg:py-44 overflow-hidden bg-space-radial z-10">
-    <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-cyan-500/15 blur-[120px]"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[90px]"></div>
+{{-- ═══════════ 07 / SECURITY://PROCESS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="process-heading" data-3d-state="process">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="07" label="SECURITY://PROCESS"
+            title="From discovery to continuous monitoring."
+            desc="A fixed six-stage workflow keeps every assessment scoped, documented, and verified — nothing informal, nothing undocumented." />
+        <span id="process-heading" class="sr-only">Security process</span>
+        <ol class="mt-10 lg:mt-14 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-6 lg:gap-0 lg:divide-x lg:divide-term-300 lg:dark:divide-white/5">
+            @foreach([
+                ['n' => '01', 't' => 'DISCOVER', 'd' => 'Map assets and agree the authorized scope in writing.'],
+                ['n' => '02', 't' => 'ASSESS', 'd' => 'Baseline vulnerabilities and configuration weaknesses.'],
+                ['n' => '03', 't' => 'TEST', 'd' => 'Controlled testing strictly inside the agreed scope.'],
+                ['n' => '04', 't' => 'REMEDIATE', 'd' => 'Prioritized fixes with clear severity and guidance.'],
+                ['n' => '05', 't' => 'VERIFY', 'd' => 'Retest fixes and confirm closure with evidence.'],
+                ['n' => '06', 't' => 'MONITOR', 'd' => 'Ongoing watch with documented follow-up.'],
+            ] as $s)
+            <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">{{ $s['n'] }}</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">{{ $s['t'] }}</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">{{ $s['d'] }}</p>
+            </li>
+            @endforeach
+        </ol>
     </div>
-    <div class="absolute inset-0 bg-cyber-grid opacity-20 pointer-events-none"></div>
+</section>
 
-    <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-400/30 bg-cyan-950/50 backdrop-blur-xl mb-8">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-xs font-semibold uppercase tracking-widest text-cyan-300">Ready to Elevate Your Security Posture?</span>
-        </div>
-
-        <h2 class="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.08] mb-8">
-            Protect What You Built.<br>
-            <span class="gradient-text-cyber">Scale What You're Building.</span>
-        </h2>
-
-        <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-12">
-            Speak directly with a senior IT architect today. Receive an in-depth security posture assessment and customized infrastructure blueprint with zero obligation.
-        </p>
-
-        <div class="flex flex-wrap items-center justify-center gap-5">
-            <a href="{{ route('contact') }}"
-               class="btn btn-lg text-white rounded-2xl text-base px-10 py-5 font-bold transition-all duration-300 hover:scale-105"
-               style="background: linear-gradient(135deg, #16A34A, #2563EB); box-shadow: 0 12px 40px rgba(37,99,235,0.5);">
-                Schedule Architecture Consultation
-                <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-            </a>
-            <a href="{{ route('services.index') }}"
-               class="btn btn-lg btn-glass rounded-2xl text-base px-8 py-5 font-semibold border-white/20 hover:border-cyan-400 hover:bg-white/10 transition-all">
-                Explore Solutions
-            </a>
+{{-- ═══════════ 08 / STACK://CAPABILITIES ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="stack-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="08" label="STACK://CAPABILITIES"
+            title="Capability areas we actively deliver."
+            desc="Named only where the team genuinely delivers client work today — no invented partnerships or certifications." />
+        <span id="stack-heading" class="sr-only">Technology capabilities</span>
+        <div class="mt-10 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach([
+                ['t' => 'SECURITY', 'items' => 'Testing · Hardening · Monitoring · Documentation'],
+                ['t' => 'DEVELOPMENT', 'items' => 'Websites · Portals · Business automation · Secure builds'],
+                ['t' => 'INFRASTRUCTURE', 'items' => 'Servers · Networks · Endpoints · Microsoft 365'],
+                ['t' => 'CLOUD & DATA', 'items' => 'Hosting · Backups · Monitoring · Reporting'],
+            ] as $c)
+            <div class="term-panel p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.2em] text-accent-soft">{{ $c['t'] }}</h3>
+                <p class="mt-3 text-sm leading-relaxed text-surface-600 dark:text-term-800">{{ $c['items'] }}</p>
+            </div>
+            @endforeach
         </div>
     </div>
 </section>
+
+{{-- ═══════════ 09 / COMPLIANCE://FRAMEWORKS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="compliance-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="09" label="COMPLIANCE://FRAMEWORKS"
+            title="Security practices aligned with recognized frameworks."
+            desc="We do not claim certifications we do not hold. Our practices are aligned with widely used frameworks, and we support your compliance preparation with documentation and evidence." />
+        <span id="compliance-heading" class="sr-only">Compliance frameworks</span>
+        <ul class="mt-10 flex flex-wrap gap-2.5 reveal" aria-label="Reference frameworks">
+            @foreach(['ISO 27001','SOC 2','GDPR','OWASP','NIST','CIS Controls'] as $f)
+            <li class="term-tag">Aligned: {{ $f }}</li>
+            @endforeach
+        </ul>
+        <p class="mt-5 text-xs leading-relaxed text-term-700 max-w-2xl reveal">Wording is deliberate: “aligned with” and “support for compliance preparation” — never a claim of certification unless verified and published by the company.</p>
+    </div>
+</section>
+
+{{-- ═══════════ 10 / ASSESSMENT://READINESS ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="assess-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-5">
+            <x-section-head num="10" label="ASSESSMENT://READINESS"
+                title="Check your security readiness in 60 seconds."
+                desc="Seven quick questions produce an informational readiness signal. This is guidance only — not a penetration test, audit, or certification." />
+            <span id="assess-heading" class="sr-only">Security readiness assessment</span>
+        </div>
+        <div class="lg:col-span-7">
+            <form id="readiness-quiz" class="term-panel p-6 sm:p-8 reveal" aria-describedby="quiz-note">
+                <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5">$ readiness --interactive</div>
+                <ol class="space-y-5">
+                    @foreach([
+                        'Do you have a website or business application?',
+                        'Do you have an internal IT team or provider?',
+                        'Have you had a security assessment in the last 12 months?',
+                        'Do you enforce multi-factor authentication (MFA)?',
+                        'Do you maintain tested, off-site backups?',
+                        'Do you have an incident response plan?',
+                        'Do you manage company devices centrally?',
+                    ] as $i => $q)
+                    <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">{{ str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) }}. {{ $q }}</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q{{ $i }}" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q{{ $i }}" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                    @endforeach
+                </ol>
+                <div class="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <button type="submit" class="term-btn">Generate Result →</button>
+                    <button type="reset" class="term-btn term-btn-ghost" id="quiz-reset">Reset</button>
+                </div>
+                <div id="quiz-result" class="mt-6 hidden" role="status" aria-live="polite"></div>
+                <p id="quiz-note" class="mt-5 text-xs leading-relaxed text-term-700">Informational self-check only. No personal data is collected or transmitted — scoring runs entirely in your browser. For a formal review, <a href="{{ route('get-quote') }}" class="underline underline-offset-2 hover:text-accent-soft">request an assessment</a>.</p>
+            </form>
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 11 / WORK://CASEFILES ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="work-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <x-section-head num="11" label="WORK://CASEFILES"
+                title="Selected work from the live catalogue."
+                desc="Pulled directly from the database — administrators manage these records, and the public list always matches." />
+            <a href="{{ route('portfolio.index') }}" class="term-link flex-shrink-0 reveal">All casefiles
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+        </div>
+        <span id="work-heading" class="sr-only">Portfolio case files</span>
+        <div class="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+            @forelse($portfolioItems as $i => $item)
+            <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_{{ str_pad((string)($i + 1), 3, '0', STR_PAD_LEFT) }} // {{ strtoupper($item->category ?? 'GENERAL') }}</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">{{ $item->title }}</h3>
+                @if($item->summary)<p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">{{ $item->summary }}</p>@endif
+                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    @if($item->category)<div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">{{ $item->category }}</dd></div>@endif
+                    @if($item->technologies)<div class="flex gap-2"><dt class="text-term-700">TECH:</dt><dd class="text-term-900 dark:text-term-950 line-clamp-1">{{ is_array($item->technologies) ? implode(', ', $item->technologies) : $item->technologies }}</dd></div>@endif
+                </dl>
+                <a href="{{ route('portfolio.show', $item->slug) }}" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+            @empty
+            <div class="term-panel p-8 text-sm text-term-800 md:col-span-2 xl:col-span-3">
+                Case files are being curated.
+                <a href="{{ route('portfolio.index') }}" class="term-link ml-2">View portfolio →</a>
+            </div>
+            @endforelse
+        </div>
+
+        @if($caseStudies->isNotEmpty())
+        <div class="mt-8 grid gap-4 sm:gap-5 md:grid-cols-3">
+            @foreach($caseStudies as $cs)
+            <a href="{{ route('case-studies.show', $cs->slug) }}" class="term-panel-2 p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">CASE STUDY // {{ strtoupper($cs->industry ?? 'GENERAL') }}</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">{{ $cs->title }}</h3>
+                @if($cs->summary)<p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">{{ $cs->summary }}</p>@endif
+            </a>
+            @endforeach
+        </div>
+        @endif
+    </div>
+</section>
+
+{{-- ═══════════ 12 / KNOWLEDGE://BASE ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="kb-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <x-section-head num="12" label="KNOWLEDGE://BASE"
+                title="Documentation-grade guides, searchable."
+                desc="Live articles from the knowledge base — security guides, IT procedures, troubleshooting, and FAQs maintained by the team." />
+            <a href="{{ route('kb.index') }}" class="term-link flex-shrink-0 reveal">Open knowledge base
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+        </div>
+        <span id="kb-heading" class="sr-only">Knowledge base</span>
+
+        <form action="{{ route('kb.index') }}" method="GET" role="search" class="mt-8 flex flex-col sm:flex-row gap-2.5 max-w-2xl reveal">
+            <label for="home-kb-search" class="sr-only">Search the knowledge base</label>
+            <input id="home-kb-search" name="search" type="search" placeholder="search guides: e.g. MFA, backups, VPN…" class="form-input flex-1 font-mono text-sm" autocomplete="off">
+            <button type="submit" class="term-btn flex-shrink-0">Search →</button>
+        </form>
+
+        @if($kbCategories->isNotEmpty())
+        <ul class="mt-5 flex flex-wrap gap-1.5 reveal" aria-label="Knowledge base categories">
+            @foreach($kbCategories as $kc)
+            <li><a href="{{ route('kb.index') }}?category={{ $kc->slug }}" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">{{ $kc->name }}</a></li>
+            @endforeach
+        </ul>
+        @endif
+
+        <div class="mt-8 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+            @forelse($kbArticles as $a)
+            <a href="{{ route('kb.show', $a->slug) }}" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">{{ strtoupper($a->category->name ?? 'GUIDE') }} // {{ strtoupper($a->difficulty ?? 'ALL LEVELS') }}</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">{{ $a->title }}</h3>
+                @if($a->excerpt)<p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">{{ $a->excerpt }}</p>@endif
+            </a>
+            @empty
+            <div class="term-panel p-8 text-sm text-term-800 md:col-span-2 xl:col-span-3">
+                Guides are being published.
+                <a href="{{ route('kb.index') }}" class="term-link ml-2">Browse all →</a>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 13 / AI://ASSISTANT ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="ai-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-7">
+            <x-section-head num="13" label="AI://ASSISTANT"
+                title="A support console, not a chatbot toy."
+                desc="The assistant answers from the company knowledge base, helps you discover services, guides support requests, and escalates to a human when needed." />
+            <span id="ai-heading" class="sr-only">AI customer assistant</span>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 reveal">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-ai-chat'))" class="term-btn">Launch Assistant →</button>
+                <a href="{{ route('faq') }}" class="term-btn term-btn-ghost">Read FAQ</a>
+            </div>
+        </div>
+        <div class="lg:col-span-5 term-panel p-0 overflow-hidden reveal delay-100" aria-hidden="true">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-term-300 dark:border-white/5">
+                <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">AI://CONSOLE</span>
+                <span class="term-status text-accent-soft"><span class="term-status-dot"></span>Ready</span>
+            </div>
+            <div class="p-5 font-mono text-xs leading-relaxed space-y-3">
+                <p class="text-term-700">visitor&gt; <span class="text-term-950 dark:text-term-950">how do I reset MFA on my account?</span></p>
+                <p class="text-term-800">assistant&gt; <span class="text-navy-800 dark:text-term-900">Here is the documented procedure from the knowledge base… [escalation to human available]</span></p>
+                <p class="text-term-700">system&gt; <span class="text-accent-soft">knowledge-base linked · no credentials requested</span></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- ═══════════ 14 / CONTACT://SECURE_CHANNEL ═══════════ --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="contact-heading" data-3d-state="contact">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 text-center">
+        <div class="term-sec-head justify-center" aria-hidden="true">
+            <span class="term-sec-num">14</span>
+            <span class="term-sec-label">CONTACT://SECURE_CHANNEL</span>
+        </div>
+        <h2 id="contact-heading" class="term-sec-title text-3xl sm:text-4xl lg:text-6xl text-balance reveal">LET'S SECURE YOUR<br>NEXT PROJECT.</h2>
+        <p class="term-sec-desc mt-5 max-w-xl mx-auto reveal delay-100">Tell us what you need — support, security, development, or cloud. Requests use the existing contact workflow and land in the same tracked queue.</p>
+        <div class="mt-9 flex flex-col sm:flex-row justify-center gap-3 reveal delay-200">
+            <a href="{{ route('contact') }}" class="term-btn term-btn-lg">Send Request
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+            <a href="{{ route('get-quote') }}" class="term-btn term-btn-lg term-btn-ghost">Get a Quote →</a>
+        </div>
+        @if($latestPosts->isNotEmpty())
+        <div class="mt-16 text-left">
+            <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5 reveal">LATEST://TRANSMISSIONS</div>
+            <div class="grid gap-4 sm:gap-5 md:grid-cols-3">
+                @foreach($latestPosts as $post)
+                <a href="{{ route('blog.show', $post->slug) }}" class="term-panel p-5 sm:p-6 group block reveal">
+                    <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">{{ $post->title }}</h3>
+                    @if($post->excerpt)<p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">{{ $post->excerpt }}</p>@endif
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+</section>
+
+@push('scripts')
+<script>
+(function () {
+    var form = document.getElementById('readiness-quiz');
+    if (!form) return;
+    var result = document.getElementById('quiz-result');
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var score = 0, answered = 0;
+        for (var i = 0; i < 7; i++) {
+            var checked = form.querySelector('input[name="q' + i + '"]:checked');
+            if (checked) { answered++; score += parseInt(checked.value, 10); }
+        }
+        if (answered < 7) {
+            result.classList.remove('hidden');
+            result.innerHTML = '<p class="font-mono text-xs tracking-wider text-amber-400">Please answer all 7 questions to generate your signal.</p>';
+            return;
+        }
+        var level, detail, cls;
+        if (score >= 6) { level = 'READINESS: STRONG'; detail = 'Core hygiene looks covered. A periodic professional assessment keeps it that way.'; cls = 'text-accent-soft border-accent/40'; }
+        else if (score >= 4) { level = 'READINESS: DEVELOPING'; detail = 'Foundations exist with clear gaps. Prioritize MFA, backups, and an incident plan.'; cls = 'text-[#4DA3FF] border-[#4DA3FF]/40'; }
+        else { level = 'READINESS: AT RISK'; detail = 'Several fundamentals are missing. Start with backups + MFA, then book a scoped review.'; cls = 'text-[#FFB454] border-[#FFB454]/40'; }
+        result.classList.remove('hidden');
+        // Text is fully static (no user input reflected) — no XSS surface.
+        result.innerHTML = '<div class="border px-5 py-4 ' + cls + '">'
+            + '<p class="font-mono text-xs tracking-[0.18em]">' + level + ' — ' + score + '/7</p>'
+            + '<p class="mt-2 text-sm leading-relaxed text-term-800">' + detail + '</p>'
+            + '<p class="mt-2 font-mono text-[11px] text-term-700">signal informational only · not a penetration test</p></div>';
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    document.getElementById('quiz-reset').addEventListener('click', function () {
+        result.classList.add('hidden');
+        result.innerHTML = '';
+    });
+})();
+</script>
+@endpush
 
 @endsection

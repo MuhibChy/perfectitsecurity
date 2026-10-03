@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -29,9 +30,9 @@ class EmailVerificationService
         abort_if(RateLimiter::tooManyAttempts($key, 3), 429, 'Too many verification requests. Please wait.');
         RateLimiter::hit($key, 600);
 
-        // Generate secure OTP
+        // Generate secure OTP — bcrypt-hashed so a DB read cannot replay it.
         $code = (string) random_int(100000, 999999);
-        $hash = hash('sha256', $code);
+        $hash = Hash::make($code);
 
         $user->update([
             'email_otp_hash' => $hash,
@@ -51,6 +52,8 @@ class EmailVerificationService
             Log::info("Email OTP for user {$user->id}: {$code}");
             session()->flash('dev_email_otp', $code);
         }
+
+        \App\Models\AuditLog::log('email_verification.sent', 'users', $user, 'Email OTP sent.');
 
         return [
             'success' => true,
@@ -90,9 +93,13 @@ class EmailVerificationService
         }
 
         $user->increment('email_otp_attempts');
-        $inputHash = hash('sha256', $code);
-        if (!hash_equals($user->email_otp_hash, $inputHash)) {
-            $remaining = self::MAX_ATTEMPTS - $user->email_otp_attempts;
+        $stored = (string) $user->email_otp_hash;
+        // Bcrypt primary; legacy plain-SHA256 hashes accepted once then upgraded path (invalidated on success).
+        $valid = Hash::check($code, $stored)
+            || (preg_match('/^[0-9a-f]{64}$/i', $stored) && hash_equals($stored, hash('sha256', $code)));
+        if (!$valid) {
+            $remaining = self::MAX_ATTEMPTS - (int) $user->email_otp_attempts;
+            \App\Models\AuditLog::log('email_verification.failed', 'users', $user, 'Email OTP verification failed.');
             abort(422, "Invalid code. {$remaining} attempts remaining.");
         }
 
@@ -103,6 +110,7 @@ class EmailVerificationService
             'email_otp_expires_at' => null,
             'email_otp_attempts' => 0,
         ]);
+        \App\Models\AuditLog::log('email_verified', 'users', $user, 'Email address verified via OTP.');
 
         return true;
     }

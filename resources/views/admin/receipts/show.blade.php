@@ -13,11 +13,11 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans p-6 md:p-12">
-    <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-gray-200">
+    <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 shadow-lg border border-gray-200">
         {{-- Header / Brand --}}
         <div class="flex items-start justify-between border-b border-gray-200 pb-6">
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-indigo-600">TechSupport Services</h1>
+                <h2 class="text-2xl font-black tracking-tight text-indigo-600">TechSupport Services</h2>
                 <p class="text-xs text-gray-500 mt-0.5">Enterprise IT Support, ITSM & Digital Solutions</p>
                 <div class="mt-3 text-xs text-gray-600">
                     <div>support@techsupport.local</div>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                <span class="term-tag inline-block font-bold uppercase tracking-wider">
                     Official Payment Receipt
                 </span>
                 <div class="mt-2 text-xl font-mono font-bold text-gray-900">{{ $receipt->receipt_number }}</div>
@@ -34,7 +34,7 @@
         </div>
 
         {{-- Customer & Order Info --}}
-        <div class="grid grid-cols-2 gap-6 py-6 border-b border-gray-200 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-gray-200 text-xs">
             <div>
                 <span class="font-bold uppercase tracking-wider text-gray-400 block mb-1">Customer Details</span>
                 <div class="font-bold text-sm text-gray-900">{{ $receipt->customer->name }}</div>
@@ -55,7 +55,7 @@
 
         {{-- Payment Itemization --}}
         <div class="py-6 border-b border-gray-200">
-            <table class="w-full text-left text-xs">
+            <table class="data-table w-full text-left text-xs term-table">
                 <thead>
                     <tr class="text-gray-400 font-semibold uppercase border-b border-gray-200 pb-2">
                         <th class="py-2">Description</th>
@@ -64,11 +64,11 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     <tr>
-                        <td class="py-3">
+                        <td class="py-3" data-label="Description">
                             <div class="font-bold text-sm text-gray-900">{{ $receipt->order?->service?->name ?? 'IT Service Payment' }}</div>
                             <div class="text-gray-500 text-[11px]">Payment applied towards invoice {{ $receipt->invoice->invoice_number }}</div>
                         </td>
-                        <td class="py-3 text-right font-bold text-base text-gray-900">
+                        <td class="py-3 text-right font-bold text-base text-gray-900" data-label="Amount Received">
                             {{ $receipt->currency }} {{ number_format((float)$receipt->amount, 2) }}
                         </td>
                     </tr>
@@ -104,8 +104,8 @@
         {{-- Footer & Print Action --}}
         <div class="mt-8 pt-6 border-t border-gray-200 text-center text-xs text-gray-400 flex items-center justify-between no-print">
             <span>Thank you for your business.</span>
-            <button onclick="window.print()" class="px-4 py-2 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl text-xs transition-colors shadow">
-                🖨️ Print Receipt
+            <button onclick="window.print()" class="print-btn px-4 py-2 bg-gray-900 hover:bg-black text-white font-semibold text-xs transition-colors shadow">
+                Print Receipt
             </button>
         </div>
     </div>

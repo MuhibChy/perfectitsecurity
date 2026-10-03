@@ -146,7 +146,10 @@ class AiChatController extends Controller
         if ($response = $this->authorizeConversation($request, $conversation)) {
             return $response;
         }
-        $escalation = $conversation->escalate($request->reason ?? 'Customer requested human support');
+        // Authorized path: escalation record + audit log + staff notification.
+        $escalation = app(\App\Services\Ai\AiAgentService::class)->requestHumanSupport(
+            $conversation, $request->user(), $request->reason ?? 'Customer requested human support'
+        );
 
         return response()->json([
             'success' => true,

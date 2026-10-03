@@ -3,36 +3,31 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ showPayModal: false, payAmount: '{{ (float)$order->amount_due }}' }">
-    {{-- Breadcrumb & Actions --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-            <a href="{{ route('portal.orders.index') }}" class="hover:text-primary-600">My Orders</a>
-            <span>/</span>
-            <span class="font-mono text-gray-900 dark:text-white font-medium">{{ $order->order_number }}</span>
-        </div>
-        <div class="flex items-center gap-3">
+    <x-page-header :title="'Order ' . $order->order_number" :subtitle="'Source: ' . ($order->order_source_label ?: ucfirst($order->source))" sys="ORDER://ORDERS">
+        <x-slot:actions>
+            <a href="{{ route('portal.orders.index') }}" class="term-btn term-btn-ghost term-btn-sm">My Orders</a>
+            <a href="{{ route('portal.reports.service', $order->id) }}" class="term-btn term-btn-ghost term-btn-sm">Service Report</a>
             @if((float)$order->amount_due > 0 && $order->price_locked)
-            <button @click="showPayModal = true" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm inline-flex items-center gap-2">
-                <span>💳</span>
+            <button @click="showPayModal = true" class="term-btn term-btn-sm">
                 <span>Pay Balance ({{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }})</span>
             </button>
             @endif
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Final Payment Alert if technical work completed with outstanding balance --}}
     @if($order->status === 'awaiting_final_payment')
-    <div class="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="term-alert term-alert-warn flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-start gap-3">
-            <span class="text-2xl">🎉</span>
+            <span class="term-alert-tag">FINALIZE</span>
             <div>
-                <h3 class="font-bold text-gray-900 dark:text-white">Technical Work Completed! Final Payment Required</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-                    Our team has completed all technical deliverables for this task. Please settle the remaining balance of <strong class="text-amber-600 dark:text-amber-400">{{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}</strong> to complete and close your order.
+                <h3 class="font-bold text-slate-900 dark:text-white">Technical Work Completed! Final Payment Required</h3>
+                <p class="text-sm text-slate-600 dark:text-term-800 mt-0.5">
+                    Our team has completed all technical deliverables for this task. Please settle the remaining balance of <strong>{{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}</strong> to complete and close your order.
                 </p>
             </div>
         </div>
-        <button @click="showPayModal = true" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl whitespace-nowrap shadow-sm">
+        <button @click="showPayModal = true" class="term-btn term-btn-sm whitespace-nowrap">
             Pay Remaining {{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}
         </button>
     </div>
@@ -40,38 +35,38 @@
 
     {{-- Status Banner & Financial Tracker --}}
     <div class="grid lg:grid-cols-4 gap-4">
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Order Status</span>
+        <div class="term-panel-2 p-4">
+            <span class="term-field-label">Order Status</span>
             <div class="mt-1 flex items-center gap-2">
-                <span class="text-lg font-bold text-gray-900 dark:text-white">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
+                <x-status-badge :status="$order->status" />
             </div>
-            <span class="text-xs text-gray-500">Source: {{ $order->order_source_label ?: ucfirst($order->source) }}</span>
+            <span class="term-hint">Source: {{ $order->order_source_label ?: ucfirst($order->source) }}</span>
         </div>
 
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Agreed Price</span>
-            <div class="mt-1 text-lg font-bold text-gray-900 dark:text-white">
+        <div class="term-panel-2 p-4">
+            <span class="term-field-label">Agreed Price</span>
+            <div class="mt-1 text-lg font-bold text-slate-900 dark:text-white tabular-nums">
                 {{ $order->currency }} {{ number_format((float)$order->total, 2) }}
             </div>
-            <span class="text-xs {{ $order->price_locked ? 'text-emerald-600' : 'text-amber-600' }}">
-                {{ $order->price_locked ? '🔒 Price Locked & Agreed' : '💬 Under Discussion' }}
+            <span class="term-hint">
+                {{ $order->price_locked ? 'Price Locked & Agreed' : 'Under Discussion' }}
             </span>
         </div>
 
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Paid to Date</span>
-            <div class="mt-1 text-lg font-bold text-emerald-600">
-                {{ $order->currency }} {{ number_format((float)$order->amount_paid, 2) }}
+        <div class="term-panel-2 p-4">
+            <span class="term-field-label">Paid to Date</span>
+            <div class="mt-1 text-lg font-bold tabular-nums">
+                <span class="fin-tag fin-tag-income">{{ $order->currency }} {{ number_format((float)$order->amount_paid, 2) }}</span>
             </div>
-            <span class="text-xs text-gray-500">{{ $order->receipts->count() }} payment receipt(s)</span>
+            <span class="term-hint">{{ $order->receipts->count() }} payment receipt(s)</span>
         </div>
 
-        <div class="glass-card p-4">
-            <span class="text-xs font-semibold uppercase text-gray-400">Outstanding Due</span>
-            <div class="mt-1 text-lg font-bold {{ (float)$order->amount_due > 0 ? 'text-amber-600' : 'text-gray-400' }}">
-                {{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}
+        <div class="term-panel-2 p-4">
+            <span class="term-field-label">Outstanding Due</span>
+            <div class="mt-1 text-lg font-bold tabular-nums">
+                <span class="{{ (float)$order->amount_due > 0 ? 'fin-tag fin-tag-due' : '' }}">{{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}</span>
             </div>
-            <span class="text-xs text-gray-500">Auth: {{ ucfirst(str_replace('_', ' ', $order->payment_authorization)) }}</span>
+            <span class="term-hint">Auth: {{ ucfirst(str_replace('_', ' ', $order->payment_authorization)) }}</span>
         </div>
     </div>
 
@@ -80,80 +75,92 @@
         {{-- Left 2 cols: Service Requirements & Price Negotiation --}}
         <div class="lg:col-span-2 space-y-6">
             {{-- Service Overview --}}
-            <div class="glass-card p-6">
-                <div class="flex items-start justify-between">
+            <div class="term-panel p-6">
+                <div class="flex items-start justify-between gap-3">
                     <div>
-                        <span class="text-xs font-semibold uppercase text-primary-600">{{ $order->service->category?->name ?? 'IT Service' }}</span>
-                        <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-1">{{ $order->service->name }}</h2>
+                        <span class="term-tag">{{ $order->service->category?->name ?? 'IT Service' }}</span>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white mt-2">{{ $order->service->name }}</h2>
                     </div>
-                    <span class="text-xs font-mono bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-lg">
+                    <span class="term-tag font-mono">
                         {{ $order->order_number }}
                     </span>
                 </div>
 
-                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <h3 class="text-xs font-semibold uppercase text-gray-500">Requirements & Scope</h3>
-                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-line">{{ $order->requirements }}</p>
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <h3 class="term-field-label">Requirements &amp; Scope</h3>
+                    <p class="text-sm text-slate-600 dark:text-term-800 mt-1 whitespace-pre-line">{{ $order->requirements }}</p>
                 </div>
 
                 @if($order->customer_notes)
-                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <h3 class="text-xs font-semibold uppercase text-gray-500">Customer Notes</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $order->customer_notes }}</p>
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <h3 class="term-field-label">Customer Notes</h3>
+                    <p class="text-sm text-slate-600 dark:text-term-800 mt-1">{{ $order->customer_notes }}</p>
                 </div>
                 @endif
             </div>
 
             {{-- Price Negotiation History --}}
-            <div class="glass-card p-6">
-                <div class="flex items-center justify-between">
+            <div class="term-panel p-6">
+                <div class="flex items-center justify-between gap-3">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Price Negotiation & Agreement History</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Every proposal, offer, counter-offer, and discount is permanently recorded.</p>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Price Negotiation &amp; Agreement History</h3>
+                        <p class="term-hint">Every proposal, offer, counter-offer, and discount is permanently recorded.</p>
                     </div>
                     @if($order->price_locked)
-                        <span class="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 px-2.5 py-1 rounded-full">
-                            🔒 Final Price Locked
+                        <span class="term-tag term-tag-accent">
+                            Final Price Locked
                         </span>
                     @endif
                 </div>
 
                 <div class="mt-6 space-y-4">
                     @foreach($order->priceRevisions as $rev)
-                    <div class="p-4 rounded-xl border {{ $rev->status === 'accepted' ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20' : 'border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/40' }}">
-                        <div class="flex items-start justify-between">
+                    <div class="term-panel-2 p-4">
+                        <div class="flex items-start justify-between gap-3">
                             <div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-600 dark:text-term-800">
                                     {{ ucfirst(str_replace('_', ' ', $rev->kind)) }}
                                 </span>
-                                <div class="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
+                                <div class="text-lg font-bold text-slate-900 dark:text-white mt-0.5 tabular-nums">
                                     {{ $order->currency }} {{ number_format((float)$rev->amount, 2) }}
                                     @if((float)$rev->discount_amount > 0)
-                                    <span class="text-xs text-green-600 font-normal ml-1">(Discount: {{ $order->currency }} {{ number_format((float)$rev->discount_amount, 2) }})</span>
+                                    <span class="text-xs font-normal ml-1">(Discount: {{ $order->currency }} {{ number_format((float)$rev->discount_amount, 2) }})</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-gray-400 mt-1">
+                                <div class="term-hint mt-1">
                                     Proposed by {{ $rev->proposer?->name ?? 'System' }} on {{ $rev->created_at->format('M d, Y H:i') }}
                                 </div>
                             </div>
                             <div class="text-right">
                                 @if($rev->status === 'accepted')
-                                    <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">✓ Accepted</span>
+                                    <x-status-badge status="accepted" />
                                 @elseif($rev->status === 'countered')
-                                    <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Countered</span>
-                                @elseif($rev->status === 'proposed' && !$order->price_locked)
-                                    <form action="{{ route('portal.orders.accept-price', $order->id) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="revision_id" value="{{ $rev->id }}">
-                                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm">
-                                            Accept This Offer
-                                        </button>
-                                    </form>
+                                    <span class="term-tag">Countered</span>
+                                @elseif(in_array($rev->status, ['proposed', 'pending_approval']) && !$order->price_locked)
+                                    <div class="flex gap-2 justify-end">
+                                        <form action="{{ route('portal.orders.accept-price', $order->id) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="revision_id" value="{{ $rev->id }}">
+                                            <button type="submit" class="term-btn term-btn-sm">
+                                                Accept This Offer
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('portal.orders.reject-price', $order->id) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="revision_id" value="{{ $rev->id }}">
+                                            <input type="hidden" name="reason" value="Declined from order page.">
+                                            <button type="submit" class="term-btn term-btn-ghost term-btn-sm">
+                                                Decline
+                                            </button>
+                                        </form>
+                                    </div>
+                                @elseif($rev->status === 'rejected')
+                                    <x-status-badge status="rejected" />
                                 @endif
                             </div>
                         </div>
                         @if($rev->terms)
-                        <div class="mt-2 text-xs text-gray-600 dark:text-gray-300 italic">"{{ $rev->terms }}"</div>
+                        <div class="mt-2 text-xs text-slate-600 dark:text-term-800 italic">"{{ $rev->terms }}"</div>
                         @endif
                     </div>
                     @endforeach
@@ -161,21 +168,21 @@
 
                 {{-- Counter-Offer Form if not locked --}}
                 @if(!$order->price_locked)
-                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-                    <h4 class="text-sm font-bold text-gray-900 dark:text-white">Submit Counter-Offer or Proposal</h4>
+                <div class="mt-6 pt-6 border-t border-white/10">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">Submit Counter-Offer or Proposal</h4>
                     <form action="{{ route('portal.orders.negotiate', $order->id) }}" method="POST" class="mt-4 grid md:grid-cols-3 gap-4">
                         @csrf
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Your Offer ({{ $order->currency }})</label>
+                            <label class="term-field-label">Your Offer ({{ $order->currency }})</label>
                             <input type="number" step="0.01" min="1" name="amount" required placeholder="e.g. 450.00"
-                                   class="mt-1 block w-full px-3 py-2 text-sm border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:ring-primary-500">
+                                   class="term-input">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Notes / Scope Adjustment</label>
-                            <div class="flex gap-2 mt-1">
+                            <label class="term-field-label">Notes / Scope Adjustment</label>
+                            <div class="flex gap-2">
                                 <input type="text" name="terms" placeholder="e.g. Excluding weekend deployment..."
-                                       class="block w-full px-3 py-2 text-sm border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:ring-primary-500">
-                                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl whitespace-nowrap">
+                                       class="term-input">
+                                <button type="submit" class="term-btn term-btn-sm whitespace-nowrap">
                                     Send Counter
                                 </button>
                             </div>
@@ -189,88 +196,105 @@
         {{-- Right col: Financials, Invoices, Receipts, Tickets --}}
         <div class="space-y-6">
             {{-- Invoices & Balance Box --}}
-            <div class="glass-card p-6">
-                <h3 class="font-bold text-gray-900 dark:text-white">Financial Records</h3>
+            <div class="term-panel p-6">
+                <h3 class="font-bold text-slate-900 dark:text-white">Financial Records</h3>
 
                 @forelse($order->invoices as $inv)
-                <div class="mt-4 p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="font-mono text-xs font-bold text-primary-600">{{ $inv->invoice_number }}</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-semibold {{ $inv->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
-                            {{ ucfirst(str_replace('_', ' ', $inv->status)) }}
-                        </span>
+                <div class="mt-4 term-panel-2 p-4 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-mono text-xs font-bold text-accent-soft">{{ $inv->invoice_number }}</span>
+                        <x-status-badge :status="$inv->status" />
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500">
+                    <div class="flex justify-between text-xs text-slate-600 dark:text-term-800">
                         <span>Total:</span>
-                        <span class="font-bold text-gray-900 dark:text-white">{{ $order->currency }} {{ number_format((float)$inv->total, 2) }}</span>
+                        <span class="font-bold text-slate-900 dark:text-white tabular-nums">{{ $order->currency }} {{ number_format((float)$inv->total, 2) }}</span>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500">
+                    <div class="flex justify-between text-xs text-slate-600 dark:text-term-800">
                         <span>Paid:</span>
-                        <span class="font-bold text-emerald-600">{{ $order->currency }} {{ number_format((float)$inv->amount_paid, 2) }}</span>
+                        <span class="fin-tag fin-tag-income">{{ $order->currency }} {{ number_format((float)$inv->amount_paid, 2) }}</span>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500">
+                    <div class="flex justify-between text-xs text-slate-600 dark:text-term-800">
                         <span>Outstanding:</span>
-                        <span class="font-bold text-amber-600">{{ $order->currency }} {{ number_format((float)$inv->amount_due, 2) }}</span>
+                        <span class="fin-tag fin-tag-due">{{ $order->currency }} {{ number_format((float)$inv->amount_due, 2) }}</span>
                     </div>
                 </div>
                 @empty
-                <p class="text-xs text-gray-400 mt-2">Invoices are automatically issued once the final price agreement is locked.</p>
+                <p class="term-hint mt-2">Invoices are automatically issued once the final price agreement is locked.</p>
                 @endforelse
 
                 @if((float)$order->amount_due > 0 && $order->price_locked)
-                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <button @click="showPayModal = true" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm">
-                        💳 Pay Now (Full or Deposit)
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <button @click="showPayModal = true" class="term-btn term-btn-sm w-full">
+                        Pay Now (Full or Deposit)
                     </button>
-                    <span class="block text-center text-xs text-gray-400 mt-1">Min deposit to start: {{ $order->currency }} {{ number_format($minDeposit, 2) }}</span>
+                    <span class="term-hint block text-center mt-1">Min deposit to start: {{ $order->currency }} {{ number_format($minDeposit, 2) }}</span>
                 </div>
                 @endif
             </div>
 
             {{-- Receipts List --}}
-            <div class="glass-card p-6">
-                <h3 class="font-bold text-gray-900 dark:text-white">Payment Receipts</h3>
+            <div class="term-panel p-6">
+                <h3 class="font-bold text-slate-900 dark:text-white">Payment Receipts</h3>
                 <div class="mt-3 space-y-2">
                     @forelse($order->receipts as $rcp)
-                    <div class="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                    <div class="flex items-center justify-between term-panel-2 p-3">
                         <div>
-                            <span class="font-mono text-xs font-bold text-gray-800 dark:text-gray-200">{{ $rcp->receipt_number }}</span>
-                            <div class="text-xs text-gray-400">{{ $rcp->issued_at->format('M d, Y') }}</div>
+                            <span class="font-mono text-xs font-bold text-slate-900 dark:text-white">{{ $rcp->receipt_number }}</span>
+                            <div class="term-hint">{{ $rcp->issued_at->format('M d, Y') }}</div>
                         </div>
-                        <div class="text-right flex items-center gap-2">
-                            <span class="text-xs font-bold text-emerald-600">{{ $order->currency }} {{ number_format((float)$rcp->amount, 2) }}</span>
-                            <a href="{{ route('portal.orders.receipts.show', ['orderId' => $order->id, 'receiptId' => $rcp->id]) }}" target="_blank" class="text-xs text-primary-600 hover:underline">
+                        <div class="text-right flex items-center gap-2 flex-wrap justify-end">
+                            <span class="text-xs font-bold tabular-nums"><span class="fin-tag fin-tag-income">{{ $order->currency }} {{ number_format((float)$rcp->amount, 2) }}</span></span>
+                            <a href="{{ route('portal.orders.receipts.show', ['orderId' => $order->id, 'receiptId' => $rcp->id]) }}" target="_blank" class="term-link !text-[11px]">
                                 View
                             </a>
+                            <a href="{{ route('portal.receipts.pdf', $rcp) }}" target="_blank" class="term-link !text-[11px]">PDF ↓</a>
+                            @if(optional($rcp->payment)->cashMemo)
+                            <a href="{{ route('portal.cash-memos.pdf', $rcp->payment->cashMemo) }}" target="_blank" class="term-link !text-[11px]">Cash Memo ↓</a>
+                            @endif
                         </div>
                     </div>
                     @empty
-                    <p class="text-xs text-gray-400">No payment receipts issued yet.</p>
+                    <p class="term-hint">No payment receipts issued yet.</p>
                     @endforelse
                 </div>
             </div>
 
+            {{-- Documents & Completion --}}
+            <div class="term-panel p-6">
+                <h3 class="font-bold text-slate-900 dark:text-white">Documents</h3>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <a href="{{ route('portal.orders.pdf', $order) }}" target="_blank" class="term-btn term-btn-ghost term-btn-sm">Order PDF ↓</a>
+                    @foreach($order->receipts as $rcp)
+                    <a href="{{ route('portal.receipts.pdf', $rcp) }}" target="_blank" class="term-btn term-btn-ghost term-btn-sm">Receipt {{ $rcp->receipt_number }} ↓</a>
+                    @endforeach
+                </div>
+                @if(($order->task_completed_at || !$order->tasks()->where('status', '!=', 'completed')->exists()) && !in_array($order->status, ['closed', 'cancelled'], true))
+                <form method="POST" action="{{ route('portal.orders.confirm-completion', $order) }}" class="mt-3">
+                    @csrf
+                    <button class="term-btn term-btn-sm w-full" onclick="return confirm('Confirm that the service work is complete to your satisfaction?')">Confirm Service Completion</button>
+                </form>
+                @endif
+            </div>
+
             {{-- Linked IT Ticket & Delivery Task --}}
-            <div class="glass-card p-6">
-                <h3 class="font-bold text-gray-900 dark:text-white">IT Ticket & Task</h3>
+            <div class="term-panel p-6">
+                <h3 class="font-bold text-slate-900 dark:text-white">IT Ticket &amp; Task</h3>
                 <div class="mt-3 space-y-3">
                     @forelse($order->tickets as $tkt)
-                    <div class="p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-mono font-bold text-primary-600">{{ $tkt->ticket_number }}</span>
-                            <span class="px-2 py-0.5 rounded-full font-semibold {{ $tkt->status === 'closed' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700' }}">
-                                {{ ucfirst($tkt->status) }}
-                            </span>
+                    <div class="term-panel-2 p-3">
+                        <div class="flex items-center justify-between text-xs gap-2">
+                            <span class="font-mono font-bold text-accent-soft">{{ $tkt->ticket_number }}</span>
+                            <x-status-badge :status="$tkt->status" />
                         </div>
-                        <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">{{ $tkt->subject }}</div>
+                        <div class="text-xs text-slate-600 dark:text-term-800 mt-1 truncate">{{ $tkt->subject }}</div>
                         <div class="mt-2 text-right">
-                            <a href="{{ route('portal.tickets.show', $tkt->id) }}" class="text-xs text-primary-600 hover:underline font-semibold">
+                            <a href="{{ route('portal.tickets.show', $tkt->id) }}" class="term-link !text-[11px]">
                                 Open Ticket Thread →
                             </a>
                         </div>
                     </div>
                     @empty
-                    <p class="text-xs text-gray-400">An official IT Ticket will be automatically generated upon order confirmation.</p>
+                    <p class="term-hint">An official IT Ticket will be automatically generated upon order confirmation.</p>
                     @endforelse
                 </div>
             </div>
@@ -278,51 +302,51 @@
     </div>
 
     {{-- Payment Modal --}}
-    <div x-show="showPayModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4">
-        <div @click.away="showPayModal = false" class="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Make Payment</h3>
-                <button @click="showPayModal = false" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+    <div x-show="showPayModal" x-cloak @keydown.escape.window="showPayModal = false" class="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4">
+        <div @click.away="showPayModal = false" class="term-modal max-w-md w-full p-6 space-y-4">
+            <div class="term-modal-head !px-0 !pt-0">
+                <h3 class="term-modal-title">Make Payment</h3>
+                <button @click="showPayModal = false" class="text-slate-600 dark:text-term-800 hover:text-white text-xl font-bold">&times;</button>
             </div>
 
             <form action="{{ route('portal.orders.pay', $order->id) }}" method="POST" class="space-y-4">
                 @csrf
-                <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-xs space-y-1.5">
+                <div class="term-panel-2 p-3 text-xs space-y-1.5">
                     <div class="flex justify-between">
-                        <span class="text-gray-500">Total Order Amount:</span>
-                        <span class="font-bold">{{ $order->currency }} {{ number_format((float)$order->total, 2) }}</span>
+                        <span class="text-slate-600 dark:text-term-800">Total Order Amount:</span>
+                        <span class="font-bold tabular-nums">{{ $order->currency }} {{ number_format((float)$order->total, 2) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-500">Already Paid:</span>
-                        <span class="text-emerald-600 font-bold">{{ $order->currency }} {{ number_format((float)$order->amount_paid, 2) }}</span>
+                        <span class="text-slate-600 dark:text-term-800">Already Paid:</span>
+                        <span class="fin-tag fin-tag-income">{{ $order->currency }} {{ number_format((float)$order->amount_paid, 2) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-500">Remaining Balance:</span>
-                        <span class="text-amber-600 font-bold">{{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}</span>
+                        <span class="text-slate-600 dark:text-term-800">Remaining Balance:</span>
+                        <span class="fin-tag fin-tag-due">{{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }}</span>
                     </div>
-                    <div class="flex justify-between pt-1 border-t border-gray-200 dark:border-gray-700">
-                        <span class="text-gray-500">Minimum Deposit to Start Work:</span>
-                        <span class="font-semibold">{{ $order->currency }} {{ number_format($minDeposit, 2) }}</span>
+                    <div class="flex justify-between pt-1 border-t border-white/10">
+                        <span class="text-slate-600 dark:text-term-800">Minimum Deposit to Start Work:</span>
+                        <span class="font-semibold tabular-nums">{{ $order->currency }} {{ number_format($minDeposit, 2) }}</span>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Payment Amount ({{ $order->currency }})</label>
+                    <label class="term-field-label">Payment Amount ({{ $order->currency }})</label>
                     <input type="number" step="0.01" min="1" max="{{ (float)$order->amount_due }}" name="amount" x-model="payAmount" required
-                           class="mt-1 block w-full px-3 py-2 text-base font-bold text-gray-900 dark:text-white border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:ring-primary-500">
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" @click="payAmount = '{{ $minDeposit }}'" class="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200">
+                           class="term-input font-bold">
+                    <div class="flex gap-2 mt-2 flex-wrap">
+                        <button type="button" @click="payAmount = '{{ $minDeposit }}'" class="term-btn term-btn-ghost term-btn-sm">
                             Min Deposit ({{ $order->currency }} {{ number_format($minDeposit, 2) }})
                         </button>
-                        <button type="button" @click="payAmount = '{{ (float)$order->amount_due }}'" class="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200">
+                        <button type="button" @click="payAmount = '{{ (float)$order->amount_due }}'" class="term-btn term-btn-ghost term-btn-sm">
                             Full Balance ({{ $order->currency }} {{ number_format((float)$order->amount_due, 2) }})
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Payment Method</label>
-                    <select name="payment_method" class="mt-1 block w-full px-3 py-2 text-sm border rounded-xl bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                    <label class="term-field-label">Payment Method</label>
+                    <select name="payment_method" class="term-input">
                         <option value="credit_card">Credit / Debit Card</option>
                         <option value="bank_transfer">Direct Bank Transfer</option>
                         <option value="paypal">PayPal</option>
@@ -330,13 +354,38 @@
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-3">
-                    <button type="button" @click="showPayModal = false" class="px-4 py-2 border rounded-xl text-xs font-medium">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm">
-                        Confirm & Process Payment
+                    <button type="button" @click="showPayModal = false" class="term-btn term-btn-ghost term-btn-sm">Cancel</button>
+                    <button type="submit" class="term-btn term-btn-sm">
+                        Confirm &amp; Process Payment
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    {{-- Change request (approval-gated; original scope untouched until decided) --}}
+    <div class="term-panel p-5 mt-4">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-1">Request a Scope Change</h3>
+        <p class="text-sm text-slate-600 dark:text-term-800 mb-2">Describe additional requirements. The team reviews price/time impact and the original scope stays unchanged until a decision is recorded.</p>
+        <form method="POST" action="{{ route('portal.orders.change-request', $order) }}" class="space-y-2">
+            @csrf
+            <input name="title" class="term-input text-sm" placeholder="e.g. Add API security testing" required maxlength="255">
+            <textarea name="details" rows="2" class="term-input text-sm" placeholder="What should change and why? (min 10 characters)" required></textarea>
+            <button class="term-btn term-btn-ghost term-btn-sm">Submit Change Request</button>
+        </form>
+    </div>
+
+    @if(!in_array($order->status, ['closed', 'financially_completed', 'cancelled'], true))
+    {{-- Cancel order (reason required; paid balances flag a refund; history kept) --}}
+    <div class="term-panel p-5 mt-4">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-1">Cancel Order</h3>
+        <p class="text-sm text-slate-600 dark:text-term-800 mb-2">Cancellation is recorded with your reason and timestamp. Paid amounts are flagged for refund review — nothing is deleted.</p>
+        <form method="POST" action="{{ route('portal.orders.cancel', $order->id) }}" class="flex flex-col sm:flex-row gap-2">
+            @csrf
+            <input name="reason" class="term-input text-sm flex-1" placeholder="Reason for cancellation (required)" required maxlength="1000">
+            <button class="term-btn term-btn-ghost term-btn-sm !border-red-500/50 !text-red-400" onclick="return confirm('Cancel this order? This is recorded permanently.')">Cancel Order</button>
+        </form>
+    </div>
+    @endif
 </div>
 @endsection

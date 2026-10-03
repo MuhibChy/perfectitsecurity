@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>Quotation #{{ $quotation->quotation_number }}</title>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
+        body { font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0891b2; padding-bottom: 20px; margin-bottom: 25px; }
         .logo { font-size: 24px; font-weight: bold; color: #0f172a; }
         .quote-title { font-size: 20px; font-weight: bold; color: #0891b2; text-align: right; }

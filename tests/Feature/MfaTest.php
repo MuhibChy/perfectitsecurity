@@ -28,10 +28,14 @@ class MfaTest extends TestCase
     }
 
     /** @test */
-    public function customer_cannot_open_mfa_setup()
+    public function customer_can_open_mfa_setup_per_verification_policy()
     {
+        // Policy change (config/verification.php): 2FA available to all
+        // members, mandatory for admins/finance. Customers enroll too.
         $customer = User::factory()->create(['role' => 'customer', 'is_active' => true]);
-        $this->actingAs($customer)->get(route('mfa.setup'))->assertStatus(403);
+        $this->actingAs($customer)->get(route('mfa.setup'))
+            ->assertStatus(200)
+            ->assertSee('Two-Factor Setup');
     }
 
     /** @test */
@@ -80,9 +84,11 @@ class MfaTest extends TestCase
         $this->actingAs($user)->post(route('mfa.verify'), ['code' => $valid])
             ->assertRedirect();
 
-        // 6. Disable with a valid code turns MFA off.
+        // 6. Disable requires password step-up + valid code.
         $off = $totp->at($userSecret, (int) floor(time() / 30));
         $this->actingAs($user)->post(route('mfa.disable'), ['code' => $off])
+            ->assertSessionHasErrors('password');
+        $this->actingAs($user)->post(route('mfa.disable'), ['code' => $off, 'password' => 'password'])
             ->assertRedirect(route('mfa.setup'));
         $this->assertFalse($user->fresh()->hasMfaEnabled());
     }

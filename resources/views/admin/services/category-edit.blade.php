@@ -2,38 +2,40 @@
 @section('page-title', 'Edit: ' . $category->name)
 
 @section('content')
+
+    <x-page-header title="Services" sys="OPS://SERVICES" />
 <div class="max-w-2xl">
     <div class="mb-6">
         <a href="{{ route('admin.service-categories.index') }}" class="text-blue-600 hover:underline text-sm">← Back to Categories</a>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">Edit: {{ $category->name }}</h1>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-2">Edit: {{ $category->name }}</h2>
     </div>
 
     <form method="POST" action="{{ route('admin.service-categories.update', $category->id) }}" class="space-y-6">
         @csrf
         @method('PUT')
 
-        <div class="glass-card p-6 space-y-4">
+        <div class="term-panel p-6 space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category Name *</label>
+                <label class="term-field-label">Category Name *</label>
                 <input type="text" name="name" value="{{ old('name', $category->name) }}" required
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm @error('name') border-red-500 @enderror">
-                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                @error('name') <p class="term-error">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                <label class="term-field-label">Description</label>
                 <textarea name="description" rows="3"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">{{ old('description', $category->description) }}</textarea>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icon (emoji)</label>
+                    <label class="term-field-label">Icon (emoji)</label>
                     <input type="text" name="icon" value="{{ old('icon', $category->icon) }}" maxlength="10"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm text-center text-2xl">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
+                    <label class="term-field-label">Color</label>
                     <div class="flex gap-2">
                         <input type="color" name="color" value="{{ old('color', $category->color ?? '#6366f1') }}"
                             class="w-10 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer">
@@ -42,7 +44,7 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort Order</label>
+                    <label class="term-field-label">Sort Order</label>
                     <input type="number" name="sort_order" value="{{ old('sort_order', $category->sort_order) }}" min="0"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                 </div>
@@ -51,7 +53,7 @@
             <div class="flex items-center gap-2">
                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', $category->is_active) ? 'checked' : '' }}
                     class="rounded border-gray-300 text-blue-600">
-                <label class="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</label>
+                <label class="term-field-label">Active (visible to customers)</label>
             </div>
         </div>
 

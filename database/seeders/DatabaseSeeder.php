@@ -1358,7 +1358,7 @@ class DatabaseSeeder extends Seeder
             'author_id' => $admin->id,
             'title' => 'How to Create a Support Ticket',
             'slug' => 'how-to-create-support-ticket',
-            'content' => 'Follow these steps to create a support ticket:\n\n1. Log in to your customer portal dashboard.\n2. Navigate to the **Tickets** section in the sidebar.\n3. Click the **Create Ticket** button.\n4. Fill in the subject, category, priority, and description.\n5. Attach any relevant screenshots or files.\n6. Click **Submit** to create your ticket.\n\nYou will receive a confirmation email and can track the ticket status from your dashboard.',
+            'content' => 'Follow these steps to create a support ticket:\n\n1. Log in to your customer portal dashboard.\n2. Navigate to the **Tickets** section (/portal/tickets) in the sidebar.\n3. Click the **Create Ticket** button.\n4. Fill in the subject, category, priority, and description.\n5. Attach any relevant screenshots or files.\n6. Click **Submit** to create your ticket.\n\nYou will receive a confirmation email and can track the ticket status from your dashboard.',
             'excerpt' => 'Step-by-step guide to creating a support ticket in the customer portal.',
             'is_published' => true,
             'is_featured' => true,
@@ -1534,8 +1534,20 @@ class DatabaseSeeder extends Seeder
         Setting::set('date_format', 'M d, Y', 'general');
 
         // Service Catalogue (multi-country pricing)
-        $this->call(ServiceCatalogueSeeder::class);
-        $this->call(ExpandedServiceCatalogueSeeder::class);
-        $this->call(ExtraServicesSeeder::class);
+$this->call(ServiceCatalogueSeeder::class);
+$this->call(ExpandedServiceCatalogueSeeder::class);
+$this->call(ExtraServicesSeeder::class);
+$this->call(AssetLifecycleCategorySeeder::class);
+$this->call(PromoCampaignSeeder::class);
+$this->call(DemoPortfolioSeeder::class);
+$this->call(DemoContentExpansionSeeder::class);
+$this->call(AiKnowledgeSeeder::class);
+$this->call(TrainingAcademySeeder::class);
+$this->call(RoleRegistrySeeder::class);
+// Synthetic role test accounts: never in production (credentials are
+// issued via a protected channel, never stored in source).
+if (!app()->environment('production')) {
+    $this->call(RoleTestUsersSeeder::class);
+}
     }
 }

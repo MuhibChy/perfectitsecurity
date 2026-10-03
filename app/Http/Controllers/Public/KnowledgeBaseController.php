@@ -17,9 +17,10 @@ class KnowledgeBaseController extends Controller
         $query = KbArticle::published()->public()->with('category', 'author');
 
         if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('content', 'like', "%{$request->search}%");
+            $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
+            $query->where(function ($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")
+                  ->orWhere('content', 'like', "%{$s}%");
             });
         }
 

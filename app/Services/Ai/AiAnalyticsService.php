@@ -101,7 +101,17 @@ class AiAnalyticsService
         $articleCounts = [];
         foreach ($messages as $message) {
             if (is_array($message->sources)) {
-                foreach ($message->sources as $articleId) {
+                foreach ($message->sources as $source) {
+                    // Sources may be stored as scalar ids or as arrays
+                    // (e.g. ['id' => 5, 'title' => ...]); only scalar ids can
+                    // be used as array keys.
+                    if (is_array($source)) {
+                        $source = $source['id'] ?? $source['article_id'] ?? null;
+                    }
+                    if (!is_int($source) && !(is_string($source) && ctype_digit($source))) {
+                        continue;
+                    }
+                    $articleId = (int) $source;
                     $articleCounts[$articleId] = ($articleCounts[$articleId] ?? 0) + 1;
                 }
             }
@@ -118,7 +128,7 @@ class AiAnalyticsService
             ->map(fn($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
-                'category' => $article->category->name,
+                'category' => $article->category?->name ?? 'Uncategorized',
                 'usage_count' => $articleCounts[$article->id] ?? 0,
             ])
             ->toArray();

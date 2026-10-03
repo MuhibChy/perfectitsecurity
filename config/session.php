@@ -168,7 +168,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Env-aware: SESSION_SECURE_COOKIE=true in production (HTTPS), false locally
+    // so plain-HTTP dev keeps working. Falls back to APP_ENV=production.
+    'secure' => filter_var(env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'), FILTER_VALIDATE_BOOLEAN),
 
     /*
     |--------------------------------------------------------------------------
@@ -196,6 +198,6 @@ return [
     |
     */
 
-    'same_site' => 'lax',
+    'same_site' => env('SESSION_SAME_SITE', 'lax'),
 
 ];

@@ -35,7 +35,7 @@ class NewFeatureTest extends TestCase
     {
         $response = $this->get(route('get-quote'));
         $response->assertStatus(200);
-        $response->assertSee('Custom Quote');
+        $response->assertSee('CUSTOM QUOTE');
     }
 
     /** @test */
@@ -238,10 +238,12 @@ class NewFeatureTest extends TestCase
             'category' => 'general',
         ]);
 
-        // Customer2 should not be able to download it
+        // Customer2 should not be able to download it (oracle-free scoping
+        // answers 404, never 403 — consistent with orders, quotations,
+        // wallets and tracking).
         $this->actingAs($customer2);
         $response = $this->get(route('portal.documents.download', $doc->id));
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     /** @test */

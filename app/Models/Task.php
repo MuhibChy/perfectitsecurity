@@ -13,7 +13,7 @@ class Task extends Model
         'is_demo',
         'task_number', 'project_id', 'service_order_id', 'ticket_id', 'customer_id', 'title', 'description', 'assigned_to',
         'created_by', 'status', 'priority', 'type', 'budget', 'reward_amount',
-        'skills_required', 'deadline', 'start_date', 'estimated_minutes', 'actual_minutes',
+        'skills_required', 'deadline', 'start_date', 'paused_at', 'estimated_minutes', 'actual_minutes',
         'technical_notes', 'completed_at', 'sla_priority', 'progress', 'max_applicants',
         'is_locked', 'locked_by', 'locked_at',
     ];
@@ -21,6 +21,7 @@ class Task extends Model
     protected $casts = [
         'deadline' => 'date',
         'start_date' => 'datetime',
+        'paused_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
 
@@ -35,6 +36,7 @@ class Task extends Model
 
     public function project() { return $this->belongsTo(Project::class); }
     public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
+    public function contributors() { return $this->belongsToMany(User::class, 'task_contributors', 'task_id', 'user_id')->withPivot('role')->withTimestamps(); }
     public function creator() { return $this->belongsTo(User::class, 'created_by'); }
     public function locker() { return $this->belongsTo(User::class, 'locked_by'); }
     public function applications() { return $this->hasMany(TaskApplication::class); }

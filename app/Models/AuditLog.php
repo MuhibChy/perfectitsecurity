@@ -9,6 +9,17 @@ class AuditLog extends Model
     protected $fillable = ['user_id', 'action', 'module', 'auditable_type', 'auditable_id', 'description', 'old_values', 'new_values', 'ip_address', 'user_agent'];
     protected $casts = ['old_values' => 'array', 'new_values' => 'array'];
 
+    /**
+     * Append-only audit trail: entries are immutable — corrections are new
+     * entries, never edits. Blocks update/delete at the model boundary
+     * (console/tinker included).
+     */
+    protected static function booted(): void
+    {
+        static::updating(fn () => throw new \RuntimeException('Audit log entries are immutable and cannot be modified.'));
+        static::deleting(fn () => throw new \RuntimeException('Audit log entries are immutable and cannot be deleted.'));
+    }
+
     public function user() { return $this->belongsTo(User::class); }
     public function auditable() { return $this->morphTo(); }
 

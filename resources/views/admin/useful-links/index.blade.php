@@ -2,20 +2,21 @@
 @section('page-title', 'Useful Links Management')
 @section('content')
 <div class="space-y-6">
+    <x-page-header title="Useful Links Management" sys="CONTENT://RESOURCES" />
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">Useful Links</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage curated website links displayed on your public pages.</p>
         </div>
-        <a href="{{ route('admin.useful-links.create') }}" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+        <a href="{{ route('admin.useful-links.create') }}" class="term-btn term-btn-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Add Link
         </a>
     </div>
 
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+    <div class="term-panel overflow-hidden">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table w-full text-sm term-table">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="text-left px-6 py-4 font-semibold text-gray-900 dark:text-white">Title</th>
@@ -29,9 +30,9 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($links as $link)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Title">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                                 </div>
                                 <div>
@@ -42,33 +43,32 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="URL">
                             <a href="{{ $link->url }}" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline truncate max-w-[200px] block">{{ $link->url }}</a>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        <td class="px-6 py-4" data-label="Category">
+                            <span class="term-tag inline-flex items-center">
                                 {{ ucfirst($link->category) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Status">
                             <form action="{{ route('admin.useful-links.toggle', $link) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium {{ $link->is_active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' }}">
-                                    <span class="w-1.5 h-1.5 rounded-full {{ $link->is_active ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
-                                    {{ $link->is_active ? 'Active' : 'Inactive' }}
+                                <button type="submit" class="term-btn term-btn-sm term-btn-ghost">
+                                    <x-status-badge :status="$link->is_active ? 'active' : 'inactive'" />
                                 </button>
                             </form>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Featured">
                             @if($link->is_featured)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+                            <span class="term-tag inline-flex items-center">
                                 ★ Featured
                             </span>
                             @else
                             <span class="text-xs text-gray-400">—</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Actions">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('admin.useful-links.edit', $link) }}" class="p-2 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>

@@ -22,6 +22,15 @@ class OpenAiProvider implements AiProviderInterface
     {
         $this->apiKey = config('services.ai.openai.api_key', '');
         $this->model = config('services.ai.openai.model', 'gpt-4o-mini');
+        // Admin UI override (admin/ai/settings) wins when set.
+        try {
+            $adminModel = trim((string) \App\Models\AiSetting::get('ai_model', ''));
+            if ($adminModel !== '') {
+                $this->model = $adminModel;
+            }
+        } catch (\Throwable $e) {
+            // Settings table unavailable — keep config default.
+        }
         $this->baseUrl = config('services.ai.openai.base_url', 'https://api.openai.com/v1');
     }
 
@@ -43,8 +52,9 @@ class OpenAiProvider implements AiProviderInterface
             ]);
 
             if ($response->failed()) {
-                Log::error('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);
-                throw new \Exception('AI provider returned an error: ' . $response->body());
+                $status = $response->status();
+                Log::warning('OpenAI chat API error', ['status' => $status]);
+                throw AiProviderException::fromStatus($status);
             }
 
             $data = $response->json();
@@ -62,9 +72,17 @@ class OpenAiProvider implements AiProviderInterface
                 'model' => $model,
                 'cost' => $cost,
             ];
-        } catch (\Exception $e) {
-            Log::error('OpenAI request failed', ['error' => $e->getMessage()]);
+        } catch (AiProviderException $e) {
             throw $e;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::warning('OpenAI connection failed', ['category' => AiProviderException::CONNECTION_ERROR]);
+            throw AiProviderException::connectionError();
+        } catch (\Exception $e) {
+            $category = stripos($e->getMessage(), 'timed out') !== false || stripos($e->getMessage(), 'timeout') !== false
+                ? AiProviderException::TIMEOUT
+                : AiProviderException::UNKNOWN;
+            Log::warning('OpenAI request failed', ['category' => $category]);
+            throw new AiProviderException($category);
         }
     }
 
@@ -76,6 +94,22 @@ class OpenAiProvider implements AiProviderInterface
     public function isAvailable(): bool
     {
         return !empty($this->apiKey);
+    }
+
+    public function healthCheck(): array
+    {
+        // No network call: must not burn customer budget on a status page.
+        $configured = !empty($this->apiKey);
+        return [
+            'provider' => 'openai',
+            'reachable' => $configured,
+            'model' => $this->model,
+            'model_available' => $configured,
+            'models' => [],
+            'latency_ms' => null,
+            'checked_at' => now()->toDateTimeString(),
+            'error' => $configured ? null : 'missing_api_key',
+        ];
     }
 
     private function calculateCost(string $model, int $inputTokens, int $outputTokens): float

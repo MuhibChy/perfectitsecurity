@@ -63,6 +63,7 @@ class ExpenseController extends Controller
 
     public function downloadReceipt($id)
     {
+        abort_unless(auth()->user()?->isFinanceManager(), 403);
         $expense = Expense::findOrFail($id);
         abort_unless($expense->receipt_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($expense->receipt_path), 404);
         // Finance-tier access is enforced by the requires.role:isFinanceManager
@@ -100,5 +101,31 @@ class ExpenseController extends Controller
             'approved_at' => now(),
         ]);
         return redirect()->back()->with('info', 'Expense rejected.');
+    }
+
+    /**
+     * Mark an APPROVED expense PAID against its single payment transaction
+     * (Phase 6-7). Approval ≠ payment: paid requires a completed
+     * BankTransfer reference or a recorded payment reference. No second
+     * accounting entry is posted here — the transfer completion already
+     * posted it — so reports cannot double-count.
+     */
+    public function markPaid(Request $request, $id)
+    {
+        $data = $request->validate(['payment_reference' => 'required|string|max:255']);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $id) {
+            $expense = Expense::lockForUpdate()->findOrFail($id);
+            abort_unless($expense->status === 'approved', 422, 'Only approved expenses can be marked paid.');
+            abort_if($expense->paid_at, 422, 'Expense is already marked paid.');
+            $transfer = \App\Models\BankTransfer::where('reference', $data['payment_reference'])
+                ->orWhere('external_reference', $data['payment_reference'])->first();
+            if ($transfer) {
+                abort_unless($transfer->status === 'completed', 422, 'Linked transfer is not completed; expense cannot be marked paid.');
+                abort_unless(abs((float) $transfer->amount - (float) $expense->amount) < 0.01, 422, 'Transfer amount does not match the expense amount.');
+            }
+            $expense->update(['status' => 'paid', 'paid_at' => now(), 'payment_reference' => $data['payment_reference']]);
+            \App\Services\AuditService::log('expense_paid', 'expenses', $expense, "Expense {$expense->expense_number} marked paid. Payment ref: {$data['payment_reference']}.");
+            return redirect()->back()->with('success', 'Expense marked paid against its payment transaction.');
+        });
     }
 }

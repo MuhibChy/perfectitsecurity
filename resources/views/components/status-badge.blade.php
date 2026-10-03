@@ -1,3 +1,4 @@
+{{-- Terminal status badge: ● MONO LABEL chip. Props: status, label, size. --}}
 @props([
     'status',
     'label' => null,
@@ -8,55 +9,41 @@
 $normalized = strtolower(trim((string)$status));
 $displayLabel = $label ?? ucfirst(str_replace(['_', '-'], ' ', $normalized));
 
-$statusStyles = [
-    // Positive / Completed / Active / Paid
-    'active' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'paid' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'completed' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'approved' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'accepted' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'verified' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
-    'resolved' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-500/20 dot-emerald',
+// Status family: drives both the dot and the theme-aware skin class
+// (x-status-*, see app.css LIGHT MODE layer for light skins).
+$family = match(true) {
+    in_array($normalized, ['active','paid','completed','approved','accepted','verified','resolved','enabled','online','success','successful']) => 'success',
+    in_array($normalized, ['pending','waiting','on_hold','draft','new','scheduled','queued','medium','moderate','submitted','resubmission_required']) => 'warning',
+    in_array($normalized, ['in_progress','processing','sent','planning','review','under_review','partial','in_review','open','low','minor','info']) => 'info',
+    in_array($normalized, ['high','urgent','critical','overdue','failed','blocked','error','revoked','rejected']) => 'danger',
+    default => 'muted',
+};
 
-    // Pending / In Progress / Waiting / Review
-    'pending' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-500/20 dot-amber',
-    'in_progress' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-500/20 dot-blue',
-    'planning' => 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-400 border-cyan-500/20 dot-cyan',
-    'review' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border-purple-500/20 dot-purple',
-    'sent' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-500/20 dot-blue',
-    'draft' => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-500/20 dot-gray',
-    'new' => 'bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-400 border-primary-500/20 dot-primary',
+// Terminal dot color per status family.
+$dot = match(true) {
+    in_array($normalized, ['active','paid','completed','approved','accepted','verified','resolved','enabled','online','success','successful']) => 'background:#00E67A;box-shadow:0 0 8px rgba(0,230,122,0.8)',
+    in_array($normalized, ['pending','waiting','on_hold','draft','new','scheduled','queued']) => 'background:#FFB454;box-shadow:0 0 8px rgba(255,180,84,0.8)',
+    in_array($normalized, ['in_progress','processing','sent','planning','review','partial','in_review','open']) => 'background:#4DA3FF;box-shadow:0 0 8px rgba(77,163,255,0.8)',
+    in_array($normalized, ['high','urgent','critical','overdue','failed','blocked','error']) => 'background:#FF5C5C;box-shadow:0 0 8px rgba(255,92,92,0.8)',
+    in_array($normalized, ['medium','moderate']) => 'background:#FFB454;box-shadow:0 0 8px rgba(255,180,84,0.8)',
+    in_array($normalized, ['low','minor','info']) => 'background:#4DA3FF;box-shadow:0 0 8px rgba(77,163,255,0.8)',
+    in_array($normalized, ['rejected','revoked','cancelled','suspended','inactive','closed','disabled','expired']) => 'background:#FF5C5C;box-shadow:none',
+    in_array($normalized, ['resubmission_required','submitted']) => 'background:#FFB454;box-shadow:0 0 8px rgba(255,180,84,0.8)',
+    default => 'background:#8ba595;box-shadow:none',
+};
 
-    // High / Urgent / Warning
-    'high' => 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 border-orange-500/20 dot-orange',
-    'urgent' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-500/20 dot-rose',
-    'critical' => 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400 border-red-500/30 dot-red',
-    'overdue' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-500/20 dot-rose',
-
-    // Danger / Cancelled / Rejected / Suspended / Inactive
-    'cancelled' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border-gray-500/20 dot-gray',
-    'rejected' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-500/20 dot-rose',
-    'suspended' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-500/20 dot-rose',
-    'blocked' => 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400 border-red-500/30 dot-red',
-    'inactive' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border-gray-500/20 dot-gray',
-];
-
-$classes = $statusStyles[$normalized] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-500/20 dot-gray';
-
-$dotColor = match(true) {
-    str_contains($classes, 'dot-emerald') => 'bg-emerald-500',
-    str_contains($classes, 'dot-amber') => 'bg-amber-500',
-    str_contains($classes, 'dot-blue') => 'bg-blue-500',
-    str_contains($classes, 'dot-cyan') => 'bg-cyan-500',
-    str_contains($classes, 'dot-purple') => 'bg-purple-500',
-    str_contains($classes, 'dot-orange') => 'bg-orange-500',
-    str_contains($classes, 'dot-rose'), str_contains($classes, 'dot-red') => 'bg-rose-500',
-    str_contains($classes, 'dot-primary') => 'bg-primary-500',
-    default => 'bg-gray-400'
+$text = match(true) {
+    in_array($normalized, ['active','paid','completed','approved','accepted','verified','resolved','enabled','online','success','successful']) => 'color:#5CEFA8;border-color:rgba(0,230,122,0.35);background:rgba(0,230,122,0.07)',
+    in_array($normalized, ['pending','waiting','on_hold','draft','new','scheduled','queued']) => 'color:#FFB454;border-color:rgba(255,180,84,0.35);background:rgba(255,180,84,0.07)',
+    in_array($normalized, ['in_progress','processing','sent','planning','review','partial','in_review','open']) => 'color:#4DA3FF;border-color:rgba(77,163,255,0.35);background:rgba(77,163,255,0.07)',
+    in_array($normalized, ['high','urgent','critical','overdue','failed','blocked','error']) => 'color:#FF8A8A;border-color:rgba(255,92,92,0.4);background:rgba(255,92,92,0.07)',
+    in_array($normalized, ['medium','moderate']) => 'color:#FFB454;border-color:rgba(255,180,84,0.35);background:rgba(255,180,84,0.07)',
+    in_array($normalized, ['low','minor','info']) => 'color:#4DA3FF;border-color:rgba(77,163,255,0.35);background:rgba(77,163,255,0.07)',
+    default => 'color:#8ba595;border-color:rgba(139,165,149,0.3);background:rgba(139,165,149,0.06)',
 };
 @endphp
 
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-medium border text-xs {{ $classes }}">
-    <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }} flex-shrink-0"></span>
-    <span class="truncate">{{ $displayLabel }}</span>
+<span class="term-tag x-status-badge x-status-{{ $family }}" style="{{ $text }}">
+    <span aria-hidden="true" style="width:0.45rem;height:0.45rem;border-radius:9999px;flex-shrink:0;{{ $dot }}"></span>
+    <span>{{ strtoupper($displayLabel) }}</span>
 </span>

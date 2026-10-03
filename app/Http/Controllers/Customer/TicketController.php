@@ -13,12 +13,15 @@ use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tickets = Ticket::where('customer_id', auth()->id())
-            ->with('category', 'assignee')
-            ->latest()
-            ->paginate(15);
+        $query = Ticket::where('customer_id', auth()->id())->with('category', 'assignee');
+        if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('search')) {
+            $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
+            $query->where(fn ($w) => $w->where('ticket_number', 'like', "%{$s}%")->orWhere('subject', 'like', "%{$s}%"));
+        }
+        $tickets = $query->latest()->paginate(15)->withQueryString();
 
         return view('customer.tickets.index', compact('tickets'));
     }
@@ -92,8 +95,32 @@ class TicketController extends Controller
             'message' => $validated['message'],
         ]);
 
-        if ($ticket->status === 'waiting_customer') {
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Ticket evidence is private customer data; it must never be served by /storage.
+                $path = $file->store('ticket-attachments', 'local');
+                $ticket->attachments()->create([
+                    'uploaded_by' => auth()->id(),
+                    'filename' => basename($path),
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'path' => $path,
+                ]);
+            }
+        }
+
+        if (in_array($ticket->status, ['waiting_customer', 'waiting_third_party', 'escalated'], true)) {
             $ticket->update(['status' => 'in_progress']);
+        }
+
+        // Customer reply → notify the assigned agent (preference-gated).
+        if ($ticket->assigned_to) {
+            \App\Services\ServiceTrackingService::notify(
+                (int) $ticket->assigned_to, 'ticket_reply',
+                "Customer reply on {$ticket->ticket_number}",
+                mb_substr((string) $validated['message'], 0, 140)
+            );
         }
 
         return redirect()->back()->with('success', 'Reply sent!');

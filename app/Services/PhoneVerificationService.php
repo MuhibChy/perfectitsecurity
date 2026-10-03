@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Twilio\Rest\Client;
@@ -56,9 +57,9 @@ class PhoneVerificationService
             }
         }
 
-        // Secure built-in OTP provider
+        // Secure built-in OTP provider — bcrypt-hashed so a DB read cannot replay it.
         $code = (string) random_int(100000, 999999);
-        $codeHash = hash('sha256', $code);
+        $codeHash = Hash::make($code);
 
         $user->update([
             'phone' => $normalizedPhone,
@@ -132,10 +133,12 @@ class PhoneVerificationService
         // Increment attempts
         $user->increment('phone_otp_attempts');
 
-        // Verify code
-        $inputHash = hash('sha256', $code);
-        if (!hash_equals($user->phone_otp_hash, $inputHash)) {
-            $remaining = self::MAX_ATTEMPTS - $user->phone_otp_attempts;
+        // Verify code — bcrypt primary, legacy SHA-256 accepted once for rolling upgrades.
+        $stored = (string) $user->phone_otp_hash;
+        $valid = Hash::check($code, $stored)
+            || (preg_match('/^[0-9a-f]{64}$/i', $stored) && hash_equals($stored, hash('sha256', $code)));
+        if (!$valid) {
+            $remaining = self::MAX_ATTEMPTS - (int) $user->phone_otp_attempts;
             abort(422, "Invalid verification code. {$remaining} attempts remaining.");
         }
 
@@ -161,6 +164,66 @@ class PhoneVerificationService
         $phone = preg_replace('/[^0-9+]/', '', $phone);
         abort_unless(preg_match('/^\+[1-9][0-9]{7,14}$/', $phone), 422, 'Use an international phone number beginning with + (e.g. +447123456789 or +12025550123).');
         return $phone;
+    }
+
+    /**
+     * Normalize a national-format number using the selected phone country.
+     * A leading + always wins (already international); otherwise the
+     * national trunk zero is stripped and the registry dial code applied.
+     * Storage stays canonical E.164 — one identity per number.
+     */
+    public function normalizeForCountry(string $number, string $alpha2): string
+    {
+        $entry = \App\Support\PhoneCountries::find($alpha2);
+        abort_unless($entry, 422, 'Unknown phone country selected.');
+        $clean = preg_replace('/[^0-9+]/', '', trim($number));
+        abort_if($clean === '' || $clean === '+', 422, 'Please enter a mobile number.');
+        if (str_starts_with($clean, '+')) {
+            return $this->normalize($clean);
+        }
+        $national = ltrim($clean, '0');
+        abort_if($national === '', 422, 'Please enter a mobile number.');
+        return $this->normalize('+' . $entry['dial'] . $national);
+    }
+
+    /** Registry dial code for a user (own country_code first, then country text). */
+    public function dialCodeForUser(\App\Models\User $user): ?string
+    {
+        $code = strtoupper(trim((string) ($user->country_code ?? '')));
+        if ($code !== '' && ($entry = \App\Support\PhoneCountries::find($code))) {
+            return $entry['dial'];
+        }
+        $text = strtoupper(trim((string) ($user->country ?? '')));
+        foreach (\App\Support\PhoneCountries::all() as $entry) {
+            if (strtoupper($entry['name']) === $text) {
+                return $entry['dial'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Explicit phone verification state — never confused with email,
+     * identity or 2FA states.
+     */
+    public function phoneStateFor(\App\Models\User $user): string
+    {
+        if ($user->isPhoneVerified()) {
+            return 'VERIFIED';
+        }
+        if (empty($user->phone)) {
+            return 'NOT_PROVIDED';
+        }
+        if ($user->phone_otp_attempts >= self::MAX_ATTEMPTS) {
+            return 'FAILED';
+        }
+        if ($user->phone_otp_expires_at && now()->isAfter($user->phone_otp_expires_at)) {
+            return $user->phone_otp_hash ? 'EXPIRED' : 'PROVIDED';
+        }
+        if ($user->phone_otp_hash) {
+            return $user->phone_otp_sent_at ? 'PENDING' : 'SENT';
+        }
+        return 'PROVIDED';
     }
 
     private function hasTwilioCredentials(): bool

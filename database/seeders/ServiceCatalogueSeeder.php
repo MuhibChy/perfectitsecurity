@@ -13,10 +13,11 @@ class ServiceCatalogueSeeder extends Seeder
     public function run(): void
     {
         // ─── COUNTRIES ───────────────────────────────────────────────────────────
+        // firstOrCreate: the currency migration may already provide base rows.
         $countries = [
-            Country::create(['name' => 'United Kingdom', 'code' => 'UK', 'currency_code' => 'GBP', 'currency_symbol' => '£', 'currency_name' => 'British Pound', 'sort_order' => 1]),
-            Country::create(['name' => 'United States', 'code' => 'US', 'currency_code' => 'USD', 'currency_symbol' => '$', 'currency_name' => 'US Dollar', 'sort_order' => 2]),
-            Country::create(['name' => 'Bangladesh', 'code' => 'BD', 'currency_code' => 'BDT', 'currency_symbol' => '৳', 'currency_name' => 'Bangladeshi Taka', 'sort_order' => 3]),
+            Country::firstOrCreate(['code' => 'UK'], ['name' => 'United Kingdom', 'currency_code' => 'GBP', 'currency_symbol' => '£', 'currency_name' => 'British Pound', 'sort_order' => 1]),
+            Country::firstOrCreate(['code' => 'US'], ['name' => 'United States', 'currency_code' => 'USD', 'currency_symbol' => '$', 'currency_name' => 'US Dollar', 'sort_order' => 2]),
+            Country::firstOrCreate(['code' => 'BD'], ['name' => 'Bangladesh', 'currency_code' => 'BDT', 'currency_symbol' => '৳', 'currency_name' => 'Bangladeshi Taka', 'sort_order' => 3]),
         ];
         $uk = $countries[0]->id;
         $us = $countries[1]->id;

@@ -18,7 +18,7 @@ class LeadController extends Controller
             $query->where('status', $request->status);
         }
         if ($request->search) {
-            $s = $request->search;
+            $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
                     ->orWhere('email', 'like', "%{$s}%")
@@ -121,5 +121,44 @@ class LeadController extends Controller
         ]);
 
         return back()->with('success', 'Activity logged.');
+    }
+
+    /**
+     * Convert a lead into a customer account. Links the existing user when
+     * the email already belongs to a customer; otherwise creates a new
+     * customer that must complete email verification. Never upgrades roles.
+     */
+    public function convert(Request $request, Lead $lead)
+    {
+        abort_unless($lead->email, 422, 'Lead has no email address to convert.');
+        abort_if($lead->customer_id, 422, 'Lead is already linked to a customer.');
+
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($lead) {
+            $customer = User::where('email', $lead->email)->first();
+            if ($customer) {
+                abort_unless($customer->isCustomer(), 422, 'Email belongs to a staff account; link it manually.');
+            } else {
+                $customer = User::create([
+                    'name' => $lead->name,
+                    'email' => $lead->email,
+                    'password' => \Illuminate\Support\Str::random(32),
+                    'role' => 'customer',
+                    'is_active' => true,
+                    'phone' => $lead->phone,
+                ]);
+                event(new \Illuminate\Auth\Events\Registered($customer));
+            }
+
+            $lead->update(['customer_id' => $customer->id, 'status' => 'won', 'converted_at' => now()]);
+            LeadActivity::create([
+                'lead_id' => $lead->id,
+                'user_id' => auth()->id(),
+                'type' => 'status_change',
+                'subject' => 'Lead converted',
+                'body' => "Converted to customer #{$customer->id} ({$customer->email}).",
+            ]);
+
+            return back()->with('success', "Lead converted to customer {$customer->email}.");
+        });
     }
 }

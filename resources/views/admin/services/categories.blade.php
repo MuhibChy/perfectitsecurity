@@ -4,42 +4,15 @@
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Service Categories</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $categories->count() }} categories managing the service catalogue hierarchy.</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{{ route('admin.services.index') }}" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm">
-                ← Services
-            </a>
-            <a href="{{ route('admin.service-categories.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                + Add Category
-            </a>
-        </div>
-    </div>
+    <x-page-header title="Service Categories" subtitle="Service Categories" sys="OPS://SERVICES" />
 
-    <!-- Categories Grid -->
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($categories as $category)
-        <div class="glass-card p-5 relative group hover:shadow-md transition-shadow">
-            <!-- Status Badge -->
-            @if(!$category->is_active)
-                <span class="absolute top-3 right-3 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded-full">Inactive</span>
-            @endif
-
-            <!-- Color Strip -->
-            <div class="w-10 h-1 rounded-full mb-3" style="background-color: {{ $category->color ?? '#6366f1' }}"></div>
-
-            <!-- Category Info -->
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-2xl">{{ $category->icon ?? '📁' }}</span>
-                <div>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ $category->name }}</h3>
-                    <p class="text-xs text-gray-400 font-mono">{{ $category->slug }}</p>
-                </div>
+        <div class="term-panel p-5">
+            <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-2.5 h-2.5 flex-shrink-0" style="background-color: {{ $category->color ?? '#00E67A' }}" aria-hidden="true"></span>
+                <h3 class="font-display font-bold text-slate-900 dark:text-white tracking-tight">{{ $category->name }}</h3>
             </div>
-
             @if($category->description)
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{{ $category->description }}</p>
             @endif
@@ -72,7 +45,7 @@
             </div>
         </div>
         @empty
-        <div class="sm:col-span-2 lg:col-span-3 glass-card p-12 text-center">
+        <div class="sm:col-span-2 lg:col-span-3 term-panel p-12 text-center">
             <div class="text-4xl mb-3">📂</div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">No categories yet</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Create your first service category to start organizing services.</p>
@@ -85,12 +58,12 @@
 
     <!-- Summary Table -->
     @if($categories->count() > 0)
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700">
             <h3 class="font-semibold text-gray-900 dark:text-white text-sm">All Categories</h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table w-full text-sm term-table">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                         <th class="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Order</th>
@@ -106,7 +79,7 @@
                     @foreach($categories as $category)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <td class="px-5 py-3 text-gray-500 font-mono text-xs">{{ str_pad($category->sort_order, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="px-5 py-3 text-xl">{{ $category->icon ?? '📁' }}</td>
+                        <td class="px-5 py-3 text-xl">{{ $category->icon ?? '' }}</td>
                         <td class="px-5 py-3 font-medium text-gray-900 dark:text-white">
                             <div class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full" style="background-color: {{ $category->color ?? '#6366f1' }}"></div>
@@ -115,13 +88,13 @@
                         </td>
                         <td class="px-5 py-3 text-xs text-gray-400 font-mono">{{ $category->slug }}</td>
                         <td class="px-5 py-3">
-                            <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs rounded-full">{{ $category->services_count }}</span>
+                            <span class="term-tag">{{ $category->services_count }}</span>
                         </td>
                         <td class="px-5 py-3">
                             @if($category->is_active)
-                                <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">Active</span>
+                                <span class="term-tag">Active</span>
                             @else
-                                <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 text-xs rounded-full">Inactive</span>
+                                <span class="term-tag">Inactive</span>
                             @endif
                         </td>
                         <td class="px-5 py-3">

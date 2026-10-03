@@ -7,8 +7,8 @@ use Illuminate\Support\Str;
 
 class ServiceOrder extends Model
 {
-    protected $fillable = ['is_demo', 'order_number', 'customer_id', 'service_id', 'created_by', 'assigned_to', 'source', 'order_source_label', 'requirements', 'priority', 'status', 'payment_authorization', 'currency', 'original_price', 'final_price', 'discount_amount', 'tax_rate', 'tax_amount', 'total', 'amount_paid', 'amount_due', 'expected_cost', 'actual_cost', 'urgency', 'preferred_date', 'customer_notes', 'internal_notes', 'customer_accepted_at', 'employee_approved_at', 'price_locked', 'final_price_accepted_by', 'verification_snapshot', 'manager_override_by', 'manager_override_at', 'manager_override_reason', 'attachments', 'closed_at', 'closure_notes', 'task_completed_at'];
-    protected $casts = ['customer_id' => 'integer', 'service_id' => 'integer', 'created_by' => 'integer', 'assigned_to' => 'integer', 'final_price_accepted_by' => 'integer', 'manager_override_by' => 'integer', 'original_price' => 'decimal:2', 'final_price' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_rate' => 'decimal:2', 'tax_amount' => 'decimal:2', 'total' => 'decimal:2', 'amount_paid' => 'decimal:2', 'amount_due' => 'decimal:2', 'expected_cost' => 'decimal:2', 'actual_cost' => 'decimal:2', 'customer_accepted_at' => 'datetime', 'employee_approved_at' => 'datetime', 'price_locked' => 'boolean', 'manager_override_at' => 'datetime', 'closed_at' => 'datetime', 'task_completed_at' => 'datetime', 'preferred_date' => 'date', 'attachments' => 'array'];
+    protected $fillable = ['is_demo', 'order_number', 'customer_id', 'service_id', 'quotation_id', 'service_snapshot', 'created_by', 'assigned_to', 'source', 'order_source_label', 'requirements', 'priority', 'status', 'payment_authorization', 'currency', 'original_price', 'final_price', 'discount_amount', 'tax_rate', 'tax_amount', 'total', 'amount_paid', 'amount_due', 'expected_cost', 'actual_cost', 'urgency', 'preferred_date', 'customer_notes', 'internal_notes', 'customer_accepted_at', 'employee_approved_at', 'price_locked', 'final_price_accepted_by', 'verification_snapshot', 'manager_override_by', 'manager_override_at', 'manager_override_reason', 'attachments', 'closed_at', 'closure_notes', 'task_completed_at', 'cancelled_at', 'cancel_reason', 'cancelled_by', 'refund_due'];
+    protected $casts = ['customer_id' => 'integer', 'service_id' => 'integer', 'quotation_id' => 'integer', 'service_snapshot' => 'array', 'created_by' => 'integer', 'assigned_to' => 'integer', 'final_price_accepted_by' => 'integer', 'manager_override_by' => 'integer', 'cancelled_by' => 'integer', 'refund_due' => 'boolean', 'original_price' => 'decimal:2', 'final_price' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_rate' => 'decimal:2', 'tax_amount' => 'decimal:2', 'total' => 'decimal:2', 'amount_paid' => 'decimal:2', 'amount_due' => 'decimal:2', 'expected_cost' => 'decimal:2', 'actual_cost' => 'decimal:2', 'customer_accepted_at' => 'datetime', 'employee_approved_at' => 'datetime', 'price_locked' => 'boolean', 'manager_override_at' => 'datetime', 'closed_at' => 'datetime', 'cancelled_at' => 'datetime', 'task_completed_at' => 'datetime', 'preferred_date' => 'date', 'attachments' => 'array'];
 
     protected static function booted(): void
     {
@@ -38,6 +38,8 @@ class ServiceOrder extends Model
 
     public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
     public function service() { return $this->belongsTo(Service::class); }
+    public function quotation() { return $this->belongsTo(Quotation::class); }
+    public function cancelledBy() { return $this->belongsTo(User::class, 'cancelled_by'); }
     public function creator() { return $this->belongsTo(User::class, 'created_by'); }
     public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
     public function finalPriceAccepter() { return $this->belongsTo(User::class, 'final_price_accepted_by'); }

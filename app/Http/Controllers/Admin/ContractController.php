@@ -68,4 +68,15 @@ class ContractController extends Controller
         $contract->update($data);
         return back()->with('success', 'Contract updated.');
     }
+
+    /**
+     * Renew a contract for a new term. Past history is preserved; the new
+     * end date must extend beyond the current one.
+     */
+    public function renew(Request $request, Contract $contract)
+    {
+        $data = $request->validate(['end_date' => 'required|date|after:' . ($contract->end_date?->format('Y-m-d') ?? 'yesterday')]);
+        $contract->update(['end_date' => $data['end_date'], 'status' => 'active']);
+        return back()->with('success', 'Contract renewed.');
+    }
 }

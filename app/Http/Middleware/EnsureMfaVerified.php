@@ -14,8 +14,8 @@ class EnsureMfaVerified
             return $next($request);
         }
 
-        // Only enforce MFA for staff who have enabled it.
-        if ($user->isStaff() && $user->hasMfaEnabled() && !session('mfa_passed')) {
+        // Enforce the challenge for any member with 2FA enabled (staff + customers).
+        if ($user->hasMfaEnabled() && !session('mfa_passed')) {
             if ($request->routeIs('mfa.*') || $request->routeIs('logout')) {
                 return $next($request);
             }

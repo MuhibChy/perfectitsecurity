@@ -38,7 +38,15 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
-            'database' => database_path('database.sqlite'),
+            // Honor DB_DATABASE so --env=staging / --env=testing can point at
+            // a separate sqlite file. Relative paths anchor at the project
+            // root; dev default still resolves to database/database.sqlite.
+            'database' => (function () {
+                $db = env('DB_DATABASE', database_path('database.sqlite'));
+                if ($db === ':memory:') return $db;
+                if (preg_match('/^([A-Za-z]:[\\\\\\/]|\\\\\\\\|[\\/])/', (string) $db)) return $db;
+                return base_path((string) $db);
+            })(),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],

@@ -23,7 +23,11 @@ class FinancialTransaction extends Model
             if (empty($txn->transaction_id)) {
                 $txn->transaction_id = 'TXN-' . strtoupper(\Illuminate\Support\Str::random(10));
             }
-            $lastBalance = static::where('status', 'completed')->latest('id')->value('running_balance') ?? 0;
+            // Serialize running-balance computation so concurrent income/
+            // refund/expense writes cannot interleave into a duplicated or
+            // lost balance. lockForUpdate blocks sibling writers until the
+            // enclosing transaction commits.
+            $lastBalance = static::where('status', 'completed')->lockForUpdate()->latest('id')->value('running_balance') ?? 0;
             $txn->running_balance = in_array($txn->type, ['expense', 'refund', 'commission', 'salary'])
                 ? $lastBalance - $txn->amount
                 : $lastBalance + $txn->amount;

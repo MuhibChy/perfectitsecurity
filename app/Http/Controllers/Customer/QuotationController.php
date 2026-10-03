@@ -19,12 +19,12 @@ class QuotationController extends Controller
         return view('customer.quotations.show', compact('quotation'));
     }
 
-    public function accept($id)
+    public function accept($id, \App\Services\ServiceOrderWorkflowService $orders)
     {
         $quotation = Quotation::where('customer_id', auth()->id())->findOrFail($id);
-        abort_unless($quotation->status === 'sent' && (!$quotation->valid_until || $quotation->valid_until->isFuture()), 422, 'This quotation is not available for acceptance.');
-        $quotation->update(['status' => 'accepted', 'accepted_at' => now()]);
-        return redirect()->back()->with('success', 'Quotation accepted!');
+        $order = $orders->createOrderFromQuotation($quotation, auth()->user());
+        return redirect()->route('portal.orders.show', $order->id)
+            ->with('success', "Quotation accepted! Order {$order->order_number} created.");
     }
 
     public function reject($id)
@@ -41,9 +41,10 @@ class QuotationController extends Controller
             ->with(['items', 'customer', 'company'])
             ->findOrFail($id);
 
+        // Local-only PDF: no remote assets — remote disabled to prevent SSRF.
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('customer.quotations.pdf', compact('quotation'))
             ->setPaper('a4')
-            ->setOption('isRemoteEnabled', true);
+            ->setOption('isRemoteEnabled', false);
 
         return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
     }

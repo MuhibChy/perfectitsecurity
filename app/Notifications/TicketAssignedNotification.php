@@ -10,16 +10,18 @@ use Illuminate\Notifications\Notification;
 
 class TicketAssignedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RespectsNotificationPreferences;
 
     public function __construct(
         public Ticket $ticket,
         public string $assignedByName
     ) {}
 
+    protected function preferenceType(): string { return 'ticket_updated'; }
+
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferenceChannels($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage

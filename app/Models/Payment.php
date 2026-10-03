@@ -12,7 +12,7 @@ class Payment extends Model
 
     protected $fillable = [
         'is_demo',
-        'payment_number', 'invoice_id', 'customer_id', 'service_order_id', 'amount', 'currency', 'refunded_amount',
+        'payment_number', 'invoice_id', 'customer_id', 'service_order_id', 'schedule_id', 'amount', 'currency', 'refunded_amount',
         'status', 'payment_method', 'transaction_id', 'gateway',
         'stripe_checkout_session_id', 'stripe_payment_intent_id', 'notes', 'paid_at',
     ];
@@ -36,5 +36,6 @@ class Payment extends Model
     public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
     public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
     public function receipt() { return $this->hasOne(Receipt::class); }
+    public function cashMemo() { return $this->hasOne(CashMemo::class); }
     public function financialTransactions() { return $this->hasMany(FinancialTransaction::class); }
 }

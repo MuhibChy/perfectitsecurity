@@ -2,27 +2,36 @@
 @section('page-title', 'My Tickets')
 @section('content')
 <div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Support Tickets</h2>
-        <a href="{{ route('portal.tickets.create') }}" class="btn-primary btn-sm">Create Ticket</a>
-    </div>
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="data-table">
-                <thead><tr><th>Ticket #</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th></th></tr></thead>
+    <x-page-header title="Support Tickets" subtitle="Open, track and resolve your technical support threads." sys="SUPPORT://TICKETS" num="02">
+        <x-slot:actions>
+            <a href="{{ route('portal.tickets.create') }}" class="term-btn term-btn-sm">Create Ticket</a>
+        </x-slot:actions>
+    </x-page-header>
+    <form method="GET" class="term-panel p-4 flex flex-wrap gap-2" role="search">
+        <input type="search" name="search" value="{{ request('search') }}" maxlength="100" placeholder="Ticket # or subject…" aria-label="Search my tickets" class="term-input !w-64">
+        <select name="status" class="term-input !w-auto" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            @foreach(['new', 'open', 'assigned', 'in_progress', 'waiting_customer', 'waiting_third_party', 'escalated', 'resolved', 'closed', 'cancelled'] as $s)<option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst(str_replace('_', ' ', $s)) }}</option>@endforeach
+        </select>
+        <button class="term-btn term-btn-sm">Search</button>
+    </form>
+    <div class="term-panel overflow-hidden">
+        <div class="term-table-wrap !border-0">
+            <table class="data-table term-table term-table-cards">
+                <thead><tr><th>Ticket</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th></th></tr></thead>
                 <tbody>
                     @forelse($tickets as $ticket)
                     <tr>
-                        <td><a href="{{ route('portal.tickets.show', $ticket) }}" class="font-mono text-primary-600">{{ $ticket->ticket_number }}</a></td>
-                        <td class="font-medium">{{ $ticket->subject }}</td>
-                        <td>{{ $ticket->category->name ?? '-' }}</td>
-                        <td><span class="badge {{ ['low'=>'badge-info','medium'=>'badge-warning','high'=>'badge-danger','urgent'=>'badge-danger','critical'=>'badge-danger'][$ticket->priority] ?? '' }}">{{ ucfirst($ticket->priority) }}</span></td>
-                        <td><span class="badge badge-purple">{{ str_replace('_', ' ', ucfirst($ticket->status)) }}</span></td>
-                        <td class="text-gray-500">{{ $ticket->created_at->diffForHumans() }}</td>
-                        <td><a href="{{ route('portal.tickets.show', $ticket) }}" class="btn-ghost btn-sm">View</a></td>
+                        <td data-label="Ticket"><a href="{{ route('portal.tickets.show', $ticket) }}" class="font-mono text-accent-soft hover:underline">{{ $ticket->ticket_number }}</a></td>
+                        <td data-label="Subject" class="font-medium text-slate-900 dark:text-white">{{ $ticket->subject }}</td>
+                        <td data-label="Category">{{ $ticket->category->name ?? '-' }}</td>
+                        <td data-label="Priority"><x-status-badge :status="$ticket->priority" /></td>
+                        <td data-label="Status"><x-status-badge :status="$ticket->status" /></td>
+                        <td data-label="Created" class="text-slate-600 dark:text-term-800">{{ $ticket->created_at->diffForHumans() }}</td>
+                        <td data-label="Action"><a href="{{ route('portal.tickets.show', $ticket) }}" class="term-btn term-btn-ghost term-btn-sm">View</a></td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center text-gray-500 py-8">No tickets yet. <a href="{{ route('portal.tickets.create') }}" class="text-primary-600">Create one</a></td></tr>
+                    <tr><td colspan="7" class="text-center text-slate-600 dark:text-term-800 py-8">No tickets yet. <a href="{{ route('portal.tickets.create') }}" class="text-accent-soft hover:underline">Create one</a></td></tr>
                     @endforelse
                 </tbody>
             </table>

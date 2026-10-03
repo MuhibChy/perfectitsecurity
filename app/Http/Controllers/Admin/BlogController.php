@@ -31,7 +31,7 @@ class BlogController extends Controller
             'category_id' => 'required|exists:blog_categories,id',
             'excerpt' => 'nullable|string|max:1000',
             'content' => 'required|string',
-            'featured_image' => 'nullable|image|max:5120',
+                'featured_image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'is_published' => 'boolean',
@@ -47,7 +47,7 @@ class BlogController extends Controller
             $validated['featured_image'] = $request->file('featured_image')->store('blog', 'public');
         }
 
-        if (!$validated['is_published']) unset($validated['published_at']);
+        if (!$request->boolean('is_published')) unset($validated['published_at']);
         if ($request->boolean('is_published')) $validated['published_at'] = now();
 
         $tags = $validated['tags'] ?? [];
@@ -82,7 +82,7 @@ class BlogController extends Controller
             'tags' => 'nullable|array',
         ]);
 
-        if (!$validated['is_published']) $validated['published_at'] = null;
+        if (!$request->boolean('is_published')) $validated['published_at'] = null;
         elseif (!$post->published_at) $validated['published_at'] = now();
 
         $tags = $validated['tags'] ?? [];

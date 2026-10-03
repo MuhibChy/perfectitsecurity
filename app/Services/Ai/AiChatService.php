@@ -4,16 +4,22 @@ namespace App\Services\Ai;
 
 use App\Models\AiConversation;
 use App\Models\AiMessage;
+use App\Models\AiSkill as AiSkillModel;
 use App\Models\AiUsageRecord;
 use App\Models\AiKnowledgeGap;
-use App\Models\Ticket;
 use App\Models\User;
 use App\Models\TicketCategory;
-use App\Services\SlaService;
 use Illuminate\Support\Facades\Log;
 
 class AiChatService
 {
+    /**
+     * Minimum top-article keyword score for internal knowledge to count as
+     * a reliable answer. Below this the assistant falls back to the local
+     * model for general knowledge (labeled as such, never as policy).
+     */
+    public const INTERNAL_RELEVANCE_THRESHOLD = 2;
+
     private AiProviderInterface $provider;
     private AiKnowledgeService $knowledgeService;
 
@@ -54,9 +60,54 @@ class AiChatService
         ]);
         $conversation->increment('message_count');
 
-        // Check if user wants to escalate
+        // Check for prompt-injection or unauthorized system extraction attempts
+        if ($this->isPromptInjectionAttempt($userMessage)) {
+            $refusal = "I cannot fulfill this request. As the official " . config('app.name') . " AI Assistant, I operate strictly within authorized cybersecurity and IT customer service boundaries. I am here to assist with services, quotations, support tickets, and company information.";
+            $conversation->messages()->create(['role' => 'assistant', 'content' => $refusal]);
+            return [
+                'success' => true,
+                'message' => $refusal,
+                'conversation_id' => $conversation->id,
+                'blocked' => true,
+            ];
+        }
+
+        // Pure greetings / thanks / farewells: answer deterministically from
+        // approved wording — no Skills, KB, or model call needed, and the
+        // assistant stays responsive even when the model server is down.
+        if ($greeting = $this->answerGreeting($conversation, $userMessage)) {
+            $conversation->messages()->create([
+                'role' => 'assistant',
+                'content' => $greeting,
+                'metadata' => ['answer_source' => 'deterministic'],
+            ]);
+            return [
+                'success' => true,
+                'message' => $greeting,
+                'conversation_id' => $conversation->id,
+                'deterministic' => true,
+                'answer_source' => 'deterministic',
+            ];
+        }
+
+        // Check if customer is reporting a critical security incident
+        if ($this->isSecurityIncident($userMessage)) {
+            return $this->handleSecurityIncident($conversation, $userMessage);
+        }
+
+        // Check if user wants to escalate to a human
         if ($this->shouldEscalate($userMessage)) {
             return $this->handleEscalation($conversation, $userMessage);
+        }
+
+        // Check if user wants a quotation draft
+        if ($this->wantsQuoteRequest($userMessage)) {
+            return $this->handleQuoteRequest($conversation, $userMessage);
+        }
+
+        // Check if user wants a service request draft
+        if ($this->wantsServiceRequest($userMessage)) {
+            return $this->handleServiceRequest($conversation, $userMessage);
         }
 
         // Check if user wants to create a ticket
@@ -66,37 +117,55 @@ class AiChatService
 
         // Deterministic self-service answers (no provider call, no cost,
         // no hallucination, works offline): own ticket/order/project/
-        // invoice/contract/quote status, straight from authorized tools.
+        // invoice/contract/quote/service status, straight from authorized tools.
         if ($statusAnswer = $this->answerStatusQuery($conversation, $userMessage)) {
-            $conversation->messages()->create(['role' => 'assistant', 'content' => $statusAnswer]);
+            $conversation->messages()->create([
+                'role' => 'assistant',
+                'content' => $statusAnswer,
+                'metadata' => ['answer_source' => 'deterministic'],
+            ]);
             return [
                 'success' => true,
                 'message' => $statusAnswer,
                 'conversation_id' => $conversation->id,
                 'deterministic' => true,
+                'answer_source' => 'deterministic',
             ];
         }
+
+        // Skill-first routing: deterministic behavior definition matched
+        // before any knowledge search or model call.
+        $skill = app(AiSkillService::class)->detectSkill($userMessage, $conversation->user);
 
         // Retrieve role-authorized knowledge for the CURRENT question first,
         // so the same set grounds the prompt, the sources record, and tests.
         $relevantArticles = $this->knowledgeService->searchRelevantArticles(
             $userMessage, $conversation->user, 5
         );
-        $sources = array_map(fn ($item) => [
+        $topScore = 0;
+        foreach ($relevantArticles as $item) {
+            $topScore = max($topScore, (int) ($item['score'] ?? 0));
+        }
+        // Internal knowledge counts only when it actually answers the
+        // question (relevance threshold), never on a stray single hit.
+        $internalSufficient = $topScore >= self::INTERNAL_RELEVANCE_THRESHOLD;
+        $answerSource = $internalSufficient ? 'internal' : 'general';
+
+        $sources = $internalSufficient ? array_map(fn ($item) => [
             'title' => $item['article']->title,
             'category' => $item['article']->category?->name ?? 'General',
-        ], $relevantArticles);
+        ], $relevantArticles) : [];
 
         // Build the AI prompt with context (retrieval runs against the
         // CURRENT user message, not a stale history tail).
-        $messages = $this->buildMessages($conversation, $userMessage, $relevantArticles);
+        $messages = $this->buildMessages($conversation, $userMessage, $internalSufficient ? $relevantArticles : [], $skill, !$internalSufficient);
 
         // Generate AI response
         $startTime = microtime(true);
         try {
             $result = $this->provider->chat($messages, [
-                'temperature' => 0.7,
-                'max_tokens' => 1024,
+                'temperature' => $skill?->temperature ?? 0.7,
+                'max_tokens' => $skill?->max_tokens ?? 512,
             ]);
             $responseTime = (int)((microtime(true) - $startTime) * 1000);
 
@@ -109,9 +178,14 @@ class AiChatService
 
             // Source transparency: titles only (already authorized for this
             // user). Never expose internal IDs, links, or restricted docs.
-            if (!empty($sources)) {
+            // General-knowledge answers are explicitly labeled as such —
+            // never presented as official company policy.
+            if ($answerSource === 'internal' && !empty($sources)) {
                 $titles = array_unique(array_column($sources, 'title'));
                 $content .= "\n\n**Sources:** " . implode('; ', $titles);
+                $content .= "\n✓ Company Knowledge Base";
+            } elseif ($answerSource === 'general') {
+                $content .= "\n\n_AI-generated general guidance — not official company policy. For binding answers, contact our support team._";
             }
 
             // Save assistant message
@@ -119,6 +193,12 @@ class AiChatService
                 'role' => 'assistant',
                 'content' => $content,
                 'sources' => $sources ?: null,
+                'metadata' => [
+                    'answer_source' => $answerSource,
+                    'skill' => $skill?->slug,
+                    'kb_top_score' => $topScore,
+                    'ollama_fallback' => $answerSource === 'general',
+                ],
                 'tokens_used' => $result['tokens_used'],
                 'cost' => $result['cost'],
                 'response_time_ms' => $responseTime,
@@ -131,6 +211,8 @@ class AiChatService
                 'success' => true,
                 'message' => $content,
                 'conversation_id' => $conversation->id,
+                'answer_source' => $answerSource,
+                'skill' => $skill?->slug,
             ];
         } catch (\Exception $e) {
             Log::error('AI chat error', ['conversation_id' => $conversation->id, 'error' => $e->getMessage()]);
@@ -153,9 +235,9 @@ class AiChatService
     /**
      * Build the system prompt and conversation messages for the AI.
      */
-    private function buildMessages(AiConversation $conversation, string $userMessage, array $relevantArticles = []): array
+    private function buildMessages(AiConversation $conversation, string $userMessage, array $relevantArticles = [], ?AiSkillModel $skill = null, bool $generalFallback = false): array
     {
-        $systemPrompt = $this->buildSystemPrompt($conversation, $userMessage, $relevantArticles);
+        $systemPrompt = $this->buildSystemPrompt($conversation, $userMessage, $relevantArticles, $skill, $generalFallback);
         $messages = [['role' => 'system', 'content' => $systemPrompt]];
 
         // Add conversation history (last 10 messages for context window)
@@ -173,7 +255,7 @@ class AiChatService
     /**
      * Build the system prompt with knowledge base context.
      */
-    private function buildSystemPrompt(AiConversation $conversation, string $userMessage, array $relevantArticles = []): string
+    private function buildSystemPrompt(AiConversation $conversation, string $userMessage, array $relevantArticles = [], ?AiSkillModel $skill = null, bool $generalFallback = false): string
     {
         $user = $conversation->user;
         $prompt = "You are the official AI customer support assistant for " . config('app.name') . ", an IT support, cybersecurity, and technology services company.\n\n";
@@ -213,6 +295,35 @@ class AiChatService
         $prompt .= "- Never reveal content beyond what is quoted in your context, and never speculate about restricted material.\n";
         $prompt .= "- If asked for information you do not have, say so and offer human support.\n\n";
 
+        // Active Skill (deterministically matched by the backend, never by
+        // the model): authoritative behavior definition for this message.
+        if ($skill) {
+            $prompt .= "## Active Skill: {$skill->name}\n";
+            $prompt .= mb_substr($skill->system_instructions, 0, 2000) . "\n\n";
+        }
+
+        // General-knowledge fallback framing: internal Skills + Knowledge
+        // Base were searched first and held no reliable answer. Answer from
+        // general knowledge WITHOUT presenting it as company policy.
+        if ($generalFallback) {
+            $prompt .= "## Fallback Mode (general knowledge only)\n";
+            $prompt .= "- The approved Skills and Knowledge Base were searched first and contain no sufficiently reliable answer for this question.\n";
+            $prompt .= "- Answer from general knowledge. NEVER present it as official company policy, pricing, certification, partnership, or guarantee.\n";
+            $prompt .= "- NEVER invent company-specific prices, services, policies, certifications, guarantees, partnerships, customers, contracts, or financials.\n";
+            $prompt .= "- If the question needs company-specific information that is unavailable, say the approved company information does not currently contain the answer and recommend contacting the support team.\n\n";
+        }
+
+        // Administrator-configured additional instructions (admin/ai/settings).
+        try {
+            $customInstructions = trim((string) \App\Models\AiSetting::get('ai_system_prompt', ''));
+            if ($customInstructions !== '') {
+                $prompt .= "## Additional Company Instructions (administrator-configured, authoritative)\n";
+                $prompt .= mb_substr($customInstructions, 0, 2000) . "\n\n";
+            }
+        } catch (\Throwable $e) {
+            // Settings table unavailable — continue with the default prompt.
+        }
+
         // Company info
         $prompt .= $this->knowledgeService->getCompanyInfo() . "\n";
         $prompt .= $this->knowledgeService->getServicesInfo() . "\n";
@@ -233,13 +344,56 @@ class AiChatService
             }
         }
 
+        // Role context (logged-in users): capabilities gate every answer.
+        if ($user && $user->role) {
+            $prompt .= "## User Role & Permissions (authoritative)\n";
+            $prompt .= \App\Support\RoleRegistry::aiBrief($user->role) . "\n";
+        }
+
+        // Staff work-history context (own records only).
+        if ($user && $user->isStaff()) {
+            $staffContext = $this->knowledgeService->getStaffContext($user);
+            if (!empty($staffContext)) {
+                $prompt .= "## Staff Work History (their own recorded work)\n";
+                $prompt .= json_encode($staffContext, JSON_PRETTY_PRINT) . "\n\n";
+            }
+        }
+
         $prompt .= "\n## Guidelines\n";
         $prompt .= "- If the customer asks to create a ticket, guide them through the process\n";
+        $prompt .= "- Recorded vs not recorded: answer history questions ONLY from the context above. "
+            . "If no payment, work update, or history record appears there, say clearly that no record was found — never invent payments, work, or communications\n";
+        $prompt .= "- Service-status questions (order status, stage, running time, ETA, latest update): answer ONLY from the services/work context above, "
+            . "stating figures exactly as recorded; if ETA shows 'Being assessed' or no update exists, say so plainly instead of estimating\n";
         $prompt .= "- If the customer wants to speak to a human, offer to escalate\n";
         $prompt .= "- Keep responses concise and actionable\n";
         $prompt .= "- Use formatting (bullet points, numbered lists) for clarity\n";
 
         return $prompt;
+    }
+
+    /**
+     * Deterministic greetings / thanks / farewells from approved wording.
+     * Matches ONLY when the whole message is a pleasantry (never a message
+     * that also carries a request), so real queries always fall through.
+     */
+    public function answerGreeting(AiConversation $conversation, string $userMessage): ?string
+    {
+        $clean = strtolower(trim(preg_replace('/[!.,?]+$/', '', trim($userMessage))));
+        if (mb_strlen($clean) > 24) return null;
+        $greetings = ['hi', 'hii', 'hiii', 'hello', 'hey', 'yo', 'good morning', 'good afternoon', 'good evening',
+            'thanks', 'thank you', 'thankyou', 'thx', 'bye', 'goodbye', 'good bye', 'see you', 'ok', 'okay'];
+        if (!in_array($clean, $greetings, true)) return null;
+
+        $name = $conversation->user?->name;
+        $hello = $name ? "Hi {$name}!" : 'Hi there!';
+        if (in_array($clean, ['thanks', 'thank you', 'thankyou', 'thx'], true)) {
+            return "You're very welcome! Is there anything else I can help you with — a service question, a quotation, or a support ticket?";
+        }
+        if (in_array($clean, ['bye', 'goodbye', 'good bye', 'see you'], true)) {
+            return "Goodbye! I'll be here whenever you need help with our services or support.";
+        }
+        return "{$hello} I'm the " . config('app.name') . " AI Support Assistant. I can explain our services, help you request a quotation, check your tickets and orders, or create a support request.\n\nHow can I help you today?";
     }
 
     /**
@@ -265,8 +419,10 @@ class AiChatService
         $isInvoiceQ = str_contains($lower, 'invoice') || str_contains($lower, 'payment') || str_contains($lower, 'bill') || ($ref && str_starts_with($ref, 'INV-'));
         $isContractQ = str_contains($lower, 'contract') || ($ref && str_starts_with($ref, 'CT-'));
         $isQuoteQ = (str_contains($lower, 'quote') || str_contains($lower, 'quotation') || str_contains($lower, 'proposal')) && !$isTicketQ;
+        $isServiceQ = (str_contains($lower, 'service') || str_contains($lower, 'subscriptions')) && !$isQuoteQ && !$isTicketQ;
+        $isAdminSummaryQ = $user && $user->isAdmin() && (str_contains($lower, 'operational') || str_contains($lower, 'workload') || str_contains($lower, 'unresolved') || str_contains($lower, 'summary'));
 
-        if (!($isTicketQ || $isOrderQ || $isProjectQ || $isInvoiceQ || $isContractQ || $isQuoteQ)) {
+        if (!($isTicketQ || $isOrderQ || $isProjectQ || $isInvoiceQ || $isContractQ || $isQuoteQ || $isServiceQ || $isAdminSummaryQ)) {
             return null;
         }
 
@@ -276,9 +432,21 @@ class AiChatService
         $selfSignal = $ref
             || str_contains($lower, 'my ') || str_contains($lower, 'mine')
             || str_contains($lower, 'status of')
+            || $isAdminSummaryQ
             || preg_match('/\b(check|view|show|see|track|list|where is|where are)\b/', $lower);
         if (!$selfSignal) {
             return null;
+        }
+
+        if ($isAdminSummaryQ) {
+            $op = $agent->getOperationalSummary($user);
+            return "Operational Overview for Administrator:\n" .
+                "- **Open Support Tickets:** {$op['open_tickets']} ({$op['unassigned_tickets']} unassigned)\n" .
+                "- **New Service Requests:** {$op['new_service_requests']}\n" .
+                "- **Active Service Orders:** {$op['active_orders']}\n" .
+                "- **Pending Escalations:** {$op['pending_escalations']}\n" .
+                "- **AI Conversations Today:** {$op['active_conversations_today']}\n\n" .
+                "Administrative controls: /admin";
         }
 
         if (!$user || !$user->isCustomer()) {
@@ -286,6 +454,13 @@ class AiChatService
                 return $this->answerStaffSummary($user);
             }
             return "To check personal records I need you signed in — please log in to your customer portal first, then ask again. I can already answer general service questions.";
+        }
+
+        if ($isServiceQ) {
+            $services = $agent->getCustomerServices($user);
+            if (empty($services)) return "You do not have any active services yet. You can browse our catalogue at /services or request a quotation at /get-quote.";
+            $lines = array_map(fn ($s) => "- **{$s['service']}** ({$s['order_number']}) — {$s['status']}", $services);
+            return "Your active services:\n" . implode("\n", $lines) . "\n\nDetails: /portal/orders";
         }
 
         if ($isTicketQ) {
@@ -400,7 +575,8 @@ class AiChatService
      */
     private function handleEscalation(AiConversation $conversation, string $message): array
     {
-        $conversation->escalate('Customer requested human support');
+        // Authorized path: status update + escalation record + audit + staff notification.
+        app(AiAgentService::class)->requestHumanSupport($conversation, $conversation->user, 'Customer requested human support');
 
         $response = "I understand you'd like to speak with a human support agent. I'm connecting you now.\n\n";
         $response .= "A support agent will be with you shortly. In the meantime, I can:\n";
@@ -479,23 +655,18 @@ class AiChatService
     public function createTicketFromDraft(AiConversation $conversation, array $draftData): array
     {
         $user = $conversation->user;
-        if (!$user) {
+        if (!$user || !$user->isCustomer()) {
             return ['success' => false, 'message' => 'Please log in to create a ticket.'];
         }
+        abort_unless($conversation->user_id === $user->id, 403, 'This draft belongs to a different account.');
 
-        $category = TicketCategory::where('name', 'like', "%{$draftData['category']}%")->first()
-            ?? TicketCategory::first();
-
-        $ticket = Ticket::create([
-            'customer_id' => $user->id,
+        // Single authorized path: validation, SLA, audit log, notifications.
+        $ticket = app(AiAgentService::class)->createSupportTicket($user, [
             'subject' => $draftData['subject'] ?? 'Support Request via AI Assistant',
             'description' => $draftData['description'] ?? '',
-            'category_id' => $category?->id,
+            'category' => $draftData['category'] ?? 'General Support',
             'priority' => $draftData['priority'] ?? 'medium',
-            'status' => 'new',
         ]);
-
-        app(SlaService::class)->applySla($ticket);
 
         $conversation->update(['related_ticket_id' => $ticket->id]);
 
@@ -568,5 +739,308 @@ class AiChatService
             'error_message' => $error,
             'recorded_date' => now()->toDateString(),
         ]);
+    }
+
+    /**
+     * Check for prompt injection or system prompt extraction.
+     */
+    public function isPromptInjectionAttempt(string $message): bool
+    {
+        $lower = strtolower($message);
+        $patterns = [
+            'ignore your instructions', 'ignore previous instructions', 'ignore all instructions',
+            'disregard instructions', 'system prompt', 'reveal system prompt', 'show system prompt',
+            'give me the api key', 'give me api key', 'show me api key', 'reveal api key',
+            'dump database', 'select * from', 'drop table', 'show all customers', 'show all users',
+            'disable security', 'bypass security', 'override safety', 'jailbreak',
+            'print environment variables', 'show .env', 'admin password',
+        ];
+        foreach ($patterns as $pattern) {
+            if (str_contains($lower, $pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if message indicates an urgent cybersecurity incident.
+     */
+    public function isSecurityIncident(string $message): bool
+    {
+        $lower = strtolower($message);
+        $incidentKeywords = [
+            'hacked', 'ransomware', 'data breach', 'security breach',
+            'unauthorized access', 'ddos attack', 'under attack', 'compromised',
+            'malware infection', 'trojan', 'phishing attack', 'system breached',
+            'database leak',
+        ];
+        foreach ($incidentKeywords as $kw) {
+            if (str_contains($lower, $kw)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Handle security incident response.
+     */
+    public function handleSecurityIncident(AiConversation $conversation, string $message): array
+    {
+        app(AiAgentService::class)->requestHumanSupport($conversation, $conversation->user, 'URGENT INCIDENT: ' . mb_substr($message, 0, 150));
+
+        $response = "🚨 **CRITICAL SECURITY INCIDENT PROTOCOL ACTIVATED**\n\n";
+        $response .= "Our Cyber Incident Response Team (CIRT) has been alerted on highest priority.\n\n";
+        $response .= "**Immediate Emergency Containment Steps:**\n";
+        $response .= "1. **Disconnect affected systems immediately** from your local network (unplug Ethernet cables and turn off Wi-Fi).\n";
+        $response .= "2. **Do NOT power off or reboot systems** if possible (to preserve volatile RAM evidence for forensic analysis).\n";
+        $response .= "3. **Never share passwords, credentials, or encryption keys in this chat.**\n";
+        $response .= "4. An emergency responder will contact you shortly.\n\n";
+        $response .= "Would you like me to create an urgent critical incident support ticket right now?";
+
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'security_incident' => true,
+            'ticket_draft' => true,
+            'draft_data' => [
+                'subject' => 'CRITICAL SECURITY INCIDENT: ' . mb_substr($message, 0, 100),
+                'description' => $message,
+                'category' => 'Cybersecurity',
+                'priority' => 'critical',
+            ],
+        ];
+    }
+
+    /**
+     * Check if user wants a quotation request.
+     */
+    public function wantsQuoteRequest(string $message): bool
+    {
+        $lower = strtolower($message);
+        $quotePhrases = [
+            'quotation', 'want a quote', 'need a quote', 'request a quote', 'quote for',
+            'get a quote', 'estimate for', 'pricing for', 'how much for',
+        ];
+        foreach ($quotePhrases as $p) {
+            if (str_contains($lower, $p)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handle quotation requirement gathering and draft creation.
+     */
+    public function handleQuoteRequest(AiConversation $conversation, string $message): array
+    {
+        $user = $conversation->user;
+        if (!$user || !$user->isCustomer()) {
+            $response = "I'd be glad to help you prepare a quotation! To submit formal quote requests and view estimates, please sign in or register your customer account first. In the meantime, I can answer questions about our pricing and service models.";
+            $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+            return [
+                'success' => true,
+                'message' => $response,
+                'conversation_id' => $conversation->id,
+                'requires_auth' => true,
+            ];
+        }
+
+        // Try to identify matching service
+        $services = \App\Models\Service::where('is_active', true)->get();
+        $matchedService = null;
+        $lower = strtolower($message);
+        foreach ($services as $s) {
+            if (str_contains($lower, strtolower($s->name)) || str_contains($lower, strtolower($s->slug))) {
+                $matchedService = $s;
+                break;
+            }
+        }
+
+        $response = "I've structured a formal quotation request based on your requirements:\n\n";
+        $response .= "- **Requested Solution:** " . ($matchedService?->name ?? 'Managed IT & Security Support') . "\n";
+        $response .= "- **Customer:** {$user->name} ({$user->email})\n";
+        $response .= "- **Scope / Requirements:** " . mb_substr($message, 0, 300) . "\n\n";
+        $response .= "Here is the quotation request I am about to submit for our engineering and sales team.\n";
+        $response .= "Would you like me to submit this request?";
+
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'quote_draft' => true,
+            'draft_data' => [
+                'service_id' => $matchedService?->id,
+                'service_name' => $matchedService?->name ?? 'Custom IT / Security Service',
+                'requirements' => $message,
+                'budget_range' => null,
+            ],
+        ];
+    }
+
+    /**
+     * Check if user wants a service request.
+     */
+    public function wantsServiceRequest(string $message): bool
+    {
+        $lower = strtolower($message);
+        // Exclude ticket creation and quote inquiries
+        if ($this->wantsToCreateTicket($message) || $this->wantsQuoteRequest($message)) {
+            return false;
+        }
+
+        $servicePhrases = [
+            'manage our microsoft 365', 'manage microsoft 365', 'manage my website',
+            'help with my company website', 'need someone to manage', 'manage our server',
+            'manage our network', 'service request', 'order service', 'request service',
+            'cybersecurity support',
+        ];
+        foreach ($servicePhrases as $p) {
+            if (str_contains($lower, $p)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handle service request requirement collection and draft.
+     */
+    public function handleServiceRequest(AiConversation $conversation, string $message): array
+    {
+        $user = $conversation->user;
+        if (!$user || !$user->isCustomer()) {
+            $response = "I'd be glad to help set up that service request for you! Please log in to your customer account so we can link it to your profile, or browse our service catalog at /services.";
+            $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+            return [
+                'success' => true,
+                'message' => $response,
+                'conversation_id' => $conversation->id,
+                'requires_auth' => true,
+            ];
+        }
+
+        $services = \App\Models\Service::where('is_active', true)->get();
+        $matchedService = null;
+        $lower = strtolower($message);
+        foreach ($services as $s) {
+            if (str_contains($lower, strtolower($s->name)) || str_contains($lower, strtolower($s->slug))) {
+                $matchedService = $s;
+                break;
+            }
+        }
+
+        $serviceTitle = $matchedService ? $matchedService->name : 'Professional IT & Cybersecurity Service';
+
+        $response = "I have prepared a service request draft for **{$serviceTitle}**:\n\n";
+        $response .= "**Requirements Summary:**\n" . mb_substr($message, 0, 300) . "\n\n";
+        $response .= "Our technical management team will review this request and assign the appropriate specialists.\n\n";
+        $response .= "Would you like me to submit this service request?";
+
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'service_request_draft' => true,
+            'draft_data' => [
+                'service_id' => $matchedService?->id,
+                'service_name' => $serviceTitle,
+                'requirements' => $message,
+            ],
+        ];
+    }
+
+    /**
+     * Confirm and create service request from AI draft.
+     */
+    public function createServiceRequestFromDraft(AiConversation $conversation, array $draftData): array
+    {
+        $user = $conversation->user;
+        if (!$user || !$user->isCustomer()) {
+            return ['success' => false, 'message' => 'Please log in to your customer account to submit a service request.'];
+        }
+
+        $agent = app(AiAgentService::class);
+        $sr = $agent->createServiceRequest($user, [
+            'service_id' => $draftData['service_id'] ?? null,
+            'requirements' => $draftData['requirements'] ?? 'Service request submitted via AI Assistant.',
+        ]);
+
+        $response = "Your service request has been successfully submitted!\n\n" .
+            "- **Reference ID:** #{$sr->id}\n" .
+            "- **Service:** " . ($draftData['service_name'] ?? 'Professional Service') . "\n" .
+            "- **Status:** New (Under Review)\n\n" .
+            "Our operations team will review your requirements and follow up promptly. You can track this in your portal.";
+
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'service_request' => $sr,
+        ];
+    }
+
+    /**
+     * Confirm and create quote request from AI draft.
+     */
+    public function createQuoteRequestFromDraft(AiConversation $conversation, array $draftData): array
+    {
+        $user = $conversation->user;
+        if (!$user || !$user->isCustomer()) {
+            return ['success' => false, 'message' => 'Please log in to your customer account to request a quotation.'];
+        }
+
+        $agent = app(AiAgentService::class);
+        $qr = $agent->createQuoteRequest($user, [
+            'service_id' => $draftData['service_id'] ?? null,
+            'requirements' => $draftData['requirements'] ?? 'Quotation request submitted via AI Assistant.',
+            'budget_range' => $draftData['budget_range'] ?? null,
+        ]);
+
+        $response = "Your quotation request has been successfully submitted!\n\n" .
+            "- **Quote Request ID:** #{$qr->id}\n" .
+            "- **Solution:** " . ($draftData['service_name'] ?? 'Managed IT & Security Support') . "\n" .
+            "- **Status:** Pending Proposal\n\n" .
+            "Our sales engineers will prepare a transparent quotation for your review at /portal/quotations.";
+
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'quote_request' => $qr,
+        ];
+    }
+
+    /**
+     * Add reply to customer's own ticket.
+     */
+    public function addTicketMessageFromChat(AiConversation $conversation, string $ticketNumber, string $message): array
+    {
+        $user = $conversation->user;
+        if (!$user || !$user->isCustomer()) {
+            return ['success' => false, 'message' => 'Please log in to add a reply to your ticket.'];
+        }
+
+        $agent = app(AiAgentService::class);
+        $ticketMsg = $agent->addTicketMessage($user, $ticketNumber, $message);
+
+        $response = "Your message has been added to ticket **{$ticketNumber}** successfully.";
+        $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
+        return [
+            'success' => true,
+            'message' => $response,
+            'conversation_id' => $conversation->id,
+            'ticket_message' => $ticketMsg,
+        ];
     }
 }

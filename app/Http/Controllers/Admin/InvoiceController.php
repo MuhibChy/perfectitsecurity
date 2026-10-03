@@ -165,9 +165,10 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::with('items', 'customer')->findOrFail($id);
 
-        $pdf = \Barryvdh\DomPDF\Facades\Pdf::loadView('admin.invoices.pdf', compact('invoice'))
+        // Local-only PDF: no remote assets — remote disabled to prevent SSRF.
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.invoices.pdf', compact('invoice'))
             ->setPaper('a4')
-            ->setOption('isRemoteEnabled', true);
+            ->setOption('isRemoteEnabled', false);
 
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
     }

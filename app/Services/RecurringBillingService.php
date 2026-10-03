@@ -15,6 +15,12 @@ class RecurringBillingService
         $created = 0;
         $failed = 0;
 
+        // Expire subscriptions past ends_at before billing (no silent over-billing).
+        Subscription::where('status', 'active')
+            ->whereNotNull('ends_at')
+            ->whereDate('ends_at', '<', now()->toDateString())
+            ->update(['status' => 'expired']);
+
         Subscription::dueForBilling()->with('customer', 'service')->chunkById(50, function ($subs) use (&$created, &$failed) {
             foreach ($subs as $subscription) {
                 try {
@@ -76,11 +82,13 @@ class RecurringBillingService
             ? $subscription->next_billing_at->copy()
             : now();
 
-        if ($subscription->interval === 'yearly') {
-            $next->addYears($subscription->interval_count ?: 1);
-        } else {
-            $next->addMonths($subscription->interval_count ?: 1);
-        }
+        $count = $subscription->interval_count ?: 1;
+        match (strtolower($subscription->interval ?? 'monthly')) {
+            'weekly' => $next->addWeeks($count),
+            'quarterly' => $next->addMonths(3 * $count),
+            'yearly', 'annual' => $next->addYears($count),
+            default => $next->addMonths($count),
+        };
 
         $subscription->update([
             'invoice_id' => $invoice->id,

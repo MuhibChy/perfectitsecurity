@@ -20,24 +20,29 @@ class RoleThemeTest extends TestCase
     {
         $response = $this->get(route('login'));
         $response->assertStatus(200);
-        $response->assertSee('role-bg-canvas', false);
-        $response->assertSee('role-bg-overlay', false);
-        $response->assertSee('role-bg-fallback', false);
-        $response->assertSee('data-rolebg="login"', false);
+        // Terminal auth shell: AUTH identity on the global fixed HUD backdrop
+        // (single shared scene + single HUD instance, never per-page copies).
+        $response->assertSee('class="term-bg"', false);
+        $response->assertSee('AUTH://IDENTITY', false);
+        $response->assertSee('data-lights="auth"', false);
+        $response->assertSee('bg-black', false);
         $response->assertDontSee('cosmic-canvas', false);
+        $response->assertSee('id="global-3d-canvas"', false);
+        $response->assertSee('id="global-hud"', false);
+        $response->assertDontSee('id="role-bg-canvas"', false);
     }
 
     /** @test */
     public function green_blue_brand_identity_is_present()
     {
-        // Green + blue primary CTA gradient on auth + quote surfaces.
-        $this->get(route('login'))->assertSee('linear-gradient(135deg, #16A34A, #2563EB)', false);
-        $this->get(route('get-quote'))->assertSee('linear-gradient(135deg, #16A34A, #2563EB)', false);
-        // Compiled theme tokens carry both brand scales (built CSS artifact).
+        // Terminal CTA system on auth + quote surfaces (accent-green primary).
+        $this->get(route('login'))->assertSee('term-btn', false);
+        $this->get(route('get-quote'))->assertSee('term-btn', false);
+        // Compiled theme tokens carry the terminal accent scale (built CSS artifact).
         $css = collect(glob(public_path('build/assets/*.css')))
             ->map(fn ($f) => file_get_contents($f))->join("\n");
-        $this->assertStringContainsString('#16A34A', $css);
-        $this->assertStringContainsString('#2563EB', $css);
+        $this->assertStringContainsString('#00E67A', $css);
+        $this->assertStringContainsString('#050807', $css);
         $this->assertStringNotContainsString('#FF0000', $css);
     }
 
@@ -66,23 +71,25 @@ class RoleThemeTest extends TestCase
     /** @test */
     public function background_canvas_never_blocks_ui()
     {
-        // Canvas + overlay must be non-interactive and behind content (z-0/z-1).
+        // Terminal environment must be decorative and behind content (z-0).
         $response = $this->get(route('login'));
-        $response->assertSee('pointer-events-none', false);
-        $response->assertSee('role-bg-overlay', false);
+        $response->assertSee('class="term-bg"', false);
+        $response->assertSee('aria-hidden="true"', false);
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('pointer-events: none;', $css);
     }
 
     /** @test */
     public function global_space_background_renders_on_all_shells()
     {
-        // Public layout, auth screens, and authenticated shell each mount
-        // exactly one global universe (component, not per-page copies).
-        $this->get(route('home'))->assertSee('gsb-spotlight', false);
-        $this->get(route('login'))->assertSee('gsb-spotlight', false);
+        // Public shell uses the pure-CSS terminal environment (no WebGL);
+        // auth screens use the same terminal environment standalone;
+        // the authenticated shell mounts exactly one role canvas.
+        $this->get(route('home'))->assertSee('class="term-bg"', false);
+        $this->get(route('login'))->assertSee('class="term-bg"', false);
 
         $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
         $content = $this->actingAs($admin)->get(route('admin.dashboard'))->getContent();
-        $this->assertEquals(1, substr_count($content, 'gsb-spotlight'));
         $this->assertEquals(1, substr_count($content, 'id="role-bg-canvas"'));
     }
 }

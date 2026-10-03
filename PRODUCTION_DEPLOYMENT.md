@@ -38,6 +38,11 @@ This application must not be deployed by copying the local `.env`. The local env
    php artisan test
    ```
 
+   `npm run build` is a blocking release gate: `resources/css/app.css` is post-processed
+   by PostCSS/Vite, so any CSS syntax error aborts the production build. Run it in CI before
+   every release and confirm `public/build/manifest.json` is re-created and committed alongside
+   the source assets it references.
+
 6. Run a persistent queue worker under Supervisor/systemd and a scheduler every minute:
 
    ```bash

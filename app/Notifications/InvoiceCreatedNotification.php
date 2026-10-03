@@ -10,16 +10,25 @@ use Illuminate\Notifications\Notification;
 
 class InvoiceCreatedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RespectsNotificationPreferences;
 
     public function __construct(
         public Invoice $invoice,
         public string $action = 'created'
     ) {}
 
+    protected function preferenceType(): string
+    {
+        return match ($this->action) {
+            'paid' => 'invoice_paid',
+            'overdue' => 'invoice_overdue',
+            default => 'invoice_created',
+        };
+    }
+
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferenceChannels($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -37,7 +46,7 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
             ->subject($subject)
             ->greeting("Hello {$notifiable->name},")
             ->line("**Invoice:** {$this->invoice->invoice_number}")
-            ->line("**Amount:** $" . number_format($this->invoice->total, 2))
+            ->line("**Amount:** " . \App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'))
             ->line("**Status:** " . ucfirst(str_replace('_', ' ', $this->invoice->status)));
 
         if ($this->invoice->due_date) {
@@ -63,7 +72,7 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => 'Invoice ' . ucfirst($this->action),
-            'message' => "Invoice {$this->invoice->invoice_number} — $" . number_format($this->invoice->total, 2),
+            'message' => "Invoice {$this->invoice->invoice_number} — " . \App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'),
             'invoice_id' => $this->invoice->id,
             'invoice_number' => $this->invoice->invoice_number,
             'amount' => $this->invoice->total,

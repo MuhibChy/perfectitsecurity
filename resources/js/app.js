@@ -3,37 +3,23 @@ import ScrollAnimations from './scroll-animations.js';
 
 window.Alpine = Alpine;
 
-// 3D Cosmic Experience & Canvas Initialization
-// Role-based 3D environment for authenticated areas (lightweight 2D canvas,
-// lazy-loaded; static CSS fallback carries the scene if this fails).
-if (document.getElementById('role-bg-canvas')) {
-    import('./role-bg.js').then(({ default: RoleBackground }) => {
-        window._roleBg = new RoleBackground('role-bg-canvas');
-    }).catch((err) => {
-        console.warn('Role background canvas fallback:', err);
-        document.body.classList.add('role-bg-static');
-    });
-}
-
-if (document.getElementById('hero-canvas') && !window._heroScene) {
-    import('./hero-3d.js').then(({ default: HeroScene }) => {
-        if (!window._heroScene) window._heroScene = new HeroScene('hero-canvas');
-    }).catch((err) => {
-        console.warn('Hero 3D WebGL initialization fallback:', err);
-        const fallback = document.querySelector('.hero-fallback-bg');
-        if (fallback) fallback.style.display = 'block';
-    });
-} else if (document.getElementById('cosmic-canvas') || document.body.dataset.cosmic !== 'false') {
-    import('./cosmic-bg.js').then(({ default: CosmicBackground }) => {
-        window._cosmicBg = new CosmicBackground('cosmic-canvas');
-    }).catch((err) => {
-        console.warn('Cosmic background canvas error:', err);
-    });
-}
+// PERFECTITSECURITY 3D identity: the terminal CSS layer (.term-bg) stays as
+// the base, and the single global WebGL world (global-3d.js — starfield,
+// planet, network, shield/glove) renders strictly behind all content as the
+// main visual identity. One instance, one loop, loaded as a SEPARATE async chunk
+// so the main bundle stays lean; static fallback when WebGL, reduced-motion
+// or low-power require it (handled inside Global3DScene).
 
 // Initialise scroll animations on every page
 document.addEventListener('DOMContentLoaded', () => {
     window._scrollAnim = new ScrollAnimations();
+    try {
+        if (document.querySelector('[data-global-3d]') && !window._global3D) {
+            import('./global-3d.js')
+                .then((m) => { window._global3D = new m.default(); })
+                .catch(() => { /* 3D decorative only — never break the page */ });
+        }
+    } catch (e) { /* 3D decorative only — never break the page */ }
 });
 
 // Dark mode persistence
@@ -48,6 +34,7 @@ Alpine.store('theme', {
         this.dark = !this.dark;
         document.documentElement.classList.toggle('dark', this.dark);
         localStorage.setItem('theme', this.dark ? 'dark' : 'light');
+        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { dark: this.dark } }));
     }
 });
 

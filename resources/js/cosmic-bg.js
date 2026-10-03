@@ -14,6 +14,7 @@ class CosmicBackground {
         this.width = 0;
         this.height = 0;
         this.isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.lowPower = (navigator.hardwareConcurrency || 8) <= 2;
 
         this.init();
     }
@@ -35,9 +36,19 @@ class CosmicBackground {
         this.resize();
         this.createStars();
 
+        // Pause when the tab is hidden to save mobile battery/CPU.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (this.animId) cancelAnimationFrame(this.animId);
+                this.animId = null;
+            } else if (!this.isReduced && !this.lowPower && !this.animId) {
+                this.animate();
+            }
+        }, { passive: true });
+
         window.addEventListener('resize', () => this.resize(), { passive: true });
 
-        if (!this.isReduced) {
+        if (!this.isReduced && !this.lowPower) {
             this.animate();
         } else {
             this.renderStatic();
@@ -47,8 +58,12 @@ class CosmicBackground {
     resize() {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
+        // Cap DPR for mobile GPUs; re-seed so stars fit the new viewport.
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        this.canvas.width = Math.floor(this.width * dpr);
+        this.canvas.height = Math.floor(this.height * dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.createStars();
     }
 
     createStars() {

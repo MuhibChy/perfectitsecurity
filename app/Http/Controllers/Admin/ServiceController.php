@@ -23,9 +23,10 @@ class ServiceController extends Controller
             $query->where('category_id', $request->category_id);
         }
         if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('short_description', 'like', "%{$request->search}%");
+            $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('short_description', 'like', "%{$s}%");
             });
         }
         if ($request->has('is_featured')) {
@@ -63,7 +64,7 @@ class ServiceController extends Controller
             'deliverables' => 'nullable|string',
             'scope' => 'nullable|string',
             'exclusions' => 'nullable|string',
-            'price_type' => 'required|string',
+            'price_type' => 'required|in:fixed,starting_from,hourly,daily,monthly,recurring,custom_quote,custom',
             'complexity_level' => 'nullable|string',
             'starting_price' => 'nullable|numeric|min:0',
             'hourly_rate' => 'nullable|numeric|min:0',
@@ -82,7 +83,7 @@ class ServiceController extends Controller
             // Country prices
             'country_prices' => 'nullable|array',
             'country_prices.*.country_id' => 'required_with:country_prices|exists:countries,id',
-            'country_prices.*.pricing_type' => 'required_with:country_prices|string',
+            'country_prices.*.pricing_type' => 'required_with:country_prices|in:fixed,starting_from,hourly,daily,monthly,recurring,custom_quote,custom',
             'country_prices.*.price' => 'required_with:country_prices|numeric|min:0',
         ]);
 
@@ -161,7 +162,7 @@ class ServiceController extends Controller
             'deliverables' => 'nullable|string',
             'scope' => 'nullable|string',
             'exclusions' => 'nullable|string',
-            'price_type' => 'required|string',
+            'price_type' => 'required|in:fixed,starting_from,hourly,daily,monthly,recurring,custom_quote,custom',
             'complexity_level' => 'nullable|string',
             'starting_price' => 'nullable|numeric|min:0',
             'hourly_rate' => 'nullable|numeric|min:0',
@@ -180,7 +181,7 @@ class ServiceController extends Controller
             // Country prices
             'country_prices' => 'nullable|array',
             'country_prices.*.country_id' => 'required_with:country_prices|exists:countries,id',
-            'country_prices.*.pricing_type' => 'required_with:country_prices|string',
+            'country_prices.*.pricing_type' => 'required_with:country_prices|in:fixed,starting_from,hourly,daily,monthly,recurring,custom_quote,custom',
             'country_prices.*.price' => 'required_with:country_prices|numeric|min:0',
         ]);
 
@@ -207,10 +208,11 @@ class ServiceController extends Controller
 
         $service->update($validated);
 
-        // Sync country prices
+        // Sync country prices (removed rows are deleted — no stale prices linger).
         if (!empty($countryPrices)) {
+            $kept = [];
             foreach ($countryPrices as $cp) {
-                ServiceCountryPrice::updateOrCreate(
+                $row = ServiceCountryPrice::updateOrCreate(
                     ['service_id' => $service->id, 'country_id' => $cp['country_id']],
                     [
                         'pricing_type' => $cp['pricing_type'],
@@ -218,7 +220,9 @@ class ServiceController extends Controller
                         'is_active' => true,
                     ]
                 );
+                $kept[] = $row->id;
             }
+            ServiceCountryPrice::where('service_id', $service->id)->whereNotIn('id', $kept)->delete();
         }
 
         return redirect()->route('admin.services.index')->with('success', 'Service updated successfully!');

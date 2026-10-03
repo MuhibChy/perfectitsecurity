@@ -4,13 +4,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <x-page-header
+    <x-page-header sys="FINANCE://INVOICES"
         title="Invoices & Receivables"
         subtitle="Manage client billing, track payments, monitor aging receivables, and generate fiscal records."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Invoices' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('admin.invoices.create') }}" class="btn-primary btn-sm">
+            <a href="{{ route('admin.invoices.create') }}" class="term-btn term-btn-sm">
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Create Invoice
             </a>
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="glass-card p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="term-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none">
             @php $currentStatus = request('status'); @endphp
             <a href="{{ route('admin.invoices.index', array_filter(['search' => request('search')])) }}"
@@ -66,7 +66,7 @@
             <input type="hidden" name="status" value="{{ request('status') }}">
             @endif
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by invoice # or client..."
-                   class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-navy-800 border border-surface-200 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                   class="term-input pl-9 pr-4">
             <div class="absolute left-3 top-2.5 text-gray-400">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
@@ -74,10 +74,10 @@
     </div>
 
     {{-- Invoices Table --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($invoices->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table term-table">
                 <thead>
                     <tr>
                         <th>Invoice #</th>
@@ -93,45 +93,45 @@
                 <tbody>
                     @foreach($invoices as $inv)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
+                        <td data-label="Invoice #">
                             <a href="{{ route('admin.invoices.show', $inv) }}" class="font-mono font-bold text-primary-600 dark:text-primary-400 hover:underline">
                                 {{ $inv->invoice_number }}
                             </a>
                         </td>
-                        <td>
+                        <td data-label="Client">
                             <div class="font-semibold text-gray-900 dark:text-white">{{ $inv->customer->name ?? 'Direct Client' }}</div>
                             @if($inv->project)
                             <div class="text-[11px] text-gray-400 font-mono">Project: {{ $inv->project->name }}</div>
                             @endif
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$inv->status" />
                         </td>
-                        <td class="text-xs text-gray-500">
+                        <td class="text-xs text-gray-500 dark:text-gray-400" data-label="Issued / Due">
                             <div>{{ $inv->issued_date ? $inv->issued_date->format('M d, Y') : 'Draft' }}</div>
-                            <div class="{{ $inv->due_date && $inv->due_date->isPast() && $inv->amount_due > 0 ? 'text-rose-500 font-bold' : 'text-gray-400' }}">
+                            <div class="{{ $inv->due_date && $inv->due_date->isPast() && $inv->amount_due > 0 ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-gray-400' }}">
                                 Due: {{ $inv->due_date ? $inv->due_date->format('M d, Y') : '—' }}
                             </div>
                         </td>
-                        <td class="font-mono font-bold text-gray-900 dark:text-white">
-                            ${{ number_format($inv->total, 2) }}
+                        <td class="font-mono font-bold text-gray-900 dark:text-white" data-label="Total">
+                            {{ \App\Services\Money::format($inv->total, $inv->currency) }}
                         </td>
-                        <td class="font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                            ${{ number_format($inv->amount_paid ?? 0, 2) }}
+                        <td class="font-mono text-xs text-emerald-600 dark:text-emerald-400" data-label="Paid">
+                            {{ \App\Services\Money::format($inv->amount_paid ?? 0, $inv->currency) }}
                         </td>
-                        <td class="font-mono text-xs font-bold {{ $inv->amount_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400' }}">
-                            ${{ number_format($inv->amount_due ?? 0, 2) }}
+                        <td class="font-mono text-xs font-bold {{ $inv->amount_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400' }}" data-label="Balance Due">
+                            {{ \App\Services\Money::format($inv->amount_due ?? 0, $inv->currency) }}
                         </td>
-                        <td class="text-right">
+                        <td class="text-right" data-label="Actions">
                             <div class="inline-flex items-center gap-1.5">
                                 <a href="{{ route('admin.invoices.pdf', $inv) }}" target="_blank" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600" title="PDF">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </a>
-                                <a href="{{ route('admin.invoices.show', $inv) }}" class="btn-ghost btn-sm text-xs">
+                                <a href="{{ route('admin.invoices.show', $inv) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     View
                                 </a>
                                 @if($inv->status === 'draft')
-                                <a href="{{ route('admin.invoices.edit', $inv) }}" class="btn-secondary btn-sm text-xs">
+                                <a href="{{ route('admin.invoices.edit', $inv) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     Edit
                                 </a>
                                 @endif

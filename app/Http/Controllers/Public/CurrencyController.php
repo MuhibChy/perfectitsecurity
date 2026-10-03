@@ -11,9 +11,17 @@ class CurrencyController extends Controller
     public function switch(Request $request, string $currency, CurrencyService $fx)
     {
         $currency = strtoupper($currency);
-        $allowed = collect($fx->supportedCurrencies())->pluck('currency_code')->map(fn ($c) => strtoupper($c))->all();
-        if (!in_array($currency, $allowed, true) && !in_array($currency, ['USD', 'GBP', 'EUR', 'BDT'], true)) {
+        // Single source of truth: active catalog rows. No hard-coded list.
+        if (!\App\Services\Money::isActive($currency)) {
             abort(400, 'Unsupported currency.');
+        }
+
+        // Customers are limited to their own allowed set (local + USD);
+        // staff and guests keep the global catalog (storefront browsing).
+        $user = $request->user();
+        if ($user && $user->isCustomer()
+            && !app(\App\Services\CustomerCurrencyService::class)->allows($user, $currency)) {
+            abort(422, 'This currency is not available for your account.');
         }
 
         $fx->setSessionCurrency($currency);

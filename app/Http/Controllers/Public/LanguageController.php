@@ -20,8 +20,22 @@ class LanguageController extends Controller
 
         Session::put('locale', $locale);
 
-        // Redirect back to the previous page or home
-        $back = $request->header('referer', route('home'));
+        // Redirect back to the previous page or home. The Referer header is
+        // attacker-spoofable, so only relative paths or same-host absolute
+        // URLs are honored — anything else falls back to home (no open redirect).
+        $back = (string) $request->header('referer', route('home'));
+        // NOTE: `~` delimiter is used because the pattern itself matches
+        // literal `#` (fragment) characters — with a `#` delimiter the
+        // unescaped `#` inside `[?#]` would terminate the pattern early
+        // and preg_match would throw ("Unknown modifier ']'"), turning
+        // every /lang/* switch into a 500.
+        if (!preg_match('~^/([^\s?#]*)?([?#][^\s]*)?$~', $back)) {
+            $host = parse_url($back, PHP_URL_HOST);
+            $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+            if (!$host || !$appHost || strtolower($host) !== strtolower($appHost)) {
+                return redirect()->route('home');
+            }
+        }
         return redirect($back);
     }
 }

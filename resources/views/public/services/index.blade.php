@@ -1,189 +1,162 @@
 @extends('layouts.public')
 
-@section('title', 'IT Services Catalog — TechSupport Solutions')
+@section('title', 'IT Services Catalog — PerfectITSecurity')
 @section('description', 'Enterprise IT services catalog: cybersecurity defense, cloud infrastructure, managed IT support, web development, and digital automation.')
 
 @section('content')
 
-{{-- Hero Section --}}
-<section class="relative w-full py-28 lg:py-36 bg-space-radial border-b border-white/10 overflow-hidden z-10">
-    {{-- Global 3D hero scene (same implementation as Home) --}}
-    <x-hero-scene />
-    <div class="absolute inset-0 bg-cyber-grid opacity-15 pointer-events-none"></div>
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
+{{-- HERO — SERVICES://CATALOG --}}
+<section class="relative w-full overflow-hidden" aria-labelledby="services-hero-heading">
+    <div class="absolute inset-0 bg-cyber-grid opacity-60 pointer-events-none" aria-hidden="true"></div>
+    <div class="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-24 sm:pt-28 lg:pt-32 pb-12 lg:pb-16">
         <div class="max-w-4xl">
-            <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold uppercase tracking-widest text-cyan-300 mb-6">
-                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                Standardized Enterprise Solutions
+            <div class="flex flex-wrap items-center gap-2.5 mb-7">
+                <span class="term-tag term-tag-accent">SERVICES://CATALOG</span>
+                <span class="term-status text-accent-soft"><span class="term-status-dot" aria-hidden="true"></span>Status: Online</span>
             </div>
-            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05] mb-8">
-                Engineered IT Services for <span class="gradient-text-cyber">Every Enterprise Layer.</span>
+            <h1 id="services-hero-heading" class="font-display font-extrabold tracking-tight leading-[1.02] text-4xl sm:text-6xl lg:text-7xl text-navy-900 dark:text-white text-balance">
+                ENGINEERED IT SERVICES FOR <span class="text-accent-soft">EVERY ENTERPRISE LAYER.</span>
             </h1>
-            <p class="text-lg sm:text-xl text-slate-300 leading-relaxed font-normal max-w-3xl">
+            <p class="mt-6 text-base sm:text-lg lg:text-xl leading-relaxed text-slate-600 dark:text-term-800 max-w-3xl">
                 From 24/7 managed SOC cybersecurity to scalable cloud DevOps and custom business portals — explore our standardized catalog of high-impact IT services.
             </p>
         </div>
     </div>
 </section>
 
-{{-- Sticky Currency / Country Selector --}}
-<section class="sticky top-0 z-30 bg-[#040816]/95 backdrop-blur-2xl border-b border-white/10 py-3.5">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <span class="text-xs font-mono uppercase tracking-widest text-slate-400">Regional Pricing:</span>
-            <div class="flex flex-wrap gap-2 country-selector" id="countrySelector">
+{{-- Regional pricing selector (hooks preserved: countrySelector, country-btn, data-country-price) --}}
+<section class="dark-island sticky top-14 z-30 bg-term-0/95 backdrop-blur-md border-y border-term-300 py-3.5" aria-label="Regional pricing">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="font-mono text-[10px] uppercase tracking-[0.24em] text-term-700">REGIONAL PRICING:</span>
+            <div class="flex flex-wrap gap-1.5 country-selector" id="countrySelector">
                 @foreach($countries as $country)
                 <button
                     type="button"
                     data-country="{{ $country->code }}"
-                    class="country-btn px-4 py-1.5 rounded-full text-xs font-semibold transition-all border border-white/10 text-slate-300 hover:border-cyan-400/50"
+                    class="country-btn term-tag hover:border-accent/50 hover:text-accent-soft transition-colors"
                 >
                     {{ $country->currency_symbol }} {{ $country->code }} — {{ $country->name }}
                 </button>
                 @endforeach
             </div>
         </div>
-        <div class="text-xs text-slate-400 hidden sm:block font-mono">
+        <div class="font-mono text-[11px] tracking-wider text-term-700 hidden sm:block">
             Showing verified multi-currency pricing
         </div>
     </div>
 </section>
 
-{{-- Featured Services (Wide Edge-to-Edge Grid) --}}
+{{-- Featured services --}}
 @if($featured->count() > 0)
-<section class="relative w-full py-20 lg:py-28 bg-[#030712] border-b border-white/10 z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="max-w-3xl mb-12">
-            <div class="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 mb-3 uppercase tracking-widest">
-                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                High-Impact Deployments
-            </div>
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">Most In-Demand Solutions.</h2>
-        </div>
+<section class="relative w-full py-16 sm:py-20 lg:py-24 border-b border-term-300 dark:border-white/5" aria-labelledby="featured-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <x-section-head num="01" label="SERVICES://FEATURED"
+            title="Most in-demand solutions."
+            desc="High-impact deployments ordered most often by enterprise clients — verified multi-currency pricing on every module." />
+        <span id="featured-heading" class="sr-only">Featured services</span>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             @foreach($featured->take(6) as $service)
-            <div class="cosmic-card p-7 flex flex-col justify-between group">
-                <a href="{{ route('services.show', $service->slug) }}" class="block">
-                    <div class="flex items-center justify-between mb-4">
+            <article class="term-panel p-4 flex flex-col justify-between group">
+                <div class="block">
+                    <div class="flex items-center justify-between gap-3 mb-2">
                         @if($service->category)
-                            <span class="text-xs font-mono font-semibold px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
-                                {{ $service->category->name }}
-                            </span>
+                            <span class="term-tag">{{ $service->category->name }}</span>
                         @endif
+                        <span class="font-mono text-[10px] tracking-[0.2em] text-term-700">MOD://{{ str_pad((string)($loop->iteration), 2, '0', STR_PAD_LEFT) }}</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-                        {{ $service->name }}
+                    <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                        <a href="{{ route('services.show', $service->slug) }}">{{ $service->name }}</a>
                     </h3>
-                    <p class="text-sm text-slate-400 leading-relaxed mb-6 line-clamp-2">
+                    <p class="mt-1 text-sm leading-snug text-slate-600 dark:text-term-800 line-clamp-2">
                         {{ $service->short_description }}
                     </p>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
-                        <div class="pricing-display">
+                    <div class="flex items-end justify-between gap-2 pt-2 mt-2 border-t border-term-300 dark:border-white/5">
+                        <a href="{{ route('services.show', $service->slug) }}" class="pricing-display min-w-0" aria-label="Details for {{ $service->name }}">
                             @forelse($service->countryPrices as $cp)
                                 @if($cp->country)
                                 <span data-country-price="{{ $cp->country->code }}" style="display:none">
-                                    @if($cp->pricing_type === 'custom_quote')
-                                        <span class="text-xs font-mono font-bold text-violet-400 uppercase tracking-wide">Custom Quote</span>
-                                    @elseif($cp->discount_price && $cp->discount_valid_until && \Carbon\Carbon::parse($cp->discount_valid_until)->isFuture())
-                                        <span class="text-xs text-slate-500 line-through">{{ $cp->country->currency_symbol }}{{ number_format($cp->price, 0) }}</span>
-                                        <span class="text-base font-bold text-emerald-400 ml-1">{{ $cp->country->currency_symbol }}{{ number_format($cp->discount_price, 0) }}</span>
-                                        <span class="ml-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">PROMO</span>
-                                    @else
-                                        <span class="text-base font-bold text-cyan-400">{{ $cp->country->currency_symbol }}{{ number_format($cp->price, 0) }}</span>
-                                        <span class="text-[11px] text-slate-400 ml-1">/ {{ ucfirst($cp->pricing_type) }}</span>
-                                    @endif
+                                    <x-service-price :service="$service" :row="$cp" size="card" />
                                 </span>
                                 @endif
                             @empty
                                 @if($service->allows_custom_quote)
-                                    <span class="text-xs font-mono font-bold text-violet-400 uppercase tracking-wide">Custom Quote</span>
+                                    <span class="font-mono text-[11px] font-bold text-accent-soft uppercase tracking-wider">Custom Quote</span>
                                 @endif
                             @endforelse
+                        </a>
+                        <div class="flex flex-shrink-0 flex-col gap-1.5 w-[92px]">
+                            <a href="{{ auth()->check() ? route('portal.service-request.create', ['service_id' => $service->id]) : route('get-quote', ['service_id' => $service->id]) }}"
+                               class="term-btn term-btn-sm justify-center" aria-label="Order {{ $service->name }}">
+                                Order
+                            </a>
+                            <a href="{{ route('contact') }}"
+                               class="term-btn term-btn-sm term-btn-ghost justify-center" aria-label="Consult about {{ $service->name }}">
+                                Consult
+                            </a>
                         </div>
-                        <span class="text-xs font-semibold text-cyan-400 group-hover:text-white flex items-center gap-1 transition-colors">
-                            Details →
-                        </span>
                     </div>
-                </a>
-
-                <div class="flex gap-2.5 mt-5 pt-4 border-t border-white/10">
-                    <a href="{{ auth()->check() ? route('portal.service-request.create', ['service_id' => $service->id]) : route('login') }}"
-                       class="flex-1 text-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-500/20">
-                        Order Now
-                    </a>
-                    <a href="{{ route('contact') }}"
-                       class="flex-1 text-center px-4 py-2.5 border border-white/15 text-slate-300 hover:border-cyan-400 hover:text-white rounded-xl text-xs font-semibold transition-all">
-                        Consult
-                    </a>
                 </div>
-            </div>
+            </article>
             @endforeach
         </div>
     </div>
 </section>
 @endif
 
-{{-- All Categories --}}
+{{-- All categories --}}
 @foreach($categories as $category)
 @if($category->services->count() > 0)
-<section class="relative w-full py-20 lg:py-24 {{ $loop->even ? 'bg-[#020617]' : 'bg-[#030712]' }} border-b border-white/10 z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="max-w-3xl mb-12">
-            <div class="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 mb-3 uppercase tracking-widest">
-                <span class="w-2 h-2 rounded-full" style="background-color: {{ $category->color ?? '#16A34A' }}"></span>
-                {{ $category->name }}
+<section class="relative w-full py-16 sm:py-20 lg:py-24 border-b border-term-300 dark:border-white/5" aria-labelledby="cat-{{ $category->id }}">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl">
+            <div class="term-sec-head" aria-hidden="true">
+                <span class="term-sec-num">{{ str_pad((string)($loop->iteration + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                <span class="term-sec-label">SERVICES://{{ strtoupper($category->slug ?? $category->name) }}</span>
             </div>
-            <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">{{ $category->description ?? $category->name }}</h2>
+            <h2 id="cat-{{ $category->id }}" class="term-sec-title text-3xl sm:text-4xl">{{ $category->description ?? $category->name }}</h2>
+            <p class="term-sec-desc mt-3">{{ $category->services->count() }} module{{ $category->services->count() === 1 ? '' : 's' }} in {{ $category->name }}</p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             @foreach($category->services as $service)
-            <div class="cosmic-card p-6 flex flex-col justify-between group">
-                <a href="{{ route('services.show', $service->slug) }}" class="block">
-                    <h3 class="font-bold text-white text-lg mb-2 group-hover:text-cyan-300 transition-colors">{{ $service->name }}</h3>
-                    <p class="text-xs text-slate-400 mb-4 line-clamp-2 leading-relaxed">{{ $service->short_description }}</p>
-                    
-                    <div class="flex items-center justify-between pt-3 border-t border-white/10">
-                        <div class="pricing-display">
+            <article class="term-panel p-4 flex flex-col justify-between group">
+                <div class="block">
+                    <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-1.5">MODULE://{{ strtoupper($service->slug ?? $loop->iteration) }}</div>
+                    <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors"><a href="{{ route('services.show', $service->slug) }}">{{ $service->name }}</a></h3>
+                    <p class="mt-1 text-[13px] leading-snug text-slate-600 dark:text-term-800 line-clamp-2">{{ $service->short_description }}</p>
+
+                    <div class="flex items-end justify-between gap-2 pt-2 mt-2 border-t border-term-300 dark:border-white/5">
+                        <a href="{{ route('services.show', $service->slug) }}" class="pricing-display min-w-0" aria-label="Details for {{ $service->name }}">
                             @forelse($service->countryPrices as $cp)
                                 @if($cp->country)
                                 <span data-country-price="{{ $cp->country->code }}" style="display:none">
-                                    @if($cp->pricing_type === 'custom_quote')
-                                        <span class="text-xs font-mono text-violet-400 font-bold">Custom Quote</span>
-                                    @elseif($cp->discount_price && $cp->discount_valid_until && \Carbon\Carbon::parse($cp->discount_valid_until)->isFuture())
-                                        <span class="text-xs text-slate-500 line-through">{{ $cp->country->currency_symbol }}{{ number_format($cp->price, 0) }}</span>
-                                        <span class="text-sm font-bold text-emerald-400 ml-1">{{ $cp->country->currency_symbol }}{{ number_format($cp->discount_price, 0) }}</span>
-                                    @else
-                                        <span class="text-sm font-bold text-cyan-400">{{ $cp->country->currency_symbol }}{{ number_format($cp->price, 0) }}</span>
-                                        <span class="text-[10px] text-slate-400 ml-1">{{ ucfirst($cp->pricing_type) }}</span>
-                                    @endif
+                                    <x-service-price :service="$service" :row="$cp" size="card" />
                                 </span>
                                 @endif
                             @empty
                                 @if($service->allows_custom_quote)
-                                    <span class="text-xs font-mono text-violet-400 font-bold">Custom Quote</span>
+                                    <span class="font-mono text-[11px] text-accent-soft font-bold">Custom Quote</span>
                                 @else
-                                    <span class="text-xs text-slate-400">Contact for pricing</span>
+                                    <span class="text-xs text-term-700">Contact for pricing</span>
                                 @endif
                             @endforelse
+                        </a>
+                        <div class="flex flex-shrink-0 flex-col gap-1.5 w-[92px]">
+                            <a href="{{ auth()->check() ? route('portal.service-request.create', ['service_id' => $service->id]) : route('get-quote', ['service_id' => $service->id]) }}"
+                               class="term-btn term-btn-sm justify-center" aria-label="Order {{ $service->name }}">
+                                Order
+                            </a>
+                            <a href="{{ route('contact') }}"
+                               class="term-btn term-btn-sm term-btn-ghost justify-center" aria-label="Consult about {{ $service->name }}">
+                                Consult
+                            </a>
                         </div>
-                        <span class="text-xs text-cyan-400 group-hover:text-white font-semibold">View →</span>
                     </div>
-                </a>
-
-                <div class="flex gap-2 mt-4 pt-3 border-t border-white/10">
-                    <a href="{{ auth()->check() ? route('portal.service-request.create', ['service_id' => $service->id]) : route('login') }}"
-                       class="flex-1 text-center px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500 hover:text-black text-cyan-300 rounded-xl text-xs font-bold transition-all border border-cyan-500/30">
-                        Order
-                    </a>
-                    <a href="{{ route('contact') }}"
-                       class="flex-1 text-center px-3 py-2 border border-white/10 text-slate-400 hover:text-white rounded-xl text-xs font-semibold transition-all">
-                        Contact
-                    </a>
                 </div>
-            </div>
+            </article>
             @endforeach
         </div>
     </div>
@@ -191,24 +164,24 @@
 @endif
 @endforeach
 
-{{-- Ready to Order Banner --}}
-<section class="relative w-full py-20 bg-space-radial border-t border-white/10 z-10">
-    <div class="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-8 cosmic-glass p-10 rounded-3xl border border-cyan-500/30">
-            <div class="text-white max-w-2xl">
-                <h2 class="text-2xl sm:text-3xl font-black mb-3">Require a Custom Architecture or SLA Package?</h2>
-                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+{{-- Custom work CTA --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-24" aria-labelledby="custom-cta-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="term-panel p-8 sm:p-10 lg:p-12 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div class="max-w-2xl">
+                <span class="term-tag term-tag-accent">SERVICES://CUSTOM</span>
+                <h2 id="custom-cta-heading" class="mt-4 font-display text-2xl sm:text-3xl font-bold tracking-tight text-navy-900 dark:text-white">Require a custom architecture or SLA package?</h2>
+                <p class="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-term-800">
                     Can't find an exact match for your infrastructure requirements? Our principal architects design tailored engineering and multi-year support agreements with guaranteed SLAs.
                 </p>
             </div>
-            <div class="flex flex-wrap gap-4">
+            <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row flex-shrink-0 gap-3">
                 <a href="{{ auth()->check() ? route('portal.service-request.create') : route('login') }}"
-                   class="btn btn-lg text-white rounded-2xl text-sm font-bold"
-                   style="background: linear-gradient(135deg, #16A34A, #2563EB); box-shadow: 0 8px 30px rgba(37,99,235,0.4);">
+                   class="term-btn">
                     Order Custom Work
                 </a>
-                <a href="{{ route('contact') }}" class="btn btn-lg btn-glass rounded-2xl text-sm font-semibold">
-                    Schedule Free Consultation
+                <a href="{{ route('contact') }}" class="term-btn term-btn-ghost">
+                    Free Consultation
                 </a>
             </div>
         </div>
@@ -233,9 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.country-btn').forEach(btn => {
             if (btn.dataset.country === code) {
                 btn.classList.remove('text-slate-300', 'border-white/10');
-                btn.classList.add('bg-cyan-500', 'text-black', 'border-cyan-400', 'font-bold');
+                btn.classList.add('bg-accent', 'text-black', 'border-accent', 'font-bold');
             } else {
-                btn.classList.remove('bg-cyan-500', 'text-black', 'border-cyan-400', 'font-bold');
+                btn.classList.remove('bg-accent', 'text-black', 'border-accent', 'font-bold');
                 btn.classList.add('text-slate-300', 'border-white/10');
             }
         });

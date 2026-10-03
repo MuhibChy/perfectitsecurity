@@ -23,7 +23,7 @@ class DemoPortfolioSeeder extends Seeder
 {
     public function run(): void
     {
-        if (PortfolioItem::where('is_demo', true)->exists()) {
+        if (PortfolioItem::where('title', 'Enterprise IT Support Portal')->where('is_demo', true)->exists()) {
             $this->command?->warn('Sample portfolio batch already present — skipping.');
             return;
         }

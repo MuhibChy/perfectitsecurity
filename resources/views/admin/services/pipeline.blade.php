@@ -4,26 +4,27 @@
 
 @section('content')
 <div class="space-y-6">
+    <x-page-header title="Sales Pipeline & Lead Management" sys="OPS://SERVICES" />
     {{-- Header & Metrics --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-                <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+            <h2 class="text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                <span class="p-2 bg-accent/10 text-accent border border-accent/30">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 </span>
                 Visual Sales Pipeline
-            </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            </h2>
+            <p class="text-sm text-slate-600 dark:text-term-800 mt-1">
                 Track incoming service requests, advance opportunities through commercial review stages, and graduate qualified leads to active quotations.
             </p>
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.service-requests.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5">
+                <a href="{{ route('admin.service-requests.index') }}" class="term-btn term-btn-sm term-btn-ghost">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 Table View
             </a>
-            <a href="{{ route('admin.quotations.create') }}" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-1.5">
+                <a href="{{ route('admin.quotations.create') }}" class="term-btn term-btn-sm">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Create Quotation
             </a>
@@ -32,19 +33,19 @@
 
     {{-- Metric Stat Cards --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="glass-card p-4 rounded-xl border border-gray-200 dark:border-white/10">
+        <div class="term-panel p-4 border border-gray-200 dark:border-white/10">
             <span class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Leads</span>
             <div class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $totalCount }}</div>
             <div class="text-xs text-gray-400 mt-0.5">Across all pipeline stages</div>
         </div>
 
-        <div class="glass-card p-4 rounded-xl border border-gray-200 dark:border-white/10">
+        <div class="term-panel p-4 border border-gray-200 dark:border-white/10">
             <span class="text-xs font-medium uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Est. Pipeline Value</span>
             <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">${{ number_format($totalValue, 0) }}</div>
             <div class="text-xs text-gray-400 mt-0.5">Combined budgets & quoted</div>
         </div>
 
-        <div class="glass-card p-4 rounded-xl border border-gray-200 dark:border-white/10">
+        <div class="term-panel p-4 border border-gray-200 dark:border-white/10">
             <span class="text-xs font-medium uppercase tracking-wider text-amber-500">Active Review / Scoping</span>
             <div class="text-2xl font-bold text-amber-500 mt-1">
                 {{ ($stages['inbound']['items']->count() ?? 0) + ($stages['scoping']['items']->count() ?? 0) + ($stages['pricing']['items']->count() ?? 0) }}
@@ -52,7 +53,7 @@
             <div class="text-xs text-gray-400 mt-0.5">In negotiation & estimation</div>
         </div>
 
-        <div class="glass-card p-4 rounded-xl border border-gray-200 dark:border-white/10">
+        <div class="term-panel p-4 border border-gray-200 dark:border-white/10">
             <span class="text-xs font-medium uppercase tracking-wider text-emerald-500">Won / Converted</span>
             <div class="text-2xl font-bold text-emerald-500 mt-1">
                 {{ $stages['won']['items']->count() ?? 0 }}
@@ -62,16 +63,16 @@
     </div>
 
     {{-- Filter Bar --}}
-    <div class="glass-card p-4 rounded-xl border border-gray-200 dark:border-white/10">
+    <div class="term-panel p-4 border border-gray-200 dark:border-white/10">
         <form method="GET" action="{{ route('admin.service-requests.pipeline') }}" class="flex flex-wrap gap-3 items-end">
             <div class="flex-1 min-w-[200px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Search Leads</label>
+                <label class="term-field-label">Search Leads</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, company, email, or #..."
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
             </div>
 
             <div class="min-w-[140px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Priority</label>
+                <label class="term-field-label">Priority</label>
                 <select name="priority" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                     <option value="">All Priorities</option>
                     @foreach(['urgent' => 'Urgent', 'high' => 'High', 'medium' => 'Medium', 'low' => 'Low'] as $pval => $plabel)
@@ -81,7 +82,7 @@
             </div>
 
             <div class="min-w-[160px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Assigned Agent</label>
+                <label class="term-field-label">Assigned Agent</label>
                 <select name="assigned_to" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                     <option value="">All Staff</option>
                     @foreach($staffMembers as $staff)
@@ -105,14 +106,14 @@
     <div class="overflow-x-auto pb-6">
         <div class="flex gap-4 min-w-[1400px]">
             @foreach($stages as $stageKey => $stage)
-            <div class="flex-1 min-w-[280px] max-w-[340px] flex flex-col bg-gray-50/70 dark:bg-gray-900/50 rounded-2xl border border-gray-200/80 dark:border-white/10 p-3">
+            <div class="flex-1 min-w-[280px] max-w-[340px] flex flex-col bg-gray-50/70 dark:bg-gray-900/50 border border-gray-200/80 dark:border-white/10 p-3">
                 {{-- Column Header --}}
                 <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-200 dark:border-white/10">
                     <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-{{ $stage['color'] }}-500"></span>
+                        <span class="term-tag w-2.5 h-2.5"></span>
                         <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ $stage['title'] }}</h3>
                     </div>
-                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                    <span class="term-tag">
                         {{ $stage['items']->count() }}
                     </span>
                 </div>
@@ -120,7 +121,7 @@
                 {{-- Column Cards --}}
                 <div class="space-y-3 flex-1 overflow-y-auto max-h-[750px] pr-1">
                     @forelse($stage['items'] as $item)
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-shadow group flex flex-col justify-between">
+                    <div class="bg-white dark:bg-gray-800 p-4 shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-shadow group flex flex-col justify-between">
                         <div>
                             {{-- Top row: Ref & Priority --}}
                             <div class="flex items-center justify-between mb-2">
@@ -135,7 +136,7 @@
                                         'low' => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
                                     ];
                                 @endphp
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full {{ $pColors[$item->priority] ?? $pColors['low'] }}">
+                                <span class="term-tag font-bold uppercase {{ $pColors[$item->priority] ?? $pColors['low'] }}">
                                     {{ $item->priority ?? 'medium' }}
                                 </span>
                             </div>
@@ -202,7 +203,7 @@
                                 @else
                                     <form action="{{ route('admin.service-requests.graduate', $item->id) }}" method="POST" class="flex-1">
                                         @csrf
-                                        <button type="submit" class="w-full py-1 px-2 text-center text-xs font-semibold rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white transition-colors flex items-center justify-center gap-1">
+                                        <button type="submit" class="term-btn term-btn-sm w-full">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                             Graduate to Quote
                                         </button>
@@ -216,7 +217,7 @@
                         </div>
                     </div>
                     @empty
-                    <div class="p-6 text-center text-xs text-gray-400 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                    <div class="p-6 text-center text-xs text-gray-400 border border-dashed border-gray-200 dark:border-gray-800">
                         No requests in this stage
                     </div>
                     @endforelse

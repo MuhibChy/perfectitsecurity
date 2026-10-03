@@ -16,7 +16,7 @@ class Expense extends Model
         'status', 'approved_by', 'approved_at', 'project_id', 'service_order_id',
         'task_id', 'worker_id', 'cost_type', 'hours', 'hourly_rate',
         'commission_percentage', 'commission_amount',
-        'is_recurring', 'recurrence_pattern', 'created_by',
+        'is_recurring', 'recurrence_pattern', 'created_by', 'paid_at', 'payment_reference',
     ];
 
     protected $casts = [
@@ -27,6 +27,7 @@ class Expense extends Model
         'commission_amount' => 'decimal:2',
         'date' => 'date',
         'approved_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     protected static function booted(): void

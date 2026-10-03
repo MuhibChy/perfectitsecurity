@@ -36,6 +36,15 @@ class FakeSupportProvider implements AiProviderInterface
     {
         return true;
     }
+
+    public function healthCheck(): array
+    {
+        return [
+            'provider' => 'fake', 'reachable' => true, 'model' => 'fake-support-1',
+            'model_available' => true, 'models' => [], 'latency_ms' => 0,
+            'checked_at' => now()->toDateTimeString(), 'error' => null,
+        ];
+    }
 }
 
 /**

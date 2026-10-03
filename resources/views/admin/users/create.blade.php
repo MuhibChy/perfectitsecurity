@@ -4,34 +4,34 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6">
-    <x-page-header
+    <x-page-header sys="SYSTEM://USERS"
         title="Create User Account"
         subtitle="Provision a new administrative, engineering, client, or contractor identity."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Users' => route('admin.users.index'), 'Create' => null]"
     />
 
-    <div class="glass-card p-8 lg:p-10 rounded-2xl shadow-xl border border-white/10">
+    <div class="term-panel p-8 lg:p-10 shadow-xl border border-white/10">
         <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-6">
             @csrf
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Full Name</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    @error('name') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="term-field-label">Full Name</label>
+                    <input type="text" name="name" value="{{ old('name') }}" required class="term-input">
+                    @error('name') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Email Address</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    @error('email') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="term-field-label">Email Address</label>
+                    <input type="email" name="email" value="{{ old('email') }}" required class="term-input">
+                    @error('email') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Role Assignment</label>
-                    <select name="role" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <label class="term-field-label">Role Assignment</label>
+                    <select name="role" required class="term-input">
                         <option value="customer" {{ old('role') === 'customer' ? 'selected' : '' }}>Customer (Client Portal)</option>
                         <option value="support_agent" {{ old('role') === 'support_agent' ? 'selected' : '' }}>Support Agent (Ticket Handling)</option>
                         <option value="project_manager" {{ old('role') === 'project_manager' ? 'selected' : '' }}>Project Manager</option>
@@ -40,26 +40,25 @@
                         <option value="freelancer" {{ old('role') === 'freelancer' ? 'selected' : '' }}>Freelancer / Contractor</option>
                         <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>System Administrator</option>
                     </select>
-                    @error('role') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    @error('role') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Phone Number</label>
-                    <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+1 (555) 000-0000" class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    @error('phone') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                <div class="sm:col-span-2">
+                    <x-phone-input label="Phone Number" hint="Stored verified/unverified as entered; verification follows the standard OTP workflow." />
+                    @error('phone') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div class="grid sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Initial Password</label>
-                    <input type="password" name="password" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                    @error('password') <p class="text-xs text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="term-field-label">Initial Password</label>
+                    <input type="password" name="password" required class="term-input">
+                    @error('password') <p class="term-error">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Confirm Password</label>
-                    <input type="password" name="password_confirmation" required class="w-full px-4 py-2.5 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <label class="term-field-label">Confirm Password</label>
+                    <input type="password" name="password_confirmation" required class="term-input">
                 </div>
             </div>
 
@@ -70,8 +69,8 @@
                 </label>
 
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('admin.users.index') }}" class="btn-ghost btn-sm">Cancel</a>
-                    <button type="submit" class="btn-primary btn-sm px-6">Create Account</button>
+                    <a href="{{ route('admin.users.index') }}" class="term-btn term-btn-ghost term-btn-sm">Cancel</a>
+                    <button type="submit" class="term-btn term-btn-sm">Create Account</button>
                 </div>
             </div>
         </form>

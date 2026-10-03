@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
+use App\Models\Quotation;
 use App\Models\Receipt;
 use App\Models\Service;
 use App\Models\ServiceOrder;
@@ -27,8 +28,21 @@ class ServiceOrderWorkflowService
     public function createCustomerOrder(array $data, User $customer): ServiceOrder
     {
         return DB::transaction(function () use ($data, $customer) {
-            $service = Service::findOrFail($data['service_id']);
+            // Only active/orderable catalogue services may be ordered, even if
+            // a service ID is submitted directly. Frontend scoping is not a control.
+            $service = Service::where('is_active', true)->findOrFail($data['service_id']);
             $negotiate = !empty($data['negotiate']) || !empty($data['custom_quote']);
+
+            // Forged-total guard: a customer-supplied proposed_price that differs
+            // from the catalogue price is a price discussion, never an instantly
+            // confirmed order. Without this, POSTing proposed_price=1 would mint
+            // a confirmed order + invoice at an arbitrary total.
+            if (!$negotiate && isset($data['proposed_price']) && is_numeric($data['proposed_price'])) {
+                $catalogue = round((float) ($service->base_price ?: 0), 2);
+                if (round((float) $data['proposed_price'], 2) !== $catalogue) {
+                    $negotiate = true;
+                }
+            }
 
             // If customer wants to immediately confirm without negotiation, both email & phone must be verified
             if (!$negotiate) {
@@ -41,8 +55,8 @@ class ServiceOrderWorkflowService
 
             $discount = (float) ($data['discount_amount'] ?? 0);
             $taxRate = (float) ($data['tax_rate'] ?? 0);
-            $tax = max(0, $price - $discount) * ($taxRate / 100);
-            $total = max(0, $price - $discount) + $tax;
+            $tax = round(max(0, $price - $discount) * ($taxRate / 100), 2);
+            $total = round(max(0, $price - $discount) + $tax, 2);
 
             // Prevent free confirmed orders via manipulated proposed_price/discount.
             if (!$negotiate && $total <= 0) {
@@ -165,12 +179,18 @@ class ServiceOrderWorkflowService
             $order = ServiceOrder::lockForUpdate()->findOrFail($order->id);
             $customer = $order->customer;
 
+            abort_if(in_array($order->status, ['closed', 'financially_completed', 'cancelled'], true), 422, 'This order is closed and no longer accepts price decisions.');
+
             // Strict rule: Customer must have email and phone verified before confirmation
             abort_unless($customer->isFullyVerified(), 422, 'The customer must have both verified email and verified phone before order agreement is confirmed.');
 
             $revision = $revisionId
                 ? $order->priceRevisions()->findOrFail($revisionId)
                 : $order->priceRevisions()->whereIn('status', ['proposed', 'pending_approval'])->latest()->firstOrFail();
+
+            // Only live proposals can be accepted — replaying a stale
+            // countered/rejected/accepted revision must never re-lock a price.
+            abort_unless(in_array($revision->status, ['proposed', 'pending_approval'], true), 422, 'Only pending proposals can be accepted.');
 
             $subtotal = (float) $revision->amount;
             $discount = (float) $revision->discount_amount;
@@ -200,6 +220,20 @@ class ServiceOrderWorkflowService
             AuditLog::log('service_order.price_accepted', 'service_orders', $order, "Final price accepted ({$order->currency} {$total}). Price locked.");
 
             $this->generateConnectedRecords($order, $actor);
+
+            // Keep the invoice in lockstep: totals/due/status follow the order
+            // (extra charges approved after invoicing must not leave a stale invoice).
+            if ($invoice = $order->invoices()->first()) {
+                $invoice->update([
+                    'subtotal' => $subtotal,
+                    'discount_amount' => $discount,
+                    'tax_rate' => $taxRate,
+                    'tax_amount' => $tax,
+                    'total' => $total,
+                    'amount_due' => max(0, round($total - (float) $order->amount_paid, 2)),
+                    'status' => max(0, round($total - (float) $order->amount_paid, 2)) == 0 ? 'paid' : ((float) $order->amount_paid > 0 ? 'partially_paid' : 'sent'),
+                ]);
+            }
 
             return $order->fresh(['invoices', 'tickets', 'tasks', 'priceRevisions']);
         });
@@ -237,8 +271,8 @@ class ServiceOrderWorkflowService
 
             $discount = (float) ($data['discount_amount'] ?? 0);
             $taxRate = (float) ($data['tax_rate'] ?? 0);
-            $tax = max(0, $subtotal - $discount) * ($taxRate / 100);
-            $total = max(0, $subtotal - $discount) + $tax;
+            $tax = round(max(0, $subtotal - $discount) * ($taxRate / 100), 2);
+            $total = round(max(0, $subtotal - $discount) + $tax, 2);
 
             // Discount permission check: if discount > 20%, require manager/admin
             $discountPct = $subtotal > 0 ? ($discount / $subtotal) * 100 : 0;
@@ -308,6 +342,7 @@ class ServiceOrderWorkflowService
             $invoice = Invoice::create([
                 'customer_id' => $order->customer_id,
                 'service_order_id' => $order->id,
+                'currency' => $order->currency ?? 'USD',
                 'subtotal' => $order->final_price,
                 'discount_amount' => $order->discount_amount,
                 'tax_rate' => $order->tax_rate,
@@ -378,12 +413,34 @@ class ServiceOrderWorkflowService
             $order = ServiceOrder::lockForUpdate()->findOrFail($order->id);
             $invoice = $order->invoices()->lockForUpdate()->firstOrFail();
 
+            abort_if(in_array($order->status, ['cancelled', 'closed', 'financially_completed'], true), 422, 'This order is closed and no longer accepts payments.');
+
             $amount = round((float) $data['amount'], 2);
             abort_if($amount <= 0, 422, 'Payment amount must be greater than zero.');
 
             // Server-side calculation prevents overpaying or browser manipulation
             $outstanding = max(0, round((float) $order->total - (float) $order->amount_paid, 2));
             abort_if($amount > $outstanding, 422, "Payment amount ({$order->currency} {$amount}) cannot exceed the outstanding balance ({$order->currency} {$outstanding}).");
+
+            // Idempotency: a retried callback/record call carrying the same
+            // transaction_id reuses the original payment instead of minting
+            // money twice. (payments.transaction_id is nullable/non-unique by
+            // schema, so this domain guard is the authoritative dedup.)
+            $txn = trim((string) ($data['transaction_id'] ?? ''));
+            if ($txn !== '') {
+                $existing = Payment::where('service_order_id', $order->id)
+                    ->where('transaction_id', $txn)->lockForUpdate()->first();
+                if ($existing) {
+                    $receipt = Receipt::where('payment_id', $existing->id)->first();
+                    AuditLog::log('payment.duplicate_ignored', 'service_orders', $order, "Duplicate {$order->currency} {$amount} for {$order->order_number} ignored (transaction {$txn} already recorded as {$existing->payment_number}).");
+                    return [
+                        'payment' => $existing,
+                        'receipt' => $receipt,
+                        'order' => $order->fresh(),
+                        'duplicate' => true,
+                    ];
+                }
+            }
 
             $payment = Payment::create([
                 'invoice_id' => $invoice->id,
@@ -437,19 +494,36 @@ class ServiceOrderWorkflowService
             }
             $order->save();
 
-            // Issue official Receipt
-            $receipt = Receipt::create([
-                'payment_id' => $payment->id,
-                'invoice_id' => $invoice->id,
-                'customer_id' => $order->customer_id,
-                'service_order_id' => $order->id,
-                'amount' => $amount,
-                'remaining_balance' => $newAmountDue,
-                'currency' => $order->currency,
-                'issued_at' => now(),
-            ]);
+            // Issue official Receipt — idempotent per payment (retry-safe:
+            // the unique payment_id key means a retried webhook/record call
+            // reuses the same receipt instead of duplicating documents).
+            $receipt = Receipt::firstOrCreate(
+                ['payment_id' => $payment->id],
+                [
+                    'invoice_id' => $invoice->id,
+                    'customer_id' => $order->customer_id,
+                    'service_order_id' => $order->id,
+                    'amount' => $amount,
+                    'remaining_balance' => $newAmountDue,
+                    'currency' => $order->currency,
+                    'issued_at' => now(),
+                ]
+            );
 
             AuditLog::log('payment.recorded', 'service_orders', $order, "Payment of {$order->currency} {$amount} recorded. Receipt {$receipt->receipt_number} issued. Balance: {$order->currency} {$newAmountDue}.");
+
+            // Allocate across staged payment schedule rows (FIFO). Keeps the
+            // milestone/stage view in sync on every rail (manual/Stripe/wallet).
+            app(\App\Services\OrderPaymentAllocator::class)->allocate($order->fresh(), $payment->fresh(), $amount);
+
+            // Book finance income once per payment (same rule as the
+            // Stripe and finance payment paths; keyed by payment id).
+            app(\App\Services\FinancialService::class)->recordIncome(
+                (float) $amount,
+                'Customer Payment',
+                "Payment {$payment->payment_number} for order {$order->order_number}",
+                ['invoice_id' => $invoice->id, 'payment_id' => $payment->id, 'customer_id' => $order->customer_id, 'service_order_id' => $order->id]
+            );
 
             if ($newAmountDue == 0 && $invoice->customer) {
                 $invoice->customer->notify(new \App\Notifications\InvoiceCreatedNotification($invoice->fresh(), 'paid'));
@@ -470,6 +544,7 @@ class ServiceOrderWorkflowService
     {
         abort_unless($manager->isAdmin() || $manager->isSupportManager() || $manager->isProjectManager() || $manager->isFinanceManager(), 403, 'Only managers or administrators can grant work authorization overrides.');
         abort_if(empty(trim($reason)), 422, 'A manager override reason must be provided.');
+        abort_if(in_array($order->status, ['cancelled', 'closed', 'financially_completed'], true), 422, 'This order is closed and cannot receive a manager override.');
 
         $order->update([
             'manager_override_by' => $manager->id,
@@ -571,6 +646,136 @@ class ServiceOrderWorkflowService
             }
 
             return $task;
+        });
+    }
+
+    /**
+     * Create a confirmed order directly from an accepted quotation.
+     * Idempotent via the quotation state machine: only `sent` quotes convert,
+     * under row lock, so double-clicks/retries can never mint two orders.
+     */
+    public function createOrderFromQuotation(Quotation $quotation, User $customer): ServiceOrder
+    {
+        return DB::transaction(function () use ($quotation, $customer) {
+            $q = Quotation::lockForUpdate()->findOrFail($quotation->id);
+            abort_unless((int) $q->customer_id === (int) $customer->id, 403);
+            abort_unless($q->status === 'sent' && (!$q->valid_until || $q->valid_until->isFuture()), 422, 'This quotation is not available for acceptance.');
+            abort_unless($customer->isFullyVerified(), 422, 'You must verify both email and phone before confirming an order.');
+            abort_if(ServiceOrder::where('quotation_id', $q->id)->exists(), 422, 'An order already exists for this quotation.');
+
+            $serviceId = $q->serviceRequest?->service_id;
+            abort_unless($serviceId, 422, 'This quotation has no service linked and cannot become an order.');
+            $service = Service::findOrFail($serviceId);
+
+            $subtotal = round((float) $q->subtotal, 2);
+            $discount = round((float) $q->discount_amount, 2);
+            $taxRate = (float) $q->tax_rate;
+            $tax = round((float) $q->tax_amount ?: max(0, $subtotal - $discount) * ($taxRate / 100), 2);
+            $total = round((float) $q->total ?: max(0, $subtotal - $discount) + $tax, 2);
+            abort_if($total <= 0, 422, 'A confirmed order must have a total greater than zero.');
+
+            $q->update(['status' => 'accepted', 'accepted_at' => now()]);
+            $q->serviceRequest?->update(['review_status' => 'accepted', 'status' => 'accepted']);
+
+            $order = ServiceOrder::create([
+                'customer_id' => $customer->id,
+                'service_id' => $service->id,
+                'quotation_id' => $q->id,
+                'created_by' => $customer->id,
+                'source' => 'quotation_accept',
+                'order_source_label' => 'Quotation Accept',
+                'requirements' => $q->serviceRequest?->requirements ?? $q->notes ?? $service->name,
+                'urgency' => 'medium',
+                'priority' => 'medium',
+                'currency' => $q->currency ?? 'USD',
+                'original_price' => $subtotal,
+                'final_price' => $subtotal,
+                'discount_amount' => $discount,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $tax,
+                'total' => $total,
+                'amount_paid' => 0,
+                'amount_due' => $total,
+                'expected_cost' => (float) ($service->estimated_cost ?? 0),
+                'status' => 'confirmed',
+                'payment_authorization' => 'not_authorized',
+                'price_locked' => true,
+                'customer_accepted_at' => now(),
+                'final_price_accepted_by' => $customer->id,
+            ]);
+
+            ServiceOrderPriceRevision::create([
+                'service_order_id' => $order->id,
+                'proposed_by' => $customer->id,
+                'kind' => 'final_offer',
+                'amount' => $subtotal,
+                'discount_amount' => $discount,
+                'tax_rate' => $taxRate,
+                'terms' => 'Accepted quotation ' . $q->quotation_number,
+                'status' => 'accepted',
+            ]);
+
+            AuditLog::log('service_order.created_from_quotation', 'service_orders', $order, "Order {$order->order_number} created from accepted quotation {$q->quotation_number}.");
+            ServiceTrackingService::notify($customer->id, 'order_created', 'Order created', "Your order {$order->order_number} is confirmed. A deposit of 30% unlocks scheduling.");
+
+            $this->generateConnectedRecords($order, $customer);
+
+            return $order->fresh(['customer', 'service', 'invoices', 'tickets', 'tasks', 'priceRevisions']);
+        });
+    }
+
+    /**
+     * Reject a proposed price revision (customer declines, or finance declines).
+     */
+    public function rejectPrice(ServiceOrder $order, User $actor, ?int $revisionId, string $reason): ServiceOrderPriceRevision
+    {
+        return DB::transaction(function () use ($order, $actor, $revisionId, $reason) {
+            $order = ServiceOrder::lockForUpdate()->findOrFail($order->id);
+            abort_if(in_array($order->status, ['closed', 'financially_completed', 'cancelled'], true), 422, 'This order is closed and no longer accepts price decisions.');
+            $isOwner = (int) $order->customer_id === (int) $actor->id;
+            abort_unless($isOwner || $actor->isAdmin() || $actor->isFinanceManager(), 403);
+            $revision = $revisionId
+                ? $order->priceRevisions()->findOrFail($revisionId)
+                : $order->priceRevisions()->whereIn('status', ['proposed', 'pending_approval'])->latest()->firstOrFail();
+            abort_unless(in_array($revision->status, ['proposed', 'pending_approval'], true), 422, 'Only pending proposals can be rejected.');
+            $revision->update(['status' => 'rejected']);
+            AuditLog::log('service_order.price_rejected', 'service_orders', $order, "Price proposal rejected by {$actor->name}. Reason: {$reason}");
+            ServiceTrackingService::notify($order->customer_id, 'price_rejected', 'Price proposal declined', "A price proposal on {$order->order_number} was declined. Reason: {$reason}");
+            return $revision->fresh();
+        });
+    }
+
+    /**
+     * Cancel an order with reason/actor/timestamp. Paid balances flag refund_due
+     * instead of vanishing; history is preserved (never deleted).
+     */
+    public function cancelOrder(ServiceOrder $order, User $actor, string $reason): ServiceOrder
+    {
+        return DB::transaction(function () use ($order, $actor, $reason) {
+            $order = ServiceOrder::lockForUpdate()->findOrFail($order->id);
+            abort_if(in_array($order->status, ['closed', 'financially_completed', 'cancelled'], true), 422, 'This order can no longer be cancelled.');
+            $isOwner = (int) $order->customer_id === (int) $actor->id;
+            $isManager = $actor->isAdmin() || $actor->isFinanceManager() || $actor->isSupportManager();
+            abort_unless($isOwner || $isManager, 403);
+            // Owners may only cancel unpaid work; paid cancellations need finance/admin.
+            abort_if($isOwner && !$actor->isAdmin() && !$actor->isFinanceManager() && (float) $order->amount_paid > 0, 403, 'Paid orders can only be cancelled by finance or an administrator.');
+            $refundDue = (float) $order->amount_paid > 0;
+            $order->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancel_reason' => $reason,
+                'cancelled_by' => $actor->id,
+                'refund_due' => $refundDue,
+            ]);
+            AuditLog::log('service_order.cancelled', 'service_orders', $order, "Order {$order->order_number} cancelled by {$actor->name}. Reason: {$reason}" . ($refundDue ? " Refund due: {$order->currency} {$order->amount_paid}." : ''));
+            ServiceTrackingService::notify($order->customer_id, 'order_cancelled', 'Order cancelled', "Order {$order->order_number} was cancelled." . ($refundDue ? ' Our finance team will process your refund.' : ''));
+            if ($refundDue) {
+                $finance = User::whereIn('role', ['admin', 'super_admin', 'finance_manager'])->where('is_active', true)->get();
+                foreach ($finance as $f) {
+                    ServiceTrackingService::notify($f->id, 'refund_required', 'Refund required', "Cancelled order {$order->order_number} has a paid balance of {$order->currency} {$order->amount_paid}.");
+                }
+            }
+            return $order;
         });
     }
 

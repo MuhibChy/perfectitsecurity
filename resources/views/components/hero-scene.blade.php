@@ -1,9 +1,7 @@
-{{-- Global reusable 3D hero scene — the exact implementation premiered on
-     the Home Page (Three.js starfield, nebula, planet, holo shield, network).
-     Usage: place as the first child of a `relative overflow-hidden` hero
-     section: <x-hero-scene />. One instance per page; app.js initializes it
-     lazily and hero-3d.js self-guards against double initialization.
-     Decorative only: pointer-events-none, aria-hidden, with static fallback. --}}
-@props(['canvasId' => 'hero-canvas', 'class' => 'absolute inset-0 w-full h-full'])
-<canvas id="{{ $canvasId }}" class="{{ $class }} pointer-events-none" aria-hidden="true" data-hero-scene></canvas>
-<div class="hero-fallback-bg" style="display: none;" aria-hidden="true"></div>
+{{-- hero-scene — RETIRED compatibility shim.
+     The 3D experience is now ONE global fixed scene (<x-global-3d-scene /> in
+     the layouts, resources/js/global-3d.js). This component intentionally
+     renders nothing so the ~20 pages still referencing <x-hero-scene /> keep
+     compiling without spawning hero-local absolute canvases that disappear on
+     scroll or duplicate WebGL instances. Do not re-add a canvas here. --}}
+@props(['canvasId' => 'hero-canvas', 'class' => ''])

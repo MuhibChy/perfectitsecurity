@@ -3,9 +3,10 @@
 
 @section('content')
 <div class="space-y-6">
+    <x-page-header title="Service Requests" sys="OPS://SERVICES" />
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Service Requests</h1>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Service Requests</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $serviceRequests->total() }} total requests</p>
         </div>
         <div class="flex items-center gap-2">
@@ -18,15 +19,15 @@
     </div>
 
     <!-- Filters -->
-    <div class="glass-card p-4">
+    <div class="term-panel p-4">
         <form method="GET" class="flex flex-wrap gap-3 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
+            <div class="flex-1 min-w-[200px] basis-full sm:basis-auto">
+                <label class="term-field-label">Search</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search requests..."
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
             </div>
             <div class="min-w-[150px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Review Status</label>
+                <label class="term-field-label">Review Status</label>
                 <select name="status" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                     <option value="">All Statuses</option>
                     @foreach(['new', 'under_review', 'awaiting_info', 'scope_clarification', 'pricing_in_progress', 'pending_approval', 'sent_to_customer', 'accepted', 'rejected', 'expired', 'cancelled', 'converted'] as $s)
@@ -35,7 +36,7 @@
                 </select>
             </div>
             <div class="min-w-[120px]">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Priority</label>
+                <label class="term-field-label">Priority</label>
                 <select name="priority" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
                     <option value="">All</option>
                     @foreach(['low', 'medium', 'high', 'urgent'] as $p)
@@ -51,9 +52,9 @@
     </div>
 
     <!-- Requests Table -->
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+    <div class="term-panel overflow-hidden">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table w-full text-sm term-table">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                         <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Request #</th>
@@ -80,14 +81,14 @@
                                 $priorityColors = ['low' => 'gray', 'medium' => 'blue', 'high' => 'amber', 'urgent' => 'red'];
                                 $color = $priorityColors[$req->priority] ?? 'gray';
                             @endphp
-                            <span class="px-2 py-1 bg-{{ $color }}-100 dark:bg-{{ $color }}-900/30 text-{{ $color }}-700 dark:text-{{ $color }}-400 text-xs rounded-full">{{ ucfirst($req->priority) }}</span>
+                            <span class="term-tag">{{ ucfirst($req->priority) }}</span>
                         </td>
                         <td class="px-4 py-3">
                             @php
                                 $statusColors = ['new' => 'blue', 'under_review' => 'amber', 'accepted' => 'green', 'rejected' => 'red', 'converted' => 'purple'];
                                 $sc = $statusColors[$req->review_status] ?? 'gray';
                             @endphp
-                            <span class="px-2 py-1 bg-{{ $sc }}-100 dark:bg-{{ $sc }}-900/30 text-{{ $sc }}-700 dark:text-{{ $sc }}-400 text-xs rounded-full">{{ str_replace('_', ' ', ucfirst($req->review_status)) }}</span>
+                            <span class="term-tag">{{ str_replace('_', ' ', ucfirst($req->review_status)) }}</span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $req->assignedTo->name ?? 'Unassigned' }}</td>
                         <td class="px-4 py-3 text-xs text-gray-500">{{ $req->created_at->format('M d, Y') }}</td>

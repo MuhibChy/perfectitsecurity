@@ -71,6 +71,10 @@ return [
 
     'timezone' => 'UTC',
 
+    // Display-only fallback for per-user timezone rendering (storage stays
+    // UTC; see App\Support\UserTime). Overridable via DISPLAY_TIMEZONE.
+    'display_timezone' => env('DISPLAY_TIMEZONE', 'UTC'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

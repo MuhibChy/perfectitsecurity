@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Customer Guide — TechSupport Platform')
+@section('title', 'Customer Guide — PerfectITSecurity Platform')
 
 @section('page-title', '📖 Customer Guide')
 
@@ -20,7 +20,7 @@
 
     {{-- Welcome Banner --}}
     <div class="bg-gradient-to-r from-primary-500 to-blue-600 rounded-2xl p-8 mb-8 text-white shadow-xl shadow-primary-500/20">
-        <h2 class="text-3xl font-bold mb-2">Welcome to TechSupport! 👋</h2>
+        <h2 class="text-3xl font-bold mb-2">Welcome to PerfectITSecurity! 👋</h2>
         <p class="text-primary-100 text-lg">This guide will help you get the most out of your customer portal. Follow the sections below to learn how to manage tickets, view projects, pay invoices, and get instant support.</p>
     </div>
 
@@ -449,7 +449,7 @@
 
     {{-- Footer --}}
     <div class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-        <p>TechSupport Platform — Customer Guide v1.0</p>
+        <p>PerfectITSecurity Platform — Customer Guide v1.0</p>
         <p class="mt-1">Last updated: August 2026</p>
     </div>
 

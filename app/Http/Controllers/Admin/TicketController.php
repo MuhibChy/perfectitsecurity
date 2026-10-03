@@ -45,11 +45,19 @@ class TicketController extends Controller
         $ticket = Ticket::with('customer', 'assignee', 'category', 'subcategory', 'team', 'messages.user', 'attachments', 'timeEntries.user')->findOrFail($id);
         $this->ensureTicketAccess($ticket, false);
         $slaStatus = app(SlaService::class)->getSlaStatus($ticket);
+        // Additive ITSM: grounded suggestions (related tickets + permission-aware
+        // KB articles). Read-only and failure-isolated — never breaks the view.
+        try {
+            $suggestions = app(\App\Services\ItsmService::class)->suggestForTicket($ticket, $request->user());
+        } catch (\Throwable $e) {
+            report($e);
+            $suggestions = ['tickets' => collect(), 'articles' => []];
+        }
         $agents = User::where('role', 'support_agent')->get();
         $teams = SupportTeam::where('is_active', true)->get();
         $categories = TicketCategory::where('is_active', true)->get();
 
-        return view('admin.tickets.show', compact('ticket', 'slaStatus', 'agents', 'teams', 'categories'));
+        return view('admin.tickets.show', compact('ticket', 'slaStatus', 'suggestions', 'agents', 'teams', 'categories'));
     }
 
     public function assign(Request $request, $id)
@@ -66,6 +74,11 @@ class TicketController extends Controller
             'team_id' => $request->team_id ?? $ticket->team_id,
             'status' => 'assigned',
         ]);
+
+        $assignee = User::find($request->assigned_to);
+        if ($assignee) {
+            $assignee->notify(new \App\Notifications\TicketAssignedNotification($ticket->fresh(), auth()->user()->name ?? 'System'));
+        }
 
         return redirect()->back()->with('success', 'Ticket assigned successfully!');
     }
@@ -107,6 +120,16 @@ class TicketController extends Controller
             $ticket->update(['status' => 'in_progress']);
         }
 
+        // Customer-visible reply → notify the customer (preference-gated).
+        // Internal notes use addNote() and deliberately notify nobody.
+        if ($ticket->customer) {
+            \App\Services\ServiceTrackingService::notify(
+                (int) $ticket->customer_id, 'ticket_reply',
+                "Reply on ticket {$ticket->ticket_number}",
+                mb_substr((string) $request->message, 0, 140)
+            );
+        }
+
         return redirect()->back()->with('success', 'Reply sent!');
     }
 
@@ -114,7 +137,7 @@ class TicketController extends Controller
     {
         $ticket = Ticket::findOrFail($id);
         $this->ensureTicketAccess($ticket, false);
-        $request->validate(['status' => 'required|in:new,open,assigned,in_progress,waiting_customer,waiting_third_party,escalated,resolved,closed,cancelled']);
+        $request->validate(['status' => 'required|in:new,open,assigned,in_progress,waiting_customer,waiting_third_party,escalated,resolved,reopened,closed,cancelled']);
 
         $ticket->update(['status' => $request->status]);
 

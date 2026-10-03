@@ -16,7 +16,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('sla:check-deadlines')->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command('contracts:expire')->dailyAt('01:00')->withoutOverlapping()->onOneServer();
+        $schedule->command('quotes:expire')->dailyAt('01:30')->withoutOverlapping()->onOneServer();
         $schedule->command('invoices:send-overdue-reminders')->daily()->at('09:00')->withoutOverlapping();
+        $schedule->command('maintenance:remind-due')->daily()->at('08:00')->withoutOverlapping();
         $schedule->command('billing:process-subscriptions')->dailyAt('06:00')->withoutOverlapping()->onOneServer();
         $schedule->command('fx:refresh')->dailyAt('06:30')->withoutOverlapping()->onOneServer();
         $schedule->command('auth:clear-resets')->everyFifteenMinutes();

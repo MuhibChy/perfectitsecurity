@@ -1,137 +1,131 @@
 @extends('layouts.public')
 
-@section('title', $post->title . ' — TechSupport Blog')
+@section('title', $post->title . ' — PerfectITSecurity Blog')
 @section('description', $post->excerpt ?? 'Enterprise cybersecurity and IT infrastructure insights.')
 
 @section('content')
 
-{{-- Header / Hero --}}
-<section class="section bg-navy-900 dark:bg-navy-950 text-white py-16 lg:py-24 border-b border-white/5 relative overflow-hidden">
-    {{-- Global 3D hero scene (same implementation as Home) --}}
-    <x-hero-scene />
-    <div class="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
-        {{-- Breadcrumb --}}
-        <nav class="flex items-center gap-2 text-xs text-surface-400 mb-6">
-            <a href="{{ route('home') }}" class="hover:text-white transition-colors">Home</a>
-            <svg class="w-3 h-3 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a href="{{ route('blog.index') }}" class="hover:text-white transition-colors">Blog</a>
-            <svg class="w-3 h-3 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="text-surface-300 truncate max-w-xs">{{ $post->category->name ?? 'Article' }}</span>
+{{-- Header — BLOG://ENTRY --}}
+<section class="relative w-full overflow-hidden border-b border-term-300 dark:border-white/5" aria-labelledby="blog-show-heading">
+    <div class="absolute inset-0 bg-cyber-grid opacity-60 pointer-events-none" aria-hidden="true"></div>
+    <div class="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-20 sm:pt-24 pb-10 lg:pb-14">
+        <nav class="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wider text-term-700 mb-6" aria-label="Breadcrumb">
+            <a href="{{ route('home') }}" class="hover:text-accent-soft transition-colors">HOME</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ route('blog.index') }}" class="hover:text-accent-soft transition-colors">BLOG</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-term-900 dark:text-term-950 truncate max-w-xs">{{ $post->category->name ?? 'Article' }}</span>
         </nav>
 
         <div class="max-w-3xl">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyber-500/10 border border-cyber-500/30 text-cyber-300 mb-4">
-                {{ $post->category->name ?? 'Cybersecurity Insights' }}
-            </div>
-            <h1 class="text-3xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-6">
+            <span class="term-tag term-tag-accent">BLOG://{{ strtoupper($post->category->name ?? 'INSIGHTS') }}</span>
+            <h1 id="blog-show-heading" class="mt-5 font-display font-extrabold tracking-tight leading-tight text-3xl sm:text-4xl lg:text-5xl text-navy-900 dark:text-white text-balance">
                 {{ $post->title }}
             </h1>
 
-            <div class="flex items-center gap-4 text-xs text-surface-400">
+            <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-term-700">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-xs">
+                    <div class="w-8 h-8 border border-accent/50 bg-accent/10 flex items-center justify-center font-bold text-accent-soft text-xs" aria-hidden="true">
                         {{ substr($post->author->name ?? 'Admin', 0, 1) }}
                     </div>
-                    <span class="font-medium text-surface-200">{{ $post->author->name ?? 'TechSupport Editorial' }}</span>
+                    <span class="font-medium text-slate-600 dark:text-term-800">{{ $post->author->name ?? 'PerfectITSecurity Editorial' }}</span>
                 </div>
-                <span>•</span>
-                <span>{{ $post->published_at?->format('M d, Y') ?? $post->created_at->format('M d, Y') }}</span>
-                <span>•</span>
-                <span>~{{ max(1, ceil(str_word_count(strip_tags($post->content)) / 200)) }} min read</span>
+                <span aria-hidden="true">/</span>
+                <span class="font-mono text-[11px] tracking-wider">{{ $post->published_at?->format('M d, Y') ?? $post->created_at->format('M d, Y') }}</span>
+                <span aria-hidden="true">/</span>
+                <span class="font-mono text-[11px] tracking-wider">READ:// ~{{ max(1, ceil(str_word_count(strip_tags($post->content)) / 200)) }} min</span>
             </div>
         </div>
     </div>
 </section>
 
-{{-- Content Body --}}
-<section class="section bg-white dark:bg-navy-900 py-16 lg:py-24">
-    <div class="max-w-[1000px] mx-auto px-6 lg:px-10">
+{{-- Content body --}}
+<section class="relative w-full py-16 sm:py-20 lg:py-24" aria-label="Article">
+    <div class="w-full max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-10">
 
-        {{-- Featured Image --}}
         @if($post->featured_image)
-        <div class="rounded-2xl overflow-hidden aspect-[16/9] mb-12 shadow-2xl border border-surface-200 dark:border-white/10">
+        <div class="term-panel p-0 overflow-hidden aspect-[16/9] mb-8">
             <img src="{{ asset('storage/' . $post->featured_image) }}" class="w-full h-full object-cover" alt="{{ $post->title }}">
         </div>
         @endif
 
-        {{-- Excerpt Callout --}}
         @if($post->excerpt)
-        <div class="p-6 lg:p-8 rounded-2xl bg-surface-50 dark:bg-navy-800/50 border border-surface-200 dark:border-white/10 mb-12 text-lg text-surface-700 dark:text-surface-300 font-medium leading-relaxed">
+        <div class="term-panel-2 px-5 sm:px-6 py-5 mb-8 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-term-800">
             {{ $post->excerpt }}
         </div>
         @endif
 
-        {{-- Article Content --}}
-        <article class="prose prose-lg dark:prose-invert max-w-none text-navy-900 dark:text-surface-200 leading-relaxed">
-            {!! $post->content !!}
-        </article>
+        <div class="term-panel p-6 sm:p-8 lg:p-10">
+            <article class="prose dark:prose-invert max-w-none text-slate-600 dark:text-term-800 leading-relaxed">
+                {!! $post->content !!}
+            </article>
 
-        {{-- Tags --}}
-        @if($post->tags && $post->tags->isNotEmpty())
-        <div class="mt-12 pt-8 border-t border-surface-200 dark:border-white/10 flex flex-wrap items-center gap-2">
-            <span class="text-xs font-semibold text-surface-500 uppercase tracking-wider mr-2">Tags:</span>
-            @foreach($post->tags as $tag)
-            <span class="px-3 py-1 rounded-lg text-xs font-medium bg-surface-100 dark:bg-navy-800 text-surface-700 dark:text-surface-300">
-                #{{ $tag->name }}
-            </span>
-            @endforeach
+            @if($post->tags && $post->tags->isNotEmpty())
+            <div class="mt-10 pt-6 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-1.5">
+                <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-term-700 mr-2">TAGS://</span>
+                @foreach($post->tags as $tag)
+                <span class="term-tag">
+                    #{{ $tag->name }}
+                </span>
+                @endforeach
+            </div>
+            @endif
         </div>
-        @endif
 
-        {{-- Comments Section --}}
-        <div class="mt-16 pt-12 border-t border-surface-200 dark:border-white/10">
-            <h3 class="text-2xl font-bold text-navy-900 dark:text-white mb-6">Discussion & Comments</h3>
+        {{-- Comments --}}
+        <div class="term-panel p-6 sm:p-8 mt-6">
+            <div class="term-sec-label mb-2">BLOG://DISCUSSION</div>
+            <h3 class="font-display text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-6">Discussion &amp; comments</h3>
 
             @if(session('success'))
-            <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm mb-6 flex items-center gap-3">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <div class="term-alert term-alert-ok mb-6" role="status">
+                <span class="term-alert-tag">SYS://OK</span>
                 <span>{{ session('success') }}</span>
             </div>
             @endif
 
-            {{-- Comment Form --}}
-            <form action="{{ route('blog.comment', $post->slug) }}" method="POST" class="glass-card p-6 lg:p-8 rounded-2xl space-y-5">
+            <form action="{{ route('blog.comment', $post->slug) }}" method="POST" class="space-y-5">
                 @csrf
                 @guest
-                <div class="grid sm:grid-cols-2 gap-4">
+                <div class="grid sm:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-xs font-semibold text-surface-700 dark:text-surface-300 uppercase tracking-wider mb-2">Your Name</label>
-                        <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-navy-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <label class="term-field-label">Your Name</label>
+                        <input type="text" name="name" required class="term-input">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-surface-700 dark:text-surface-300 uppercase tracking-wider mb-2">Your Email</label>
-                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-navy-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <label class="term-field-label">Your Email</label>
+                        <input type="email" name="email" required class="term-input">
                     </div>
                 </div>
                 @endguest
 
                 <div>
-                    <label class="block text-xs font-semibold text-surface-700 dark:text-surface-300 uppercase tracking-wider mb-2">Your Message</label>
-                    <textarea name="comment" rows="4" required placeholder="Share your perspective or feedback..." class="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-white/10 bg-white dark:bg-navy-800 text-sm text-navy-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                    <label class="term-field-label">Your Message</label>
+                    <textarea name="comment" rows="4" required placeholder="Share your perspective or feedback..." class="term-input resize-none"></textarea>
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="submit" class="btn-primary px-6 py-2.5 text-sm">
+                    <button type="submit" class="term-btn term-btn-sm">
                         Submit Comment for Review
                     </button>
                 </div>
             </form>
         </div>
 
-        {{-- Related Posts --}}
+        {{-- Related posts --}}
         @if(isset($related) && $related->isNotEmpty())
-        <div class="mt-20 pt-12 border-t border-surface-200 dark:border-white/10">
-            <h3 class="text-xl font-bold text-navy-900 dark:text-white mb-6">Related Analysis</h3>
-            <div class="grid sm:grid-cols-3 gap-6">
+        <div class="mt-12 pt-10 border-t border-term-300 dark:border-white/5">
+            <div class="term-sec-label mb-5">BLOG://RELATED</div>
+            <div class="grid sm:grid-cols-3 gap-4 sm:gap-5">
                 @foreach($related as $rel)
-                <a href="{{ route('blog.show', $rel->slug) }}" class="glass-card group p-5 rounded-2xl block hover:-translate-y-1 transition-all">
-                    <span class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2 block">
-                        {{ $rel->category->name ?? 'Article' }}
+                <a href="{{ route('blog.show', $rel->slug) }}" class="term-panel p-5 group block">
+                    <span class="term-sec-label mb-2 block">
+                        {{ strtoupper($rel->category->name ?? 'ARTICLE') }}
                     </span>
-                    <h4 class="text-sm font-bold text-navy-900 dark:text-white group-hover:text-brand-500 transition-colors line-clamp-2">
+                    <h4 class="text-sm font-bold text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">
                         {{ $rel->title }}
                     </h4>
-                    <span class="text-xs text-surface-400 mt-2 block">{{ $rel->published_at?->format('M d, Y') }}</span>
+                    <span class="font-mono text-[10px] tracking-wider text-term-700 mt-2 block">{{ $rel->published_at?->format('M d, Y') }}</span>
                 </a>
                 @endforeach
             </div>

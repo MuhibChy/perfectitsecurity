@@ -2,14 +2,15 @@
 @section('page-title', 'Link Submissions')
 @section('content')
 <div class="space-y-6">
+    <x-page-header title="Link Submissions" sys="CONTENT://LINK-SUBMISSIONS" />
     <div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">Link Submissions</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review and approve link suggestions submitted by visitors.</p>
     </div>
 
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+    <div class="term-panel overflow-hidden">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table w-full text-sm term-table">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="text-left px-6 py-4 font-semibold text-gray-900 dark:text-white">Link</th>
@@ -23,7 +24,7 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($submissions as $submission)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors {{ $submission->status === 'pending' ? 'bg-yellow-50/50 dark:bg-yellow-900/5' : '' }}">
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Link">
                             <div>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ $submission->title }}</p>
                                 <a href="{{ $submission->url }}" target="_blank" class="text-xs text-primary-600 dark:text-primary-400 hover:underline truncate block max-w-xs">{{ $submission->url }}</a>
@@ -32,39 +33,39 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Submitted By">
                             <p class="text-sm text-gray-700 dark:text-gray-300">{{ $submission->submitter_name ?: 'Anonymous' }}</p>
                             @if($submission->submitter_email)
                             <p class="text-xs text-gray-500">{{ $submission->submitter_email }}</p>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        <td class="px-6 py-4" data-label="Category">
+                            <span class="term-tag inline-flex items-center">
                                 {{ ucfirst($submission->category) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Status">
                             @if($submission->status === 'pending')
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                            <span class="term-tag inline-flex items-center gap-1.5">
+                                <span class="term-tag w-1.5 h-1.5"></span>
                                 Pending
                             </span>
                             @elseif($submission->status === 'approved')
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span class="term-tag inline-flex items-center gap-1.5">
+                                <span class="term-tag w-1.5 h-1.5"></span>
                                 Approved
                             </span>
                             @else
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            <span class="term-tag inline-flex items-center gap-1.5">
+                                <span class="term-tag w-1.5 h-1.5"></span>
                                 Rejected
                             </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Date">
                             <span class="text-xs text-gray-500">{{ $submission->created_at->format('M d, Y') }}</span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4" data-label="Actions">
                             <div class="flex items-center justify-end gap-2">
                                 @if($submission->status === 'pending')
                                 <a href="{{ route('admin.link-submissions.show', $submission) }}" class="p-2 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors" title="Review">

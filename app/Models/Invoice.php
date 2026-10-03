@@ -72,14 +72,14 @@ class Invoice extends Model
 
     public function recalculate()
     {
-        $this->subtotal = $this->items->sum('total');
+        $this->subtotal = round((float) $this->items->sum('total'), 2);
         $discount = $this->discount_type === 'percentage'
             ? $this->subtotal * ($this->discount_amount / 100)
             : $this->discount_amount;
-        $afterDiscount = $this->subtotal - $discount;
-        $this->tax_amount = $afterDiscount * ($this->tax_rate / 100);
-        $this->total = $afterDiscount + $this->tax_amount;
-        $this->amount_due = $this->total - $this->amount_paid;
+        $afterDiscount = round($this->subtotal - $discount, 2);
+        $this->tax_amount = round($afterDiscount * ($this->tax_rate / 100), 2);
+        $this->total = round($afterDiscount + $this->tax_amount, 2);
+        $this->amount_due = round($this->total - $this->amount_paid, 2);
         $this->save();
     }
 }

@@ -203,7 +203,9 @@ class DemoDataIntegrityTest extends TestCase
         Storage::disk('private')->put($doc->path, 'demo-bytes');
 
         $this->actingAs($owner)->get(route('portal.documents.download', $doc))->assertStatus(200);
-        $this->actingAs($other)->get(route('portal.documents.download', $doc))->assertStatus(403);
+        // Oracle-free scoping: another customer's document answers 404,
+        // never 403 — consistent with orders, quotations and tracking.
+        $this->actingAs($other)->get(route('portal.documents.download', $doc))->assertStatus(404);
     }
 
     /** @test */

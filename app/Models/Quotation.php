@@ -16,6 +16,7 @@ class Quotation extends Model
         'notes', 'terms', 'subtotal', 'discount_amount', 'tax_rate', 'tax_amount',
         'total', 'status', 'valid_until', 'sent_at', 'viewed_at', 'accepted_at',
         'currency', 'country_id', 'assigned_to',
+        'promo_campaign', 'promo_percent', 'promo_snapshot',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Quotation extends Model
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total' => 'decimal:2',
+        'promo_snapshot' => 'array',
     ];
 
     protected static function booted()

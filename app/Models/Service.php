@@ -29,6 +29,12 @@ class Service extends Model
         'tags' => 'array',
     ];
 
+    /**
+     * Finite business enum for catalog pricing display. `custom` is the
+     * legacy alias of `custom_quote` (both render as Custom Quote).
+     */
+    public const PRICE_TYPES = ['fixed', 'starting_from', 'hourly', 'daily', 'monthly', 'recurring', 'custom_quote', 'custom'];
+
     public function getBasePriceAttribute()
     {
         return $this->attributes['starting_price'] ?? 0;
@@ -71,17 +77,17 @@ class Service extends Model
 
         $country = $countryPrice->country;
         $price = $countryPrice->effective_price;
-        $symbol = $country->currency_symbol;
+        $fmt = \App\Services\Money::format((float) $price, (string) ($country->currency_code ?? 'USD'));
 
         return match ($countryPrice->pricing_type) {
-            'fixed' => $symbol . number_format($price, 0),
-            'starting_from' => 'From ' . $symbol . number_format($price, 0),
-            'hourly' => $symbol . number_format($price, 2) . '/hr',
-            'daily' => $symbol . number_format($price, 0) . '/day',
-            'monthly' => $symbol . number_format($price, 0) . '/mo',
-            'recurring' => $symbol . number_format($price, 0) . '/mo',
+            'fixed' => $fmt,
+            'starting_from' => 'From ' . $fmt,
+            'hourly' => $fmt . '/hr',
+            'daily' => $fmt . '/day',
+            'monthly' => $fmt . '/mo',
+            'recurring' => $fmt . '/mo',
             'custom_quote' => 'Custom Quote',
-            default => $symbol . number_format($price, 0),
+            default => $fmt,
         };
     }
 

@@ -153,6 +153,7 @@ class KbAiAuditTest extends TestCase
     public function ai_provider_failure_returns_safe_fallback_without_secrets()
     {
         config(['services.ai.openai.api_key' => 'invalid-key-for-test']);
+        \App\Models\AiSetting::set('ai_provider', 'openai');
         \App\Services\Ai\AiProviderFactory::reset();
         $customer = $this->user('customer');
         $conversation = \App\Models\AiConversation::create(['user_id' => $customer->id, 'status' => 'active']);

@@ -7,8 +7,14 @@
     <x-page-header
         title="Invoices & Commercial Billing"
         subtitle="Access issued invoices, download PDF receipts, track payment receipts, and review outstanding accounts."
+        sys="PAYMENT://SECURE"
+        num="04"
         :breadcrumbs="['Customer Portal' => route('portal.dashboard'), 'Invoices' => null]"
-    />
+    >
+        <x-slot:actions>
+            <a href="{{ route('portal.reports.mine', ['type' => 'customer-full', 'format' => 'pdf']) }}" class="term-btn term-btn-ghost term-btn-sm">Generate Report</a>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Stats Cards Row --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -39,54 +45,54 @@
     </div>
 
     {{-- Invoices Table Card --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($invoices->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="term-table-wrap !border-0">
+            <table class="data-table term-table term-table-cards">
                 <thead>
                     <tr>
-                        <th>Invoice #</th>
-                        <th>Issued Date</th>
-                        <th>Due Date</th>
-                        <th>Total Amount</th>
+                        <th>Invoice</th>
+                        <th>Issued</th>
+                        <th>Due</th>
+                        <th>Total</th>
                         <th>Paid</th>
-                        <th>Balance Due</th>
+                        <th>Balance</th>
                         <th>Status</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($invoices as $invoice)
-                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
-                            <a href="{{ route('portal.invoices.show', $invoice->id) }}" class="font-mono font-bold text-primary-600 dark:text-primary-400 hover:underline">
+                    <tr>
+                        <td data-label="Invoice">
+                            <a href="{{ route('portal.invoices.show', $invoice->id) }}" class="font-mono font-bold text-accent-soft hover:underline">
                                 {{ $invoice->invoice_number }}
                             </a>
                         </td>
-                        <td class="text-xs text-gray-500">
+                        <td data-label="Issued" class="font-mono text-[11px] text-slate-600 dark:text-term-800">
                             {{ $invoice->issued_date ? $invoice->issued_date->format('M d, Y') : '—' }}
                         </td>
-                        <td class="text-xs {{ $invoice->due_date && $invoice->due_date->isPast() && $invoice->amount_due > 0 ? 'text-rose-500 font-bold' : 'text-gray-500' }}">
+                        <td data-label="Due" class="font-mono text-[11px] {{ $invoice->due_date && $invoice->due_date->isPast() && $invoice->amount_due > 0 ? 'text-red-400 font-bold' : 'text-slate-600 dark:text-term-800' }}">
                             {{ $invoice->due_date ? $invoice->due_date->format('M d, Y') : '—' }}
                         </td>
-                        <td class="font-mono font-semibold text-gray-900 dark:text-white">
-                            ${{ number_format($invoice->total, 2) }}
+                        <td data-label="Total" class="font-mono font-semibold tabular-nums">
+                            {{ \App\Services\Money::format($invoice->total, $invoice->currency) }}
                         </td>
-                        <td class="font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                            ${{ number_format($invoice->amount_paid ?? 0, 2) }}
+                        <td data-label="Paid" class="font-mono text-xs tabular-nums">
+                            <span class="fin-tag fin-tag-income">{{ \App\Services\Money::format($invoice->amount_paid ?? 0, $invoice->currency) }}</span>
                         </td>
-                        <td class="font-mono text-xs font-bold {{ $invoice->amount_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400' }}">
-                            ${{ number_format($invoice->amount_due ?? 0, 2) }}
+                        <td data-label="Balance" class="font-mono text-xs font-bold tabular-nums">
+                            <span class="{{ $invoice->amount_due > 0 ? 'fin-tag fin-tag-due' : '' }}">{{ \App\Services\Money::format($invoice->amount_due ?? 0, $invoice->currency) }}</span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$invoice->status" />
                         </td>
-                        <td class="text-right">
+                        <td data-label="Action" class="text-right">
                             <div class="inline-flex items-center gap-2">
-                                <a href="{{ route('portal.invoices.pdf', $invoice->id) }}" target="_blank" class="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Download PDF Receipt">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <a href="{{ route('portal.invoices.pdf', $invoice->id) }}" target="_blank" class="term-btn term-btn-ghost term-btn-sm" title="Download PDF Receipt">
+                                    PDF ↓
                                 </a>
-                                <a href="{{ route('portal.invoices.show', $invoice->id) }}" class="btn-secondary btn-sm">
+                                <a href="{{ route('portal.invoices.show', $invoice->id) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     View
                                 </a>
                             </div>
@@ -96,7 +102,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-100 dark:border-white/5">
+        <div class="px-6 py-4 border-t border-white/10">
             {{ $invoices->links() }}
         </div>
         @else

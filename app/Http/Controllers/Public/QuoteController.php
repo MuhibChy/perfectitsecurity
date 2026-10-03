@@ -10,16 +10,24 @@ use App\Models\ServiceCategory;
 use App\Models\ServiceRequest;
 use App\Services\BusinessHoursService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QuoteController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
         $services = Service::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug', 'category_id']);
         $categories = ServiceCategory::where('is_active', true)->orderBy('sort_order')->get();
         $countries = Country::active()->orderBy('sort_order')->get();
 
-        return view('public.get-quote', compact('services', 'categories', 'countries'));
+        // Pre-select service when arriving from a service page (?service_id=).
+        $selectedServiceId = null;
+        if ($request->filled('service_id')) {
+            $preselected = Service::where('is_active', true)->find($request->input('service_id'));
+            $selectedServiceId = $preselected?->id;
+        }
+
+        return view('public.get-quote', compact('services', 'categories', 'countries', 'selectedServiceId'));
     }
 
     public function store(Request $request)
@@ -44,7 +52,8 @@ class QuoteController extends Controller
 
         $taxRate = app(BusinessHoursService::class)->taxRateForCountry($country);
 
-        $serviceRequest = ServiceRequest::create([
+        $serviceRequest = DB::transaction(function () use ($validated, $country, $taxRate) {
+            $serviceRequest = ServiceRequest::create([
             'user_id' => auth()->id(),
             'service_id' => $validated['service_id'] ?? null,
             'country_id' => $country?->id,
@@ -62,7 +71,7 @@ class QuoteController extends Controller
             'timeline' => $validated['timeline'] ?? null,
             'lead_source' => 'get-quote',
             'status' => 'new',
-            'review_status' => 'inbound',
+            'review_status' => 'new',
             'priority' => 'medium',
         ]);
 
@@ -81,6 +90,22 @@ class QuoteController extends Controller
             'country_id' => $country?->id,
             'notes' => "Tax preset: {$taxRate}%\n\n" . $validated['message'],
         ]);
+
+            return $serviceRequest;
+        });
+
+        // Staff alert: quote requests must reach sales (in-app notification).
+        $staff = \App\Models\User::whereIn('role', ['super_admin', 'admin', 'support_manager', 'sales_agent'])
+            ->where('is_active', true)->limit(10)->get();
+        foreach ($staff as $member) {
+            \App\Models\Notification::create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => 'quote_request',
+                'notifiable_type' => \App\Models\User::class,
+                'notifiable_id' => $member->id,
+                'data' => ['title' => 'New quote request', 'message' => "{$validated['name']} ({$validated['email']}) requested a quote.", 'service_request_id' => $serviceRequest->id],
+            ]);
+        }
 
         return redirect()->route('get-quote')->with('success', 'Your quote request has been submitted. We will respond within 24 hours.');
     }

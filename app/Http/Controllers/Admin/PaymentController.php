@@ -34,6 +34,7 @@ class PaymentController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string|max:100',
             'transaction_id' => 'nullable|string|max:255|unique:payments,transaction_id',
+            'currency' => 'nullable|string|size:3',
             'notes' => 'nullable|string',
         ]);
 
@@ -41,13 +42,19 @@ class PaymentController extends Controller
         $invoice = Invoice::lockForUpdate()->findOrFail($validated['invoice_id']);
         abort_unless(in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid']), 422, 'Payments can only be recorded against an issued invoice.');
         abort_if((float) $validated['amount'] > (float) $invoice->amount_due, 422, 'Payment exceeds the invoice balance.');
+        // Currency must match the invoice — never trust a browser-submitted
+        // code that would mix ledgers.
+        $currency = strtoupper($validated['currency'] ?? $invoice->currency ?? 'USD');
+        abort_unless($currency === strtoupper($invoice->currency ?? 'USD'), 422, 'Payment currency must match the invoice currency.');
         $customerId = $invoice->customer_id;
 
         $payment = Payment::create([
             'payment_number' => 'PAY-' . strtoupper(Str::random(8)),
             'invoice_id' => $invoice->id,
             'customer_id' => $customerId,
+            'service_order_id' => $invoice->service_order_id,
             'amount' => $validated['amount'],
+            'currency' => $currency,
             'status' => 'completed',
             'payment_method' => $validated['payment_method'],
             'transaction_id' => $validated['transaction_id'] ?? null,
@@ -55,9 +62,18 @@ class PaymentController extends Controller
             'paid_at' => now(),
         ]);
 
+        // Keep the service order ledger + staged schedules in sync when this
+        // invoice belongs to an order (invoice-direct path previously skipped it).
+        if ($invoice->service_order_id && ($order = \App\Models\ServiceOrder::lockForUpdate()->find($invoice->service_order_id))) {
+            $order->amount_paid = round((float) $order->amount_paid + (float) $validated['amount'], 2);
+            $order->amount_due = max(0, round((float) $order->total - (float) $order->amount_paid, 2));
+            $order->save();
+            app(\App\Services\OrderPaymentAllocator::class)->allocate($order->fresh(), $payment->fresh(), (float) $validated['amount']);
+        }
+
         // Update invoice
-        $invoice->amount_paid += $validated['amount'];
-        $invoice->amount_due = max(0, $invoice->total - $invoice->amount_paid);
+        $invoice->amount_paid = round((float) $invoice->amount_paid + (float) $validated['amount'], 2);
+        $invoice->amount_due = max(0, round((float) $invoice->total - (float) $invoice->amount_paid, 2));
         $invoice->status = $invoice->amount_due <= 0 ? 'paid' : 'partially_paid';
         if ($invoice->status === 'paid') $invoice->paid_at = now();
         $invoice->save();
@@ -67,7 +83,7 @@ class PaymentController extends Controller
             $validated['amount'],
             'Customer Payment',
             "Payment {$payment->payment_number} received",
-            ['payment_id' => $payment->id, 'invoice_id' => $invoice->id, 'customer_id' => $customerId]
+            ['payment_id' => $payment->id, 'invoice_id' => $invoice->id, 'customer_id' => $customerId, 'currency' => $currency]
         );
 
         AuditService::log('create', 'payments', $payment, 'Payment recorded');
@@ -105,6 +121,28 @@ class PaymentController extends Controller
             abort_if((float) $validated['amount'] > $refundable, 422, "Refund exceeds the refundable remainder ({$refundable}).");
 
             $amount = round((float) $validated['amount'], 2);
+
+            // Online gateway reversal first (outside the ledger transaction):
+            // if Stripe holds the funds, they must actually move. API failure
+            // aborts before any local record is created.
+            $gatewayRefundId = null;
+            if ($payment->gateway === 'stripe' && $payment->stripe_payment_intent_id
+                && !empty(config('services.stripe.secret'))) {
+                try {
+                    \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+                    $reversal = \Stripe\Refund::create([
+                        'payment_intent' => $payment->stripe_payment_intent_id,
+                        'amount' => (int) round($amount * 100),
+                        'reason' => 'requested_by_customer',
+                        'metadata' => ['payment_id' => $payment->id, 'reason' => mb_substr($validated['reason'], 0, 200)],
+                    ]);
+                    $gatewayRefundId = $reversal->id ?? null;
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Stripe refund failed', ['payment' => $payment->id]);
+                    abort(422, 'Stripe declined the reversal; no refund was recorded. Try again or refund from the Stripe Dashboard.');
+                }
+            }
+
             $refund = Payment::create([
                 'payment_number' => 'RFD-' . strtoupper(Str::random(8)),
                 'invoice_id' => $invoice->id,
@@ -114,7 +152,7 @@ class PaymentController extends Controller
                 'currency' => $payment->currency,
                 'status' => 'refunded',
                 'payment_method' => $payment->payment_method,
-                'transaction_id' => 'REFUND-' . $payment->transaction_id,
+                'transaction_id' => $gatewayRefundId ?? ('REFUND-' . $payment->transaction_id),
                 'notes' => "Refund of {$payment->payment_number}: {$validated['reason']}",
                 'paid_at' => now(),
             ]);

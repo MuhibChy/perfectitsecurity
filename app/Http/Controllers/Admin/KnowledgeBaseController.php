@@ -39,6 +39,7 @@ class KnowledgeBaseController extends Controller
             'tags.*' => 'exists:kb_tags,id',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
+            'ai_readable' => 'boolean',
         ]);
 
         $validated['author_id'] = auth()->id();
@@ -46,6 +47,7 @@ class KnowledgeBaseController extends Controller
         $validated['content'] = \App\Services\HtmlSanitizer::clean($validated['content']);
         $validated['is_published'] = $request->boolean('is_published');
         $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['ai_readable'] = $request->boolean('ai_readable', true);
 
         $tags = $validated['tags'] ?? [];
         unset($validated['tags']);
@@ -84,20 +86,26 @@ class KnowledgeBaseController extends Controller
             'tags.*' => 'exists:kb_tags,id',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
+            'ai_readable' => 'boolean',
+            'edit_reason' => 'nullable|string|max:500',
         ]);
 
         $validated['content'] = \App\Services\HtmlSanitizer::clean($validated['content']);
         $validated['is_published'] = $request->boolean('is_published');
         $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['ai_readable'] = $request->boolean('ai_readable', true);
 
+        $editReason = trim((string) ($validated['edit_reason'] ?? ''));
         $tags = $validated['tags'] ?? null;
-        unset($validated['tags']);
+        unset($validated['tags'], $validated['edit_reason']);
 
+        $before = $knowledgeBase->only(['title', 'content', 'visibility', 'is_published']);
         $knowledgeBase->update($validated);
         if ($tags !== null) {
             $knowledgeBase->tags()->sync($tags);
         }
-        $knowledgeBase->saveVersion($validated, auth()->id(), 'Admin edit');
+        $knowledgeBase->saveVersion($validated, auth()->id(), $editReason !== '' ? $editReason : 'Admin edit');
+        \App\Models\AuditLog::log('kb.updated', 'knowledge_base', $knowledgeBase, 'Article edited by ' . (auth()->user()->name ?? 'staff') . ($editReason !== '' ? '. Reason: ' . $editReason : '.'), $before, $knowledgeBase->fresh()->only(['title', 'content', 'visibility', 'is_published']));
         return redirect()->route('admin.knowledge-base.index')->with('success', 'Article updated!');
     }
 

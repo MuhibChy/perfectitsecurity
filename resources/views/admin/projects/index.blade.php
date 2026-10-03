@@ -4,13 +4,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <x-page-header
+    <x-page-header sys="OPS://PROJECTS"
         title="Project Management"
         subtitle="Orchestrate enterprise client deployments, cloud migrations, and security engineering deliverables."
         :breadcrumbs="['Admin' => route('admin.dashboard'), 'Projects' => null]"
     >
         <x-slot:actions>
-            <a href="{{ route('admin.projects.create') }}" class="btn-primary btn-sm">
+            <a href="{{ route('admin.projects.create') }}" class="term-btn term-btn-sm">
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Launch New Project
             </a>
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="glass-card p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="term-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none">
             @php $currentStatus = request('status'); @endphp
             <a href="{{ route('admin.projects.index', array_filter(['search' => request('search')])) }}"
@@ -66,7 +66,7 @@
             <input type="hidden" name="status" value="{{ request('status') }}">
             @endif
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search project or number..."
-                   class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white dark:bg-navy-800 border border-surface-200 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                   class="term-input pl-9 pr-4">
             <div class="absolute left-3 top-2.5 text-gray-400">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
@@ -74,10 +74,10 @@
     </div>
 
     {{-- Projects Table --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($projects->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="overflow-x-auto term-table-wrap">
+            <table class="data-table term-table">
                 <thead>
                     <tr>
                         <th>Project Ref</th>
@@ -93,19 +93,19 @@
                 <tbody>
                     @foreach($projects as $prj)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
+                        <td data-label="Project Ref">
                             <a href="{{ route('admin.projects.show', $prj->id) }}" class="font-mono font-bold text-primary-600 dark:text-primary-400 hover:underline">
                                 {{ $prj->project_number }}
                             </a>
                         </td>
-                        <td>
+                        <td data-label="Project Name & Client">
                             <div class="font-bold text-gray-900 dark:text-white">{{ $prj->name }}</div>
                             <div class="text-xs text-gray-500">Client: {{ $prj->customer->name ?? 'Internal' }}</div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$prj->status" />
                         </td>
-                        <td class="w-36">
+                        <td class="w-36" data-label="Progress">
                             <div class="flex items-center gap-2">
                                 <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                     <div class="bg-gradient-to-r from-primary-500 to-cyan-400 h-2 rounded-full" style="width: {{ $prj->progress ?? 0 }}%"></div>
@@ -113,21 +113,21 @@
                                 <span class="text-xs font-mono font-semibold text-gray-600 dark:text-gray-300">{{ $prj->progress ?? 0 }}%</span>
                             </div>
                         </td>
-                        <td class="text-xs text-gray-600 dark:text-gray-300">
+                        <td class="text-xs text-gray-600 dark:text-gray-300" data-label="Project Lead">
                             {{ $prj->projectManager->name ?? 'Unassigned' }}
                         </td>
-                        <td class="font-mono text-xs font-semibold text-gray-900 dark:text-white">
+                        <td class="font-mono text-xs font-semibold text-gray-900 dark:text-white" data-label="Budget">
                             ${{ number_format($prj->budget ?? 0, 2) }}
                         </td>
-                        <td class="text-xs {{ $prj->deadline && $prj->deadline->isPast() ? 'text-rose-500 font-bold' : 'text-gray-500' }}">
+                        <td class="text-xs {{ $prj->deadline && $prj->deadline->isPast() ? 'text-rose-500 font-bold' : 'text-gray-500' }}" data-label="Deadline">
                             {{ $prj->deadline ? $prj->deadline->format('M d, Y') : 'Ongoing' }}
                         </td>
-                        <td class="text-right">
+                        <td class="text-right" data-label="Actions">
                             <div class="inline-flex items-center gap-1.5">
-                                <a href="{{ route('admin.projects.show', $prj->id) }}" class="btn-ghost btn-sm text-xs">
+                                <a href="{{ route('admin.projects.show', $prj->id) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     View
                                 </a>
-                                <a href="{{ route('admin.projects.edit', $prj->id) }}" class="btn-secondary btn-sm text-xs">
+                                <a href="{{ route('admin.projects.edit', $prj->id) }}" class="term-btn term-btn-ghost term-btn-sm">
                                     Edit
                                 </a>
                             </div>

@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\Invoice;
 use App\Models\Service;
 use App\Models\Setting;
+use App\Models\Task;
 
 class AiKnowledgeService
 {
@@ -20,7 +21,7 @@ class AiKnowledgeService
      */
     public function getAuthorizedArticles(?User $user = null, ?string $query = null, int $limit = 10): \Illuminate\Database\Eloquent\Collection
     {
-        $queryBuilder = KbArticle::published()->with('category', 'tags');
+        $queryBuilder = KbArticle::published()->where('ai_readable', true)->with('category', 'tags');
 
         // Filter by visibility based on user role
         if (!$user) {
@@ -158,6 +159,105 @@ class AiKnowledgeService
                 'status' => $user->company->status,
             ];
         }
+
+        // Live service status (own orders only; computed, never invented).
+        $orders = \App\Models\ServiceOrder::with(['service'])
+            ->where('customer_id', $user->id)->latest()->limit(5)->get();
+        if ($orders->isNotEmpty()) {
+            $context['services'] = $orders->map(function ($o) {
+                $project = $o->tasks()->whereNotNull('project_id')->first()?->project;
+                $lastUpdate = $project
+                    ? \App\Models\ServiceEvent::where('project_id', $project->id)->where('customer_visible', true)->latest()->first()
+                    : null;
+                return [
+                    'order_number' => $o->order_number,
+                    'service' => $o->service?->name ?? $o->service_snapshot['name'] ?? null,
+                    'status' => $o->status,
+                    'project_status' => $project?->status,
+                    'eta' => $project?->deadline?->format('Y-m-d'),
+                    'latest_update' => $lastUpdate ? ($lastUpdate->comment ?? $lastUpdate->action) . ' (' . $lastUpdate->created_at->format('Y-m-d H:i') . ')' : null,
+                    'amount_due' => (float) $o->amount_due,
+                ];
+            })->toArray();
+        }
+
+        // FWallet (own ledgers only; never another customer's).
+        $wallets = \App\Models\Wallet::where('user_id', $user->id)->get();
+        if ($wallets->isNotEmpty()) {
+            $context['wallets'] = $wallets->map(fn($w) => [
+                'reference' => $w->wallet_reference,
+                'currency' => $w->currency,
+                'balance' => (float) $w->balance,
+                'status' => $w->status,
+                'recent' => $w->transactions()->latest()->limit(5)->get()->map(fn($t) => [
+                    'reference' => $t->transaction_reference,
+                    'type' => $t->type,
+                    'amount' => (float) $t->amount,
+                    'status' => $t->status,
+                    'date' => $t->created_at?->format('Y-m-d'),
+                ])->toArray(),
+            ])->toArray();
+        }
+
+        return $context;
+    }
+
+    /**
+     * Get staff work-history context (own records only, RBAC-safe).
+     */
+    public function getStaffContext(User $user): array
+    {
+        $context = [];
+
+        $tasks = Task::where('assigned_to', $user->id)
+            ->whereNotIn('status', ['completed', 'cancelled', 'rejected'])
+            ->latest()->limit(5)->get();
+        if ($tasks->isNotEmpty()) {
+            $context['open_tasks'] = $tasks->map(fn($t) => [
+                'number' => $t->task_number,
+                'title' => $t->title,
+                'status' => $t->status,
+            ])->toArray();
+        }
+
+        $projects = Project::where('project_manager_id', $user->id)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->latest()->limit(3)->get();
+        if ($projects->isNotEmpty()) {
+            $context['managed_projects'] = $projects->map(fn($p) => [
+                'name' => $p->name,
+                'status' => $p->status,
+                'progress' => $p->progress,
+            ])->toArray();
+        }
+
+        $tickets = Ticket::where('assigned_to', $user->id)->open()->latest()->limit(5)->get();
+        if ($tickets->isNotEmpty()) {
+            $context['assigned_tickets'] = $tickets->map(fn($t) => [
+                'number' => $t->ticket_number,
+                'subject' => $t->subject,
+                'status' => $t->status,
+            ])->toArray();
+        }
+
+        // Active service work with order references (for status questions).
+        $work = Task::with(['project.customer', 'serviceOrder'])
+            ->where('assigned_to', $user->id)->where('status', 'in_progress')
+            ->latest()->limit(5)->get();
+        if ($work->isNotEmpty()) {
+            $context['active_work'] = $work->map(fn($t) => [
+                'task' => $t->title,
+                'order_number' => $t->serviceOrder?->order_number,
+                'customer' => $t->project?->customer?->name,
+                'started' => ($t->start_date ?? $t->created_at)?->format('Y-m-d H:i'),
+                'eta' => $t->deadline?->format('Y-m-d'),
+            ])->toArray();
+        }
+
+        $context['month_summary'] = [
+            'tasks_completed_this_month' => Task::where('assigned_to', $user->id)
+                ->where('status', 'completed')->where('updated_at', '>=', now()->startOfMonth())->count(),
+        ];
 
         return $context;
     }

@@ -47,6 +47,7 @@ class SetLocale
         // Share locale data with all views
         \View::share('currentLocale', $locale);
         \View::share('supportedLocales', self::SUPPORTED_LOCALES);
+        \View::share('localeDirection', self::SUPPORTED_LOCALES[$locale]['dir'] ?? 'ltr');
 
         return $next($request);
     }

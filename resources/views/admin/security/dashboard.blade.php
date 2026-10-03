@@ -1,7 +1,9 @@
 @extends('layouts.app')
 @section('page-title', 'Security Dashboard')
 @section('content')
-<div class="glass-card p-6">
+
+    <x-page-header title="Security Dashboard" sys="SYSTEM://SECURITY" />
+<div class="term-panel p-6">
     <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Security Posture Dashboard</h2>
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Internal overview for administrators. Aligned with NIST CSF (Govern/Identify/Protect/Detect/Respond/Recover) — alignment only, not certification.</p>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -23,8 +25,8 @@
                 <p class="text-sm text-gray-500">No open findings. Record them under Security Findings.</p>
             @endforelse
             <div class="mt-4 flex gap-2">
-                <a href="{{ route('admin.security-findings.index') }}" class="btn-secondary btn-sm">Manage Findings</a>
-                <a href="{{ route('admin.sbom') }}" class="btn-secondary btn-sm">SBOM Inventory</a>
+                <a href="{{ route('admin.security-findings.index') }}" class="term-btn term-btn-ghost term-btn-sm">Manage Findings</a>
+                <a href="{{ route('admin.sbom') }}" class="term-btn term-btn-ghost term-btn-sm">SBOM Inventory</a>
             </div>
         </div>
         <div>

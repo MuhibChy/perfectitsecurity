@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>Invoice #{{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
+        body { font-family: 'DejaVu Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 30px; font-size: 13px; line-height: 1.5; }
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 25px; }
         .logo { font-size: 24px; font-weight: bold; color: #1e293b; }
         .invoice-title { font-size: 20px; font-weight: bold; color: #2563eb; text-align: right; }
@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="header">
-        <table style="width: 100%;">
+        <table style="width: 100%;" class="data-table term-table">
             <tr>
                 <td>
                     <div class="logo">TechSupport Solutions</div>
@@ -34,13 +34,13 @@
                 <td style="text-align: right;">
                     <div class="invoice-title">INVOICE</div>
                     <div style="font-weight: 600; color: #475569;">#{{ $invoice->invoice_number }}</div>
-                    <div>Status: <span class="badge {{ $invoice->status === 'paid' ? 'badge-paid' : ($invoice->status === 'overdue' ? 'badge-overdue' : 'badge-pending') }}">{{ strtoupper($invoice->status) }}</span></div>
+                    <div>Status: <span class="term-tag {{ $invoice->status === 'paid' ? '' : ($invoice->status === 'overdue' ? '' : '') }}">{{ strtoupper($invoice->status) }}</span></div>
                 </td>
             </tr>
         </table>
     </div>
 
-    <table class="meta-table">
+    <table class="data-table meta-table term-table">
         <tr>
             <td style="width: 50%;">
                 <strong style="color: #64748b; font-size: 11px; text-transform: uppercase;">Billed To:</strong><br>
@@ -59,7 +59,7 @@
         </tr>
     </table>
 
-    <table class="table">
+    <table class="data-table table term-table">
         <thead>
             <tr>
                 <th style="width: 50%;">Item & Description</th>
@@ -71,44 +71,44 @@
         <tbody>
             @forelse($invoice->items ?? [] as $item)
             <tr>
-                <td>
+                <td data-label="Item & Description">
                     <strong>{{ $item->description ?? $item->name }}</strong>
                 </td>
-                <td style="text-align: center;">{{ $item->quantity ?? 1 }}</td>
-                <td style="text-align: right;">${{ number_format($item->unit_price ?? $item->price ?? 0, 2) }}</td>
-                <td style="text-align: right;">${{ number_format($item->total ?? (($item->quantity ?? 1) * ($item->unit_price ?? 0)), 2) }}</td>
+                <td style="text-align: center;" data-label="Quantity">{{ $item->quantity ?? 1 }}</td>
+                <td style="text-align: right;" data-label="Unit Price">{{ \App\Services\Money::format($item->unit_price ?? $item->price ?? 0, $invoice->currency) }}</td>
+                <td style="text-align: right;" data-label="Total">{{ \App\Services\Money::format($item->total ?? (($item->quantity ?? 1) * ($item->unit_price ?? 0)), $invoice->currency) }}</td>
             </tr>
             @empty
             <tr>
-                <td><strong>IT Professional Services</strong></td>
-                <td style="text-align: center;">1</td>
-                <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
-                <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+                <td data-label="Item & Description"><strong>IT Professional Services</strong></td>
+                <td style="text-align: center;" data-label="Quantity">1</td>
+                <td style="text-align: right;" data-label="Unit Price">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
+                <td style="text-align: right;" data-label="Total">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
             </tr>
             @endforelse
         </tbody>
     </table>
 
-    <table class="totals">
+    <table class="data-table totals term-table">
         <tr>
             <td>Subtotal:</td>
-            <td style="text-align: right;">${{ number_format($invoice->subtotal ?? $invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->subtotal ?? $invoice->total ?? 0, $invoice->currency) }}</td>
         </tr>
         @if(isset($invoice->tax_amount) && $invoice->tax_amount > 0)
         <tr>
             <td>Tax:</td>
-            <td style="text-align: right;">${{ number_format($invoice->tax_amount, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->tax_amount, $invoice->currency) }}</td>
         </tr>
         @endif
         @if(isset($invoice->discount_amount) && $invoice->discount_amount > 0)
         <tr>
             <td>Discount:</td>
-            <td style="text-align: right;">-${{ number_format($invoice->discount_amount, 2) }}</td>
+            <td style="text-align: right;">-{{ \App\Services\Money::format($invoice->discount_amount, $invoice->currency) }}</td>
         </tr>
         @endif
         <tr class="grand-total">
             <td>Total:</td>
-            <td style="text-align: right;">${{ number_format($invoice->total_amount ?? $invoice->amount ?? 0, 2) }}</td>
+            <td style="text-align: right;">{{ \App\Services\Money::format($invoice->total ?? 0, $invoice->currency) }}</td>
         </tr>
     </table>
 

@@ -10,9 +10,18 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * production should set TRUSTED_PROXIES to the load balancer / CDN
+     * addresses instead of trusting every client-supplied X-Forwarded-*
+     * header (which would allow IP spoofing past IP-based throttles).
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies = '*';
+    protected $proxies;
+
+    public function __construct()
+    {
+        $this->proxies = env('TRUSTED_PROXIES') ?: '*';
+    }
 
     /**
      * The headers that should be used to detect proxies.

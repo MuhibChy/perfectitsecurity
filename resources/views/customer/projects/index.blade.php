@@ -7,6 +7,8 @@
     <x-page-header
         title="Infrastructure Projects"
         subtitle="Track active cloud deployments, cybersecurity hardening milestones, and technical implementations."
+        sys="CLIENT://PROJECTS"
+        num="10"
         :breadcrumbs="['Customer Portal' => route('portal.dashboard'), 'Projects' => null]"
     />
 
@@ -39,52 +41,52 @@
     </div>
 
     {{-- Projects Table Card --}}
-    <div class="glass-card overflow-hidden">
+    <div class="term-panel overflow-hidden">
         @if($projects->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="data-table">
+        <div class="term-table-wrap !border-0">
+            <table class="data-table term-table term-table-cards">
                 <thead>
                     <tr>
-                        <th>Project #</th>
-                        <th>Project Name</th>
+                        <th>Project</th>
+                        <th>Name</th>
                         <th>Status</th>
                         <th>Progress</th>
-                        <th>Project Lead</th>
+                        <th>Lead</th>
                         <th>Deadline</th>
                         <th class="text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($projects as $project)
-                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td>
-                            <a href="{{ route('portal.projects.show', $project->id) }}" class="font-mono font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+                    <tr>
+                        <td data-label="Project">
+                            <a href="{{ route('portal.projects.show', $project->id) }}" class="font-mono font-semibold text-accent-soft hover:underline">
                                 {{ $project->project_number ?? 'PRJ-' . str_pad($project->id, 5, '0', STR_PAD_LEFT) }}
                             </a>
                         </td>
-                        <td>
-                            <div class="font-bold text-gray-900 dark:text-white">{{ $project->name }}</div>
-                            <div class="text-xs text-gray-500 line-clamp-1">{{ $project->description }}</div>
+                        <td data-label="Name">
+                            <div class="font-bold text-slate-900 dark:text-white">{{ $project->name }}</div>
+                            <div class="text-xs text-slate-600 dark:text-term-800 line-clamp-1">{{ $project->description }}</div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <x-status-badge :status="$project->status" />
                         </td>
-                        <td class="w-36">
+                        <td data-label="Progress" class="w-36">
                             <div class="flex items-center gap-2">
-                                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-primary-500 to-cyan-400 h-2 rounded-full" style="width: {{ $project->progress ?? 0 }}%"></div>
+                                <div class="flex-1 bg-white/10 h-2 overflow-hidden">
+                                    <div class="h-2" style="width: {{ $project->progress ?? 0 }}%; background: linear-gradient(90deg,#00E67A,#4DA3FF);"></div>
                                 </div>
-                                <span class="text-xs font-mono font-semibold text-gray-600 dark:text-gray-300">{{ $project->progress ?? 0 }}%</span>
+                                <span class="text-xs font-mono font-semibold tabular-nums">{{ $project->progress ?? 0 }}%</span>
                             </div>
                         </td>
-                        <td class="text-xs text-gray-600 dark:text-gray-300">
+                        <td data-label="Lead" class="text-xs">
                             {{ $project->projectManager->name ?? 'Engineering Staff' }}
                         </td>
-                        <td class="text-xs {{ $project->deadline && $project->deadline->isPast() ? 'text-rose-500 font-bold' : 'text-gray-500' }}">
+                        <td data-label="Deadline" class="font-mono text-[11px] {{ $project->deadline && $project->deadline->isPast() ? 'text-red-400 font-bold' : 'text-slate-600 dark:text-term-800' }}">
                             {{ $project->deadline ? $project->deadline->format('M d, Y') : 'Ongoing' }}
                         </td>
-                        <td class="text-right">
-                            <a href="{{ route('portal.projects.show', $project->id) }}" class="btn-secondary btn-sm">
+                        <td data-label="Action" class="text-right">
+                            <a href="{{ route('portal.projects.show', $project->id) }}" class="term-btn term-btn-ghost term-btn-sm">
                                 View Board &rarr;
                             </a>
                         </td>
@@ -93,16 +95,13 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-100 dark:border-white/5">
+        <div class="px-6 py-4 border-t border-white/10">
             {{ $projects->links() }}
         </div>
         @else
-        <x-empty-state
-            title="No Active Projects"
+        <x-empty-state-3d type="projects" title="No Active Projects"
             message="Contracted services, cloud migrations, and cybersecurity deployments will be tracked on this dashboard."
-            actionText="Request a New Project"
-            :actionUrl="route('portal.service-request.create')"
-        />
+            actionText="Request a New Project" :actionUrl="route('portal.service-request.create')" />
         @endif
     </div>
 </div>
