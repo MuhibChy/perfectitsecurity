@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\SlaPolicy;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
-use App\Models\SlaPolicy;
-use App\Models\TicketMessage;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +14,9 @@ class TicketingTest extends TestCase
     use RefreshDatabase;
 
     protected $customer;
+
     protected $agent;
+
     protected $category;
 
     protected function setUp(): void

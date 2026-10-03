@@ -17,11 +17,12 @@ class QrService
     {
         $backend = new SvgImageBackEnd();
         $renderer = new ImageRenderer(new RendererStyle($size), $backend);
+
         return (new Writer($renderer))->writeString($content);
     }
 
     public function dataUri(string $content, int $size = 200): string
     {
-        return 'data:image/svg+xml;base64,' . base64_encode($this->svg($content, $size));
+        return 'data:image/svg+xml;base64,'.base64_encode($this->svg($content, $size));
     }
 }

@@ -34,37 +34,37 @@ class ContactController extends Controller
 
         $serviceRequest = DB::transaction(function () use ($validated) {
             $serviceRequest = ServiceRequest::create([
-            'user_id' => auth()->id(),
-            'service_id' => $validated['service_id'] ?? null,
-            'country_id' => $validated['country_id'] ?? null,
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'company' => $validated['company'] ?? null,
-            'subject' => $validated['subject'],
-            'service_interest' => $validated['service_interest'] ?? null,
-            'requirements' => $validated['message'],
-            'budget' => $validated['budget'] ?? null,
-            'budget_range' => $validated['budget_range'] ?? null,
-            'timeline' => $validated['timeline'] ?? null,
-            'lead_source' => 'contact',
-            'status' => 'new',
-            'review_status' => 'new',
-        ]);
+                'user_id' => auth()->id(),
+                'service_id' => $validated['service_id'] ?? null,
+                'country_id' => $validated['country_id'] ?? null,
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'company' => $validated['company'] ?? null,
+                'subject' => $validated['subject'],
+                'service_interest' => $validated['service_interest'] ?? null,
+                'requirements' => $validated['message'],
+                'budget' => $validated['budget'] ?? null,
+                'budget_range' => $validated['budget_range'] ?? null,
+                'timeline' => $validated['timeline'] ?? null,
+                'lead_source' => 'contact',
+                'status' => 'new',
+                'review_status' => 'new',
+            ]);
 
-        Lead::create([
-            'service_request_id' => $serviceRequest->id,
-            'customer_id' => auth()->id(),
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'company_name' => $validated['company'] ?? null,
-            'source' => 'contact',
-            'status' => 'new',
-            'notes' => $validated['subject'] . "\n\n" . $validated['message'],
-            'estimated_value' => $validated['budget'] ?? null,
-            'country_id' => $validated['country_id'] ?? null,
-        ]);
+            Lead::create([
+                'service_request_id' => $serviceRequest->id,
+                'customer_id' => auth()->id(),
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'company_name' => $validated['company'] ?? null,
+                'source' => 'contact',
+                'status' => 'new',
+                'notes' => $validated['subject']."\n\n".$validated['message'],
+                'estimated_value' => $validated['budget'] ?? null,
+                'country_id' => $validated['country_id'] ?? null,
+            ]);
 
             return $serviceRequest;
         });

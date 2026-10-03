@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SupportTeam;
 use App\Models\Ticket;
+use App\Models\TicketCategory;
 use App\Models\TicketMessage;
 use App\Models\User;
-use App\Models\TicketCategory;
-use App\Models\SupportTeam;
 use App\Services\SlaService;
 use Illuminate\Http\Request;
 
@@ -22,9 +22,15 @@ class TicketController extends Controller
             $query->where('assigned_to', $request->user()->id);
         }
 
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->priority) $query->where('priority', $request->priority);
-        if ($request->category_id) $query->where('category_id', $request->category_id);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->priority) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
         if ($request->assigned_to && $request->user()->isSupportManager()) {
             $query->where('assigned_to', $request->assigned_to);
         }
@@ -192,7 +198,7 @@ class TicketController extends Controller
         $this->ensureTicketAccess($primaryTicket, true);
 
         $request->validate([
-            'merge_ticket_id' => 'required|exists:tickets,id|not_in:' . $id,
+            'merge_ticket_id' => 'required|exists:tickets,id|not_in:'.$id,
             'reason' => 'nullable|string|max:500',
         ]);
 
@@ -223,7 +229,7 @@ class TicketController extends Controller
             // Soft delete secondary ticket
             $secondaryTicket->update([
                 'status' => 'cancelled',
-                'description' => $secondaryTicket->description . "\n\n--- MERGED INTO: {$primaryTicket->ticket_number} ---",
+                'description' => $secondaryTicket->description."\n\n--- MERGED INTO: {$primaryTicket->ticket_number} ---",
             ]);
             $secondaryTicket->delete();
         });
@@ -261,6 +267,6 @@ class TicketController extends Controller
             return;
         }
 
-        abort_if($managerOnly || !$user->isSupportAgent() || (int) $ticket->assigned_to !== (int) $user->id, 403);
+        abort_if($managerOnly || ! $user->isSupportAgent() || (int) $ticket->assigned_to !== (int) $user->id, 403);
     }
 }

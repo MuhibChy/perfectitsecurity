@@ -31,6 +31,7 @@ class AccountEcosystemController extends Controller
         abort_unless($me->isFinanceManager(), 403);
         abort_if($user->isCustomer(), 422, 'Customers do not hold compensation models.');
         $user->loadMissing('compensation');
+
         return view('admin.ecosystem.compensation', [
             'employee' => $user,
             'compensation' => $user->compensation,
@@ -59,7 +60,7 @@ class AccountEcosystemController extends Controller
             'status' => 'required|in:active,suspended',
         ]);
         foreach (['has_salary', 'has_commission', 'has_project_pay'] as $flag) {
-            $data[$flag] = !empty($data[$flag]);
+            $data[$flag] = ! empty($data[$flag]);
         }
         if (($data['commission_type'] ?? null) === 'percentage') {
             abort_if(($data['commission_value'] ?? 0) > 100, 422, 'Commission percentage cannot exceed 100.');
@@ -68,6 +69,7 @@ class AccountEcosystemController extends Controller
         $comp = EmployeeCompensation::updateOrCreate(['user_id' => $user->id], $data + ['updated_by' => $me->id]);
         AuditLog::log('compensation.updated', 'employee_compensations', $comp, "Compensation model for {$user->name} set to {$comp->modelLabel()} by {$me->name}.");
         \App\Services\ServiceTrackingService::notify((int) $user->id, 'compensation_updated', 'Compensation updated', "Your compensation model is now: {$comp->modelLabel()}.");
+
         return back()->with('success', "Compensation model saved ({$comp->modelLabel()}).");
     }
 
@@ -76,8 +78,13 @@ class AccountEcosystemController extends Controller
     {
         $this->authorizeAssignments(auth()->user());
         $q = EmployeeAssignment::with(['employee', 'assigner', 'assignable'])->latest();
-        if ($request->filled('employee_id')) $q->where('employee_id', $request->input('employee_id'));
-        if ($request->filled('status')) $q->where('status', $request->input('status'));
+        if ($request->filled('employee_id')) {
+            $q->where('employee_id', $request->input('employee_id'));
+        }
+        if ($request->filled('status')) {
+            $q->where('status', $request->input('status'));
+        }
+
         return view('admin.ecosystem.assignments', [
             'assignments' => $q->paginate(20),
             'employees' => User::where('is_active', true)->whereNotIn('role', ['customer'])->orderBy('name')->limit(200)->get(),
@@ -95,6 +102,7 @@ class AccountEcosystemController extends Controller
             'notes' => 'nullable|string|max:2000',
         ]);
         $assignment = $assignments->assign(auth()->user(), User::findOrFail($data['employee_id']), $data['assignable_type'], (int) $data['assignable_id'], $data['notes'] ?? null);
+
         return back()->with('success', "Assignment #{$assignment->id} created.");
     }
 
@@ -103,6 +111,7 @@ class AccountEcosystemController extends Controller
         $this->authorizeAssignments(auth()->user());
         $data = $request->validate(['status' => 'required|in:completed,revoked']);
         $assignments->transition(auth()->user(), $assignment, $data['status']);
+
         return back()->with('success', "Assignment marked {$data['status']}.");
     }
 
@@ -112,10 +121,13 @@ class AccountEcosystemController extends Controller
         $me = auth()->user();
         $q = CallLog::with(['caller', 'recipient', 'related'])->latest();
         $canSeeAll = $me->isAdmin() || $me->isSupportManager() || $me->isProjectManager() || $me->isFinanceManager();
-        if (!$canSeeAll) {
+        if (! $canSeeAll) {
             $q->where(fn ($w) => $w->where('caller_id', $me->id)->orWhere('recipient_id', $me->id));
         }
-        if ($request->filled('outcome')) $q->where('outcome', $request->input('outcome'));
+        if ($request->filled('outcome')) {
+            $q->where('outcome', $request->input('outcome'));
+        }
+
         return view('admin.ecosystem.calls', ['calls' => $q->paginate(20), 'canSeeAll' => $canSeeAll]);
     }
 
@@ -128,7 +140,7 @@ class AccountEcosystemController extends Controller
             'direction' => 'nullable|in:outbound,inbound',
             'started_at' => 'nullable|date',
             'duration_seconds' => 'nullable|integer|min:0|max:86400',
-            'outcome' => 'required|in:' . implode(',', CallLog::OUTCOMES),
+            'outcome' => 'required|in:'.implode(',', CallLog::OUTCOMES),
             'related_type' => 'nullable|string',
             'related_id' => 'nullable|integer',
             'subject' => 'nullable|string|max:255',
@@ -137,10 +149,11 @@ class AccountEcosystemController extends Controller
         ]);
         // Non-managers may only log calls they participate in.
         $caller = isset($data['caller_id']) ? User::findOrFail($data['caller_id']) : $me;
-        if (!($me->isAdmin() || $me->isSupportManager() || $me->isProjectManager())) {
+        if (! ($me->isAdmin() || $me->isSupportManager() || $me->isProjectManager())) {
             abort_unless((int) $caller->id === (int) $me->id, 403, 'You may only log your own calls.');
         }
         $log = $calls->log($me, $caller, User::findOrFail($data['recipient_id']), $data);
+
         return back()->with('success', "Call logged ({$log->uuid}).");
     }
 
@@ -149,16 +162,18 @@ class AccountEcosystemController extends Controller
     {
         $staff = $directory->staffCards(auth()->user());
         $customers = auth()->user()->isAdmin() ? $directory->customerCards(auth()->user()) : null;
+
         return view('admin.ecosystem.directory', compact('staff', 'customers'));
     }
 
     public function directoryShow(User $user, DirectoryService $directory)
     {
         $me = auth()->user();
-        abort_if($user->isCustomer() && !$me->isStaff(), 403);
+        abort_if($user->isCustomer() && ! $me->isStaff(), 403);
         $user->loadMissing(['profileDetail.manager', 'compensation']);
         $card = $directory->publicCard($user);
         $financeSeesPay = $me->isFinanceManager();
+
         return view('admin.ecosystem.directory-show', [
             'member' => $user, 'card' => $card,
             'contact' => $directory->directContact($user),

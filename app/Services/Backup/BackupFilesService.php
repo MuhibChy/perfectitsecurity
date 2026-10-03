@@ -19,7 +19,7 @@ class BackupFilesService
             throw new RuntimeException('PHP zip extension is required for file backups.');
         }
         $root = storage_path('app');
-        $out = $workDir . DIRECTORY_SEPARATOR . 'files.zip';
+        $out = $workDir.DIRECTORY_SEPARATOR.'files.zip';
         $zip = new \ZipArchive();
         if ($zip->open($out, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             throw new RuntimeException('Cannot create file backup archive.');
@@ -28,9 +28,10 @@ class BackupFilesService
         $manifest = [];
         $count = 0;
         foreach ((array) config('backup.file_sources', []) as $source) {
-            $abs = $root . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $source);
+            $abs = $root.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $source);
             if (! is_dir($abs)) {
                 $manifest[] = ['path' => $source, 'status' => 'missing_skipped'];
+
                 continue;
             }
             $iterator = new \RecursiveIteratorIterator(
@@ -48,7 +49,7 @@ class BackupFilesService
                     continue;
                 }
                 $relative = substr($file->getPathname(), strlen($root) + 1);
-                if (str_starts_with($relative, 'backups' . DIRECTORY_SEPARATOR)
+                if (str_starts_with($relative, 'backups'.DIRECTORY_SEPARATOR)
                     || str_starts_with($relative, 'backups/')) {
                     continue; // never back up previous backups into themselves
                 }

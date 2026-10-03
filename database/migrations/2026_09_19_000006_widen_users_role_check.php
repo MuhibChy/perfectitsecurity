@@ -25,12 +25,14 @@ return new class extends Migration
     {
         $driver = DB::getDriverName();
         if ($driver === 'mysql') {
-            $enum = "'" . implode("','", self::allowedRoles()) . "'";
+            $enum = "'".implode("','", self::allowedRoles())."'";
             DB::statement("ALTER TABLE users MODIFY role ENUM({$enum}) NOT NULL DEFAULT 'customer'");
+
             return;
         }
         if ($driver === 'sqlite') {
             $this->rebuildSqliteUsers(self::allowedRoles());
+
             return;
         }
         // Other drivers: fall back to plain string (drops the enum check).
@@ -51,6 +53,7 @@ return new class extends Migration
         $driver = DB::getDriverName();
         if ($driver === 'mysql') {
             DB::statement("ALTER TABLE users MODIFY role ENUM('super_admin','admin','finance_manager','support_manager','support_agent','project_manager','employee','freelancer','commission_agent','sales_agent','customer') NOT NULL DEFAULT 'customer'");
+
             return;
         }
         if ($driver === 'sqlite') {
@@ -59,6 +62,7 @@ return new class extends Migration
                 'support_agent', 'project_manager', 'employee', 'freelancer',
                 'commission_agent', 'sales_agent', 'customer',
             ]);
+
             return;
         }
         Schema::table('users', function ($table) {
@@ -75,10 +79,10 @@ return new class extends Migration
     private function rebuildSqliteUsers(array $roles): void
     {
         $ddl = DB::selectOne("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'")->sql;
-        $list = "'" . implode("','", $roles) . "'";
+        $list = "'".implode("','", $roles)."'";
         $newDdl = preg_replace(
             '/"role" varchar check \("role" in \([^)]*\)\)/',
-            '"role" varchar check ("role" in (' . $list . '))',
+            '"role" varchar check ("role" in ('.$list.'))',
             $ddl,
             1
         );

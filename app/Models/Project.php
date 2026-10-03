@@ -30,18 +30,60 @@ class Project extends Model
         'progress' => 'integer',
     ];
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function projectManager() { return $this->belongsTo(User::class, 'project_manager_id'); }
-    public function service() { return $this->belongsTo(Service::class); }
-    public function members() { return $this->belongsToMany(User::class, 'project_members')->withPivot('role'); }
-    public function tasks() { return $this->hasMany(Task::class); }
-    public function milestones() { return $this->hasMany(ProjectMilestone::class); }
-    public function files() { return $this->hasMany(ProjectFile::class); }
-    public function comments() { return $this->hasMany(ProjectComment::class); }
-    public function invoices() { return $this->hasMany(Invoice::class); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeActive($query) { return $query->whereIn('status', ['planning', 'in_progress', 'on_hold', 'review']); }
-    public function scopeForCustomer($query, $id) { return $query->where('customer_id', $id); }
+    public function projectManager()
+    {
+        return $this->belongsTo(User::class, 'project_manager_id');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_members')->withPivot('role');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function milestones()
+    {
+        return $this->hasMany(ProjectMilestone::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(ProjectFile::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ProjectComment::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereIn('status', ['planning', 'in_progress', 'on_hold', 'review']);
+    }
+
+    public function scopeForCustomer($query, $id)
+    {
+        return $query->where('customer_id', $id);
+    }
 
     public function getBudgetUsedPercentAttribute()
     {
@@ -51,6 +93,7 @@ class Project extends Model
     public function getProfitAttribute()
     {
         $revenue = $this->invoices()->where('status', 'paid')->sum('total');
+
         return $revenue - $this->actual_cost;
     }
 }

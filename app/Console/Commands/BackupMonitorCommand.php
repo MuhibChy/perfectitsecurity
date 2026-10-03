@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class BackupMonitorCommand extends Command
 {
     protected $signature = 'backup:monitor';
+
     protected $description = 'Check backup health: overdue, failed, unverified, storage unreachable.';
 
     public function handle(BackupOrchestratorService $orchestrator): int
@@ -39,11 +40,11 @@ class BackupMonitorCommand extends Command
         }
         $storage = $orchestrator->storageStatus();
         if (! $storage['local']['ok']) {
-            $this->error('Local backup storage unavailable: ' . $storage['local']['detail']);
+            $this->error('Local backup storage unavailable: '.$storage['local']['detail']);
             $failures++;
         }
         if ($storage['s3']['configured'] && $storage['s3']['ok'] === false) {
-            $this->error('S3 backup storage unreachable: ' . $storage['s3']['detail']);
+            $this->error('S3 backup storage unreachable: '.$storage['s3']['detail']);
             $failures++;
         }
         if ($failures === 0) {

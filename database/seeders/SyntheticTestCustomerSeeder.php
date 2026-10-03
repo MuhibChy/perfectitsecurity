@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 class SyntheticTestCustomerSeeder extends Seeder
 {
     public const DOMAIN = 'example.test';
+
     public const PREFIX = 'TEST-CUSTOMER-';
 
     /** tag, country text, ISO code (null = unsupported), phone, expected currencies */
@@ -51,9 +52,9 @@ class SyntheticTestCustomerSeeder extends Seeder
 
         foreach (self::MATRIX as [$tag, $country, $code, $phone, $expected]) {
             $user = User::updateOrCreate(
-                ['email' => 'test-customer-' . $tag . '@' . self::DOMAIN],
+                ['email' => 'test-customer-'.$tag.'@'.self::DOMAIN],
                 [
-                    'name' => self::PREFIX . $tag,
+                    'name' => self::PREFIX.$tag,
                     'role' => 'customer',
                     'is_active' => true,
                     'is_demo' => true,
@@ -66,23 +67,23 @@ class SyntheticTestCustomerSeeder extends Seeder
 
             // Legitimate email verification (same state change the signed
             // verification link performs via EmailVerificationRequest).
-            if (!$user->hasVerifiedEmail()) {
+            if (! $user->hasVerifiedEmail()) {
                 $user->markEmailAsVerified();
-                AuditLog::log('synthetic.email_verified', 'users', $user, 'Synthetic ' . self::PREFIX . $tag . ' email verified via standard workflow.');
+                AuditLog::log('synthetic.email_verified', 'users', $user, 'Synthetic '.self::PREFIX.$tag.' email verified via standard workflow.');
             }
 
             // Legitimate phone verification through the real OTP service.
-            if (!$user->isPhoneVerified()) {
+            if (! $user->isPhoneVerified()) {
                 $started = $otp->start($user->fresh(), $phone);
-                if (!empty($started['code'])) {
+                if (! empty($started['code'])) {
                     $otp->verify($user->fresh(), $started['code']);
-                    AuditLog::log('synthetic.phone_verified', 'users', $user, 'Synthetic ' . self::PREFIX . $tag . ' phone verified via OTP workflow.');
+                    AuditLog::log('synthetic.phone_verified', 'users', $user, 'Synthetic '.self::PREFIX.$tag.' phone verified via OTP workflow.');
                 }
             }
 
             // Assert the currency contract immediately (fail loudly in seed).
             $actual = $user->fresh()->availableCurrencies();
-            abort_unless($actual === $expected, 500, 'Currency contract broken for ' . self::PREFIX . $tag . ': ' . json_encode($actual));
+            abort_unless($actual === $expected, 500, 'Currency contract broken for '.self::PREFIX.$tag.': '.json_encode($actual));
         }
     }
 }

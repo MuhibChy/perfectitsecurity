@@ -21,6 +21,7 @@ class TrackingController extends Controller
         $services = ServiceTrackingService::customerServices(auth()->user());
         $maintenance = ServiceMaintenance::where('customer_id', auth()->id())
             ->whereIn('status', ['scheduled', 'active'])->orderBy('next_due_at')->take(10)->get();
+
         return view('customer.tracking.index', compact('services', 'maintenance'));
     }
 
@@ -36,6 +37,7 @@ class TrackingController extends Controller
         $comments = $project->comments()->where('is_customer_visible', true)->with('user')->latest()->take(20)->get();
         $maintenances = ServiceMaintenance::where('project_id', $project->id)->latest()->take(50)->get();
         $changes = ServiceChangeRequest::where('project_id', $project->id)->where('requested_by', auth()->id())->latest()->take(50)->get();
+
         return view('customer.tracking.show', compact('project', 'progress', 'stage', 'updates', 'comments', 'maintenances', 'changes'));
     }
 
@@ -56,6 +58,7 @@ class TrackingController extends Controller
         foreach (array_filter([$project->project_manager_id]) as $staffId) {
             ServiceTrackingService::notify($staffId, 'update_requested', 'Customer requested an update', "Update requested on '{$project->name}'.");
         }
+
         return back()->with('success', 'Update requested. The team has been notified and this request is part of your service history.');
     }
 
@@ -70,8 +73,9 @@ class TrackingController extends Controller
             'visible' => false,
         ]);
         if ($project->project_manager_id) {
-            ServiceTrackingService::notify($project->project_manager_id, 'customer_query', 'Customer question', "On '{$project->name}': " . mb_substr($data['question'], 0, 150));
+            ServiceTrackingService::notify($project->project_manager_id, 'customer_query', 'Customer question', "On '{$project->name}': ".mb_substr($data['question'], 0, 150));
         }
+
         return back()->with('success', 'Question sent and linked to your service.');
     }
 
@@ -91,6 +95,7 @@ class TrackingController extends Controller
             'order_id' => $order->id, 'project_id' => $projectId, 'customer_id' => auth()->id(),
             'action' => 'change_requested', 'comment' => $data['title'], 'visible' => false,
         ]);
+
         return back()->with('success', 'Change request submitted for review. The original scope is unchanged until a decision is recorded.');
     }
 }

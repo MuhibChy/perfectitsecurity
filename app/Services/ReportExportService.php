@@ -2,19 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\BankTransfer;
 use App\Models\Commission;
 use App\Models\CommissionPayout;
 use App\Models\Expense;
 use App\Models\FinancialTransaction;
 use App\Models\Franchise;
-use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Quotation;
-use App\Models\Salary;
 use App\Models\ServiceOrder;
 use App\Models\Task;
-use App\Models\Ticket;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -31,6 +27,7 @@ class ReportExportService
     public function build(string $type, array $filters, User $viewer): array
     {
         abort_unless(in_array($type, self::TYPES, true), 404, 'Unknown report type.');
+
         return match ($type) {
             'customer' => $this->customer($filters, $viewer),
             'customer-full' => $this->customerFull($filters, $viewer),
@@ -48,15 +45,21 @@ class ReportExportService
     /** Filters: date_from/date_to/customer_id/employee_id/agent_id/worker_id/franchise_id/service_id/order_id/project_id/status/payment_status/currency/branch. */
     protected function dates(array $f): array
     {
-        $from = !empty($f['date_from']) ? Carbon::parse($f['date_from'])->startOfDay() : null;
-        $to = !empty($f['date_to']) ? Carbon::parse($f['date_to'])->endOfDay() : null;
-        return [$from, $to, ($f['date_from'] ?? null) . ' → ' . ($f['date_to'] ?? null)];
+        $from = ! empty($f['date_from']) ? Carbon::parse($f['date_from'])->startOfDay() : null;
+        $to = ! empty($f['date_to']) ? Carbon::parse($f['date_to'])->endOfDay() : null;
+
+        return [$from, $to, ($f['date_from'] ?? null).' → '.($f['date_to'] ?? null)];
     }
 
     protected function inRange($q, string $col, $from, $to)
     {
-        if ($from) $q->where($col, '>=', $from);
-        if ($to) $q->where($col, '<=', $to);
+        if ($from) {
+            $q->where($col, '>=', $from);
+        }
+        if ($to) {
+            $q->where($col, '<=', $to);
+        }
+
         return $q;
     }
 
@@ -67,6 +70,7 @@ class ReportExportService
             $code = strtoupper($i->currency ?? 'USD');
             $out[$code] = round(($out[$code] ?? 0) + (float) $amount($i), 2);
         }
+
         return $out;
     }
 
@@ -80,11 +84,17 @@ class ReportExportService
         [$from, $to, $period] = $this->dates($f);
 
         $orders = $this->inRange($customer->serviceOrders()->with('service'), 'service_orders.created_at', $from, $to)->get();
-        if (!empty($f['service_id'])) $orders = $orders->where('service_id', (int) $f['service_id']);
-        if (!empty($f['status'])) $orders = $orders->where('status', $f['status']);
+        if (! empty($f['service_id'])) {
+            $orders = $orders->where('service_id', (int) $f['service_id']);
+        }
+        if (! empty($f['status'])) {
+            $orders = $orders->where('status', $f['status']);
+        }
         $invoices = $this->inRange($customer->invoices(), 'invoices.created_at', $from, $to)->get();
         $payments = $this->inRange($customer->payments()->where('status', 'completed'), 'payments.created_at', $from, $to)->get();
-        if (!empty($f['currency'])) $payments = $payments->where('currency', strtoupper($f['currency']));
+        if (! empty($f['currency'])) {
+            $payments = $payments->where('currency', strtoupper($f['currency']));
+        }
         $refunds = $this->inRange($customer->payments()->where('status', 'refunded'), 'payments.created_at', $from, $to)->get();
         $tickets = $this->inRange($customer->tickets(), 'tickets.created_at', $from, $to)->get();
         $projects = $this->inRange($customer->projects(), 'projects.created_at', $from, $to)->get();
@@ -100,6 +110,7 @@ class ReportExportService
         foreach ($orders as $o) {
             $rows[] = [$o->order_number, $o->service->name ?? '', $o->status, $o->currency, $o->total, $o->amount_paid, $o->amount_due, $o->created_at->format('Y-m-d')];
         }
+
         return [
             'title' => "Customer Report — {$customer->name}",
             'subject' => $customer,
@@ -125,14 +136,16 @@ class ReportExportService
     protected function employeeService(array $f, User $viewer): array
     {
         $employee = User::findOrFail($f['employee_id'] ?? 0);
-        abort_unless(!$employee->isCustomer(), 404);
+        abort_unless(! $employee->isCustomer(), 404);
         $selfStaff = $viewer->isStaff() && ((int) $viewer->id === (int) $employee->id || $viewer->isAdmin() || $viewer->isProjectManager() || $viewer->isFinanceManager() || $viewer->isSupportManager());
         $selfContractor = $viewer->isFreelancer() && (int) $viewer->id === (int) $employee->id;
         abort_unless($selfStaff || $selfContractor, 403);
         [$from, $to, $period] = $this->dates($f);
 
         $tasks = $this->inRange($employee->tasks()->with(['customer', 'serviceOrder.service']), 'tasks.created_at', $from, $to)->get();
-        if (!empty($f['status'])) $tasks = $tasks->where('status', $f['status']);
+        if (! empty($f['status'])) {
+            $tasks = $tasks->where('status', $f['status']);
+        }
         $contrib = $employee->contributedTasks()->with(['customer', 'serviceOrder.service'])->get();
         $tickets = $this->inRange($employee->assignedTickets(), 'tickets.created_at', $from, $to)->get();
 
@@ -141,6 +154,7 @@ class ReportExportService
             $rows[] = [$t->task_number ?? $t->id, $t->title ?? '', $t->customer->name ?? '', $t->serviceOrder->order_number ?? '', $t->pivot->role ?? 'assignee', $t->status, $t->progress ?? '', $t->created_at->format('Y-m-d'), $t->completed_at?->format('Y-m-d') ?? ''];
         }
         $done = $tasks->where('status', 'completed')->count() + $contrib->where('status', 'completed')->count();
+
         return [
             'title' => "Employee Service Report — {$employee->name}",
             'subject' => $employee,
@@ -148,7 +162,7 @@ class ReportExportService
             'summary' => [
                 'Employee' => "{$employee->name} <{$employee->email}>",
                 'Employee no.' => $employee->employee_number ?? '—',
-                'Department/Branch' => ($employee->department ?? '—') . ' / ' . ($employee->branch ?? '—'),
+                'Department/Branch' => ($employee->department ?? '—').' / '.($employee->branch ?? '—'),
                 'Assigned tasks' => $tasks->count(),
                 'Contributions' => $contrib->count(),
                 'Completed' => $done,
@@ -174,10 +188,19 @@ class ReportExportService
         $expenses = $expenses->get();
 
         $rows = [];
-        foreach ($salaries as $s) $rows[] = ['salary', "#{$s->id} {$s->period}", $s->currency ?? 'USD', $s->net_salary, $s->status, $s->pay_date];
-        foreach ($commissions as $c) $rows[] = ['commission', $c->commission_number, 'USD', $c->commission_amount, "{$c->status}/{$c->payment_status}", $c->created_at->format('Y-m-d')];
-        foreach ($transfers as $t) $rows[] = ['transfer', "{$t->reference} ({$t->purpose})", $t->currency, $t->amount, $t->status, $t->created_at->format('Y-m-d')];
-        foreach ($expenses as $e) $rows[] = ['expense', $e->expense_number, 'USD', $e->amount, $e->status, $e->date];
+        foreach ($salaries as $s) {
+            $rows[] = ['salary', "#{$s->id} {$s->period}", $s->currency ?? 'USD', $s->net_salary, $s->status, $s->pay_date];
+        }
+        foreach ($commissions as $c) {
+            $rows[] = ['commission', $c->commission_number, 'USD', $c->commission_amount, "{$c->status}/{$c->payment_status}", $c->created_at->format('Y-m-d')];
+        }
+        foreach ($transfers as $t) {
+            $rows[] = ['transfer', "{$t->reference} ({$t->purpose})", $t->currency, $t->amount, $t->status, $t->created_at->format('Y-m-d')];
+        }
+        foreach ($expenses as $e) {
+            $rows[] = ['expense', $e->expense_number, 'USD', $e->amount, $e->status, $e->date];
+        }
+
         return [
             'title' => "Employee Financial Report — {$employee->name} (CONFIDENTIAL)",
             'subject' => $employee,
@@ -200,7 +223,7 @@ class ReportExportService
     {
         // Commission agents/freelancers may view ONLY their own ledger rows;
         // finance managers keep global access. Never recalculated here.
-        if (!$viewer->isFinanceManager()) {
+        if (! $viewer->isFinanceManager()) {
             abort_unless($viewer->isFreelancer() || $viewer->isStaff(), 403);
             $f['agent_id'] = (int) $viewer->id;
             $f['worker_id'] = (int) $viewer->id;
@@ -209,9 +232,15 @@ class ReportExportService
         [$from, $to, $period] = $this->dates($f);
         $q = Commission::with(['worker', 'customer', 'rule', 'task.serviceOrder.service', 'project.service', 'approver']);
         $this->inRange($q, 'commissions.created_at', $from, $to);
-        if (!empty($f['agent_id']) || !empty($f['worker_id'])) $q->where('worker_id', (int) ($f['agent_id'] ?? $f['worker_id']));
-        if (!empty($f['status'])) $q->where('status', $f['status']);
-        if (!empty($f['customer_id'])) $q->where('customer_id', (int) $f['customer_id']);
+        if (! empty($f['agent_id']) || ! empty($f['worker_id'])) {
+            $q->where('worker_id', (int) ($f['agent_id'] ?? $f['worker_id']));
+        }
+        if (! empty($f['status'])) {
+            $q->where('status', $f['status']);
+        }
+        if (! empty($f['customer_id'])) {
+            $q->where('customer_id', (int) $f['customer_id']);
+        }
         $rows = [];
         foreach ($q->get() as $c) {
             $payoutRef = CommissionPayout::whereHas('items', fn ($x) => $x->where('commission_id', $c->id))->latest()->first();
@@ -219,6 +248,7 @@ class ReportExportService
             $serviceName = $c->task?->serviceOrder?->service?->name ?? $c->project?->service?->name ?? '';
             $rows[] = [$c->commission_number, $c->worker->name ?? '', $c->customer->name ?? '', $orderNo, $serviceName, $c->rule->name ?? '', $c->revenue_amount, $c->commission_rate, $c->commission_amount, $c->status, $c->approver->name ?? '', $c->approved_at?->format('Y-m-d') ?? '', $c->payment_status, $c->paid_at?->format('Y-m-d') ?? '', $payoutRef->transaction_reference ?? ''];
         }
+
         return [
             'title' => 'Commission Report',
             'period' => $period,
@@ -243,7 +273,10 @@ class ReportExportService
         $payments = $payments->get();
         $outstanding = ServiceOrder::whereIn('customer_id', $memberIds)->sum('amount_due');
         $rows = [];
-        foreach ($orders as $o) $rows[] = [$o->order_number, $o->customer->name ?? '', $o->status, $o->currency, $o->total, $o->amount_paid, $o->amount_due];
+        foreach ($orders as $o) {
+            $rows[] = [$o->order_number, $o->customer->name ?? '', $o->status, $o->currency, $o->total, $o->amount_paid, $o->amount_due];
+        }
+
         return [
             'title' => "Franchise Report — {$franchise->name}",
             'subject' => $franchise,
@@ -267,16 +300,23 @@ class ReportExportService
         [$from, $to, $period] = $this->dates($f);
         $q = FinancialTransaction::with('creator');
         $this->inRange($q, 'financial_transactions.created_at', $from, $to);
-        if (!empty($f['status'])) $q->where('status', $f['status']);
-        if (!empty($f['currency'])) $q->where('currency', strtoupper($f['currency']));
+        if (! empty($f['status'])) {
+            $q->where('status', $f['status']);
+        }
+        if (! empty($f['currency'])) {
+            $q->where('currency', strtoupper($f['currency']));
+        }
         $txns = $q->latest()->limit(2000)->get();
         $rows = [];
-        foreach ($txns as $t) $rows[] = [$t->created_at->format('Y-m-d H:i'), $t->transaction_id, $t->type, $t->category, mb_substr((string) $t->description, 0, 120), $t->currency, $t->amount, $t->status];
+        foreach ($txns as $t) {
+            $rows[] = [$t->created_at->format('Y-m-d H:i'), $t->transaction_id, $t->type, $t->category, mb_substr((string) $t->description, 0, 120), $t->currency, $t->amount, $t->status];
+        }
         $byTypeCur = [];
         foreach ($txns->where('status', 'completed') as $t) {
-            $k = $t->type . '|' . strtoupper($t->currency ?? 'USD');
+            $k = $t->type.'|'.strtoupper($t->currency ?? 'USD');
             $byTypeCur[$k] = round(($byTypeCur[$k] ?? 0) + (float) $t->amount, 2);
         }
+
         return [
             'title' => 'Financial Report',
             'period' => $period,
@@ -305,10 +345,18 @@ class ReportExportService
         $cancelledOrders = (clone $orders)->where('status', 'cancelled');
 
         $rows = [];
-        foreach ($orders as $o) $rows[] = [$o->created_at->format('Y-m-d H:i'), 'order', $o->order_number, $o->service->name ?? '', $o->status, $o->currency . ' ' . $o->total];
-        foreach ($invoices as $i) $rows[] = [$i->created_at->format('Y-m-d H:i'), 'invoice', $i->invoice_number, '', $i->status, $i->currency . ' ' . $i->total];
-        foreach ($payments as $p) $rows[] = [($p->paid_at ?? $p->created_at)->format('Y-m-d H:i'), 'payment', $p->payment_number . ' / ' . $p->transaction_id, $p->payment_method, $p->status, $p->currency . ' ' . $p->amount];
-        foreach ($tasks as $t) $rows[] = [$t->created_at->format('Y-m-d H:i'), 'task', $t->task_number ?? $t->id, $t->serviceOrder->order_number ?? '', $t->status, ''];
+        foreach ($orders as $o) {
+            $rows[] = [$o->created_at->format('Y-m-d H:i'), 'order', $o->order_number, $o->service->name ?? '', $o->status, $o->currency.' '.$o->total];
+        }
+        foreach ($invoices as $i) {
+            $rows[] = [$i->created_at->format('Y-m-d H:i'), 'invoice', $i->invoice_number, '', $i->status, $i->currency.' '.$i->total];
+        }
+        foreach ($payments as $p) {
+            $rows[] = [($p->paid_at ?? $p->created_at)->format('Y-m-d H:i'), 'payment', $p->payment_number.' / '.$p->transaction_id, $p->payment_method, $p->status, $p->currency.' '.$p->amount];
+        }
+        foreach ($tasks as $t) {
+            $rows[] = [$t->created_at->format('Y-m-d H:i'), 'task', $t->task_number ?? $t->id, $t->serviceOrder->order_number ?? '', $t->status, ''];
+        }
         usort($rows, fn ($a, $b) => strcmp((string) $b[0], (string) $a[0]));
 
         $base['title'] = "Customer Full Report — {$customer->name}";
@@ -326,6 +374,7 @@ class ReportExportService
         ]);
         $base['columns'] = ['Date', 'Kind', 'Reference', 'Detail', 'Status', 'Amount'];
         $base['rows'] = $rows;
+
         return $base;
     }
 
@@ -335,21 +384,30 @@ class ReportExportService
         [$from, $to, $period] = $this->dates($f);
         $q = Payment::with(['customer', 'serviceOrder.service']);
         $this->inRange($q, 'payments.created_at', $from, $to);
-        if (!empty($f['customer_id'])) {
+        if (! empty($f['customer_id'])) {
             $cid = (int) $f['customer_id'];
             abort_unless($viewer->isStaff() || (int) $viewer->id === $cid, 403);
             $q->where('customer_id', $cid);
-        } elseif (!$viewer->isStaff()) {
+        } elseif (! $viewer->isStaff()) {
             $q->where('customer_id', $viewer->id);
         }
-        if (!empty($f['order_id'])) $q->where('service_order_id', (int) $f['order_id']);
-        if (!empty($f['status'])) $q->where('status', $f['status']);
-        if (!empty($f['payment_method'])) $q->where('payment_method', $f['payment_method']);
-        if (!empty($f['currency'])) $q->where('currency', strtoupper($f['currency']));
+        if (! empty($f['order_id'])) {
+            $q->where('service_order_id', (int) $f['order_id']);
+        }
+        if (! empty($f['status'])) {
+            $q->where('status', $f['status']);
+        }
+        if (! empty($f['payment_method'])) {
+            $q->where('payment_method', $f['payment_method']);
+        }
+        if (! empty($f['currency'])) {
+            $q->where('currency', strtoupper($f['currency']));
+        }
         $rows = [];
         foreach ($q->latest()->limit(2000)->get() as $p) {
-            $rows[] = [$p->payment_number, ($p->paid_at ?? $p->created_at)->format('Y-m-d H:i'), $p->customer->name ?? '', $p->serviceOrder->order_number ?? '', $p->serviceOrder->service->name ?? '', $p->payment_method, $p->transaction_id, $p->currency . ' ' . $p->amount, $p->status];
+            $rows[] = [$p->payment_number, ($p->paid_at ?? $p->created_at)->format('Y-m-d H:i'), $p->customer->name ?? '', $p->serviceOrder->order_number ?? '', $p->serviceOrder->service->name ?? '', $p->payment_method, $p->transaction_id, $p->currency.' '.$p->amount, $p->status];
         }
+
         return [
             'title' => 'Payment Report',
             'period' => $period,
@@ -365,20 +423,27 @@ class ReportExportService
         [$from, $to, $period] = $this->dates($f);
         $q = Task::with(['customer', 'assignee', 'serviceOrder.service']);
         $this->inRange($q, 'tasks.created_at', $from, $to);
-        if (!empty($f['customer_id'])) {
+        if (! empty($f['customer_id'])) {
             $cid = (int) $f['customer_id'];
             abort_unless($viewer->isStaff() || (int) $viewer->id === $cid, 403);
             $q->where('customer_id', $cid);
-        } elseif (!$viewer->isStaff()) {
+        } elseif (! $viewer->isStaff()) {
             $q->where('customer_id', $viewer->id);
         }
-        if (!empty($f['employee_id'])) $q->where('assigned_to', (int) $f['employee_id']);
-        if (!empty($f['order_id'])) $q->where('service_order_id', (int) $f['order_id']);
-        if (!empty($f['status'])) $q->where('status', $f['status']);
+        if (! empty($f['employee_id'])) {
+            $q->where('assigned_to', (int) $f['employee_id']);
+        }
+        if (! empty($f['order_id'])) {
+            $q->where('service_order_id', (int) $f['order_id']);
+        }
+        if (! empty($f['status'])) {
+            $q->where('status', $f['status']);
+        }
         $rows = [];
         foreach ($q->latest()->limit(2000)->get() as $t) {
             $rows[] = [$t->task_number ?? $t->id, $t->title ?? '', $t->customer->name ?? '', $t->serviceOrder->order_number ?? '', $t->assignee->name ?? '—', $t->status, $t->created_at->format('Y-m-d'), $t->completed_at?->format('Y-m-d') ?? ''];
         }
+
         return [
             'title' => 'Task Report',
             'period' => $period,
@@ -395,12 +460,17 @@ class ReportExportService
         abort_unless($viewer->isStaff() || (int) $viewer->id === (int) $order->customer_id, 403);
         $paid = round((float) $order->payments()->where('status', 'completed')->sum('amount'), 2);
         $rows = [];
-        foreach ($order->tasks as $t) $rows[] = ['task', $t->task_number ?? $t->id, $t->assignee->name ?? '—', $t->status, $t->created_at->format('Y-m-d'), $t->completed_at?->format('Y-m-d') ?? ''];
-        foreach ($order->payments as $p) $rows[] = ['payment', $p->payment_number, $p->payment_method, "{$p->status}", $p->currency . ' ' . $p->amount, $p->paid_at?->format('Y-m-d') ?? ''];
+        foreach ($order->tasks as $t) {
+            $rows[] = ['task', $t->task_number ?? $t->id, $t->assignee->name ?? '—', $t->status, $t->created_at->format('Y-m-d'), $t->completed_at?->format('Y-m-d') ?? ''];
+        }
+        foreach ($order->payments as $p) {
+            $rows[] = ['payment', $p->payment_number, $p->payment_method, "{$p->status}", $p->currency.' '.$p->amount, $p->paid_at?->format('Y-m-d') ?? ''];
+        }
+
         return [
             'title' => "Service Report — {$order->order_number}",
             'subject' => $order,
-            'period' => $order->created_at->format('Y-m-d') . ' → ' . ($order->closed_at?->format('Y-m-d') ?? 'open'),
+            'period' => $order->created_at->format('Y-m-d').' → '.($order->closed_at?->format('Y-m-d') ?? 'open'),
             'summary' => [
                 'Customer' => $order->customer->name,
                 'Service' => $order->service->name ?? '',

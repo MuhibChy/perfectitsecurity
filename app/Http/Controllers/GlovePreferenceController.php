@@ -25,7 +25,7 @@ class GlovePreferenceController extends Controller
         ]);
         $x = isset($data['x']) ? (float) $data['x'] : null;
         $y = isset($data['y']) ? (float) $data['y'] : null;
-        if (($x !== null && !is_finite($x)) || ($y !== null && !is_finite($y))) {
+        if (($x !== null && ! is_finite($x)) || ($y !== null && ! is_finite($y))) {
             abort(422, 'Invalid glove coordinates.');
         }
         // Fixed mode requires a valid position; clamp inside safe margins.
@@ -49,6 +49,7 @@ class GlovePreferenceController extends Controller
     public function reset(Request $request)
     {
         $request->user()->update(['glove_mode' => 'moving', 'glove_x' => null, 'glove_y' => null]);
+
         return response()->json($request->user()->fresh()->glovePreference());
     }
 }

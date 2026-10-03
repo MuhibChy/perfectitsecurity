@@ -35,7 +35,7 @@ class EndToEndWorkflowTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'country' => 'GB',
         ]);
@@ -54,7 +54,7 @@ class EndToEndWorkflowTest extends TestCase
 
         // Order £1,500 with connected invoice/ticket/task.
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-e2e'], ['name' => 'E2E']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] E2E Managed Service', 'slug' => 't-e2e-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] E2E Managed Service', 'slug' => 't-e2e-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
         $order = ServiceOrder::create([
             'customer_id' => $customer->id, 'service_id' => $service->id, 'created_by' => $customer->id,
             'source' => 'test', 'requirements' => 'E2E synthetic scope.',
@@ -78,7 +78,7 @@ class EndToEndWorkflowTest extends TestCase
         // Milestones £300 + £300, final £400 → settled exactly.
         $paid = 500.0;
         foreach ([300, 300, 400] as $i => $amount) {
-            $r = $svc->recordPayment($order->fresh(), ['amount' => $amount, 'payment_method' => 'bank_transfer', 'transaction_id' => 'E2E-' . ($i + 1)], $finance);
+            $r = $svc->recordPayment($order->fresh(), ['amount' => $amount, 'payment_method' => 'bank_transfer', 'transaction_id' => 'E2E-'.($i + 1)], $finance);
             $paid += $amount;
             $this->assertEquals($paid, (float) $r['order']->amount_paid);
             $this->assertEquals(round(1500 - $paid, 2), (float) $r['order']->amount_due);

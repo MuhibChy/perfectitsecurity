@@ -41,7 +41,7 @@ class Quotation extends Model
     {
         static::creating(function ($q) {
             if (empty($q->quotation_number)) {
-                $q->quotation_number = 'QT-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $q->quotation_number = 'QT-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }
@@ -80,13 +80,15 @@ class Quotation extends Model
     {
         if ($this->country_id) {
             $country = Country::find($this->country_id);
+
             return $country ? $country->currency_symbol : '$';
         }
+
         return '$';
     }
 
     public function getFormattedTotalAttribute(): string
     {
-        return $this->currency_symbol . number_format($this->total, 2);
+        return $this->currency_symbol.number_format($this->total, 2);
     }
 }

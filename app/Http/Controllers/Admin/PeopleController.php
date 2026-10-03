@@ -19,20 +19,31 @@ class PeopleController extends Controller
     public function index(Request $request)
     {
         $query = User::with('franchise')->latest();
-        if ($request->filled('role')) $query->where('role', $request->role);
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
         if ($request->filled('status')) {
             $query->where('verification_status', $request->status);
         }
-        if ($request->filled('country')) $query->where('country', $request->country);
-        if ($request->filled('branch')) $query->where('branch', $request->branch);
-        if ($request->filled('department')) $query->where('department', $request->department);
-        if ($request->filled('franchise_id')) $query->where('franchise_id', $request->franchise_id);
+        if ($request->filled('country')) {
+            $query->where('country', $request->country);
+        }
+        if ($request->filled('branch')) {
+            $query->where('branch', $request->branch);
+        }
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
+        if ($request->filled('franchise_id')) {
+            $query->where('franchise_id', $request->franchise_id);
+        }
         if ($request->filled('search')) {
             $s = addcslashes($request->search, '%_\\');
             $query->where(fn ($q) => $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('employee_number', 'like', "%{$s}%"));
         }
         $people = $query->paginate(20)->withQueryString();
         $roles = collect(\App\Support\RoleRegistry::definitions())->mapWithKeys(fn ($d) => [$d['name'] => $d['display_name'] ?? $d['name']])->all();
+
         return view('admin.people.index', compact('people', 'roles'));
     }
 
@@ -64,6 +75,7 @@ class PeopleController extends Controller
         }
         $data['contributions'] = $user->contributedTasks()->with(['customer', 'serviceOrder'])->limit(50)->get();
         $data['messages'] = \App\Models\DirectMessage::with(['sender', 'recipient'])->where(fn ($q) => $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id))->latest()->limit(10)->get();
+
         return view('admin.people.show', $data);
     }
 
@@ -71,8 +83,12 @@ class PeopleController extends Controller
     {
         // Customers' data stays inside staff boundary (route already staff-gated).
         // Employee private data: own record, admin, or authorized manager hierarchy.
-        if ($target->isCustomer()) return;
-        if ($viewer->id === $target->id || $viewer->isAdmin()) return;
+        if ($target->isCustomer()) {
+            return;
+        }
+        if ($viewer->id === $target->id || $viewer->isAdmin()) {
+            return;
+        }
         abort_unless($viewer->isProjectManager() || $viewer->isFinanceManager() || $viewer->isSupportManager(), 403);
     }
 }

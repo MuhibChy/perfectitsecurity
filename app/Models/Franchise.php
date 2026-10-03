@@ -23,11 +23,24 @@ class Franchise extends Model
     protected static function booted(): void
     {
         static::creating(function (self $f) {
-            if (empty($f->franchise_code)) $f->franchise_code = 'FR-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+            if (empty($f->franchise_code)) {
+                $f->franchise_code = 'FR-'.date('Ymd').'-'.strtoupper(Str::random(4));
+            }
         });
     }
 
-    public function owner() { return $this->belongsTo(User::class, 'owner_id'); }
-    public function members() { return $this->hasMany(User::class); }
-    public function transfers() { return $this->hasMany(BankTransfer::class); }
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function members()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function transfers()
+    {
+        return $this->hasMany(BankTransfer::class);
+    }
 }

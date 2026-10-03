@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Quotation;
-use App\Models\QuotationItem;
 use App\Models\Invoice;
-use App\Models\User;
+use App\Models\Quotation;
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,8 +15,11 @@ class QuotationController extends Controller
     public function index(Request $request)
     {
         $query = Quotation::with('customer');
-        if ($request->status) $query->where('status', $request->status);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
         $quotations = $query->latest()->paginate(20);
+
         return view('admin.quotations.index', compact('quotations'));
     }
 
@@ -25,6 +27,7 @@ class QuotationController extends Controller
     {
         $customers = User::customers()->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.quotations.create', compact('customers', 'services'));
     }
 
@@ -90,6 +93,7 @@ class QuotationController extends Controller
             ? Service::where('is_active', true)->whereIn('category_id', app(\App\Services\PromotionService::class)->eligibleCategoryIds())->orderBy('name')->get()
             : collect();
         $promoCountries = $promoActive ? \App\Models\Country::where('is_active', true)->orderBy('sort_order')->get() : collect();
+
         return view('admin.quotations.show', compact('quotation', 'promoActive', 'promoCampaign', 'promoServices', 'promoCountries'));
     }
 
@@ -98,6 +102,7 @@ class QuotationController extends Controller
         $quotation = Quotation::with('items')->findOrFail($id);
         $customers = User::customers()->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.quotations.edit', compact('quotation', 'customers', 'services'));
     }
 
@@ -111,12 +116,14 @@ class QuotationController extends Controller
         ]);
 
         $quotation->update($validated);
+
         return redirect()->route('admin.quotations.index')->with('success', 'Quotation updated!');
     }
 
     public function destroy($id)
     {
         Quotation::findOrFail($id)->delete();
+
         return redirect()->route('admin.quotations.index')->with('success', 'Quotation deleted.');
     }
 
@@ -151,47 +158,48 @@ class QuotationController extends Controller
                 'data' => ['title' => 'New quotation received', 'message' => "Quotation {$quotation->quotation_number} is ready for your review.", 'quotation_id' => $quotation->id],
             ]);
         }
+
         return redirect()->back()->with('success', 'Quotation sent!');
     }
 
     public function convertToInvoice(Request $request, $id)
     {
         return DB::transaction(function () use ($id) {
-        $quotation = Quotation::with('items')->lockForUpdate()->findOrFail($id);
-        abort_unless($quotation->status === 'accepted', 422, 'Only accepted quotations can be converted to an invoice.');
-        // Acceptance now auto-creates the order (with its invoice) — converting
-        // again would duplicate financial records.
-        abort_if(\App\Models\ServiceOrder::where('quotation_id', $quotation->id)->exists(), 422, 'This quotation already has an order; conversion would duplicate records.');
+            $quotation = Quotation::with('items')->lockForUpdate()->findOrFail($id);
+            abort_unless($quotation->status === 'accepted', 422, 'Only accepted quotations can be converted to an invoice.');
+            // Acceptance now auto-creates the order (with its invoice) — converting
+            // again would duplicate financial records.
+            abort_if(\App\Models\ServiceOrder::where('quotation_id', $quotation->id)->exists(), 422, 'This quotation already has an order; conversion would duplicate records.');
 
-        $invoice = Invoice::create([
-            'customer_id' => $quotation->customer_id,
-            'company_id' => $quotation->company_id,
-            'quotation_id' => $quotation->id,
-            'notes' => $quotation->notes,
-            'terms' => $quotation->terms,
-            'subtotal' => $quotation->subtotal,
-            'discount_amount' => $quotation->discount_amount,
-            'tax_rate' => $quotation->tax_rate,
-            'tax_amount' => $quotation->tax_amount,
-            'total' => $quotation->total,
-            'amount_due' => $quotation->total,
-            'status' => 'draft',
-            'due_date' => now()->addDays(30),
-        ]);
-
-        foreach ($quotation->items as $item) {
-            $invoice->items()->create([
-                'description' => $item->description,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'discount' => $item->discount,
-                'total' => $item->total,
+            $invoice = Invoice::create([
+                'customer_id' => $quotation->customer_id,
+                'company_id' => $quotation->company_id,
+                'quotation_id' => $quotation->id,
+                'notes' => $quotation->notes,
+                'terms' => $quotation->terms,
+                'subtotal' => $quotation->subtotal,
+                'discount_amount' => $quotation->discount_amount,
+                'tax_rate' => $quotation->tax_rate,
+                'tax_amount' => $quotation->tax_amount,
+                'total' => $quotation->total,
+                'amount_due' => $quotation->total,
+                'status' => 'draft',
+                'due_date' => now()->addDays(30),
             ]);
-        }
 
-        $quotation->update(['status' => 'converted']);
+            foreach ($quotation->items as $item) {
+                $invoice->items()->create([
+                    'description' => $item->description,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'discount' => $item->discount,
+                    'total' => $item->total,
+                ]);
+            }
 
-        return redirect()->route('admin.invoices.index')->with('success', 'Quotation converted to invoice!');
+            $quotation->update(['status' => 'converted']);
+
+            return redirect()->route('admin.invoices.index')->with('success', 'Quotation converted to invoice!');
         });
     }
 
@@ -204,6 +212,6 @@ class QuotationController extends Controller
             ->setPaper('a4')
             ->setOption('isRemoteEnabled', false);
 
-        return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
+        return $pdf->download('quotation-'.$quotation->quotation_number.'.pdf');
     }
 }

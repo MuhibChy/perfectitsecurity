@@ -22,6 +22,7 @@ class WalletPolicy
         if ($user->isCustomer()) {
             return (int) $wallet->user_id === (int) $user->id;
         }
+
         return false;
     }
 

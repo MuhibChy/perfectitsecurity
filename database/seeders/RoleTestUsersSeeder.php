@@ -34,7 +34,7 @@ class RoleTestUsersSeeder extends Seeder
         $password = env('TEST_SEED_PASSWORD');
         $make = function (string $name, string $local, string $role, string $purpose) use ($password) {
             return User::updateOrCreate(
-                ['email' => $local . '@' . self::DOMAIN],
+                ['email' => $local.'@'.self::DOMAIN],
                 [
                     'name' => $name, 'role' => $role, 'is_active' => true,
                     'is_demo' => true,
@@ -109,6 +109,6 @@ class RoleTestUsersSeeder extends Seeder
                 'revenue_amount' => 1000, 'commission_rate' => 5, 'commission_amount' => 50, 'status' => 'pending']
         );
 
-        $this->command?->info('RoleTestUsersSeeder: 7 test accounts (@' . self::DOMAIN . ') with linked test workflow ensured.');
+        $this->command?->info('RoleTestUsersSeeder: 7 test accounts (@'.self::DOMAIN.') with linked test workflow ensured.');
     }
 }

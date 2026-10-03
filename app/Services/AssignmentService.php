@@ -53,6 +53,7 @@ class AssignmentService
             ]);
             AuditLog::log('assignment.created', 'employee_assignments', $assignment, "{$actor->name} assigned {$employee->name} to {$type} #{$model->getKey()}.");
             ServiceTrackingService::notify((int) $employee->id, 'assignment_created', 'New assignment', "You were assigned to {$type} #{$model->getKey()} by {$actor->name}.");
+
             return $assignment->fresh();
         });
     }
@@ -61,7 +62,8 @@ class AssignmentService
     {
         abort_unless(in_array($status, ['completed', 'revoked'], true), 422, 'Invalid assignment status.');
         $assignment->update(['status' => $status, 'completed_at' => now()]);
-        AuditLog::log('assignment.' . $status, 'employee_assignments', $assignment, "{$actor->name} marked assignment #{$assignment->id} {$status}.");
+        AuditLog::log('assignment.'.$status, 'employee_assignments', $assignment, "{$actor->name} marked assignment #{$assignment->id} {$status}.");
+
         return $assignment->fresh();
     }
 }

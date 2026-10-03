@@ -22,12 +22,14 @@ class AssetController extends Controller
                    ->orWhere('serial_number', 'like', "%{$request->search}%");
             }))
             ->latest()->paginate(20);
+
         return view('admin.assets.index', compact('assets'));
     }
 
     public function create()
     {
         $customers = User::where('role', 'customer')->where('is_active', true)->limit(200)->get();
+
         return view('admin.assets.create', compact('customers'));
     }
 
@@ -56,6 +58,7 @@ class AssetController extends Controller
     public function show(Asset $asset)
     {
         $asset->load('customer', 'assignedUser', 'configurationItems');
+
         return view('admin.assets.show', compact('asset'));
     }
 
@@ -97,6 +100,7 @@ class AssetController extends Controller
             }))
             ->latest()->paginate(20);
         $customers = User::where('role', 'customer')->where('is_active', true)->limit(200)->get();
+
         return view('admin.assets.ci-index', compact('cis', 'customers'));
     }
 
@@ -123,6 +127,7 @@ class AssetController extends Controller
     {
         $ci->load('customer', 'asset', 'owner', 'childRelationships.child', 'parentRelationships.parent');
         $candidates = ConfigurationItem::where('id', '!=', $ci->id)->latest()->limit(200)->get(['id', 'ci_number', 'name']);
+
         return view('admin.assets.ci-show', compact('ci', 'candidates'));
     }
 

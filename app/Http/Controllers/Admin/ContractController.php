@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contract;
-use App\Models\User;
 use App\Models\Proposal;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ContractController extends Controller
@@ -13,6 +13,7 @@ class ContractController extends Controller
     public function index()
     {
         $contracts = Contract::with('customer')->latest()->paginate(20);
+
         return view('admin.contracts.index', compact('contracts'));
     }
 
@@ -20,6 +21,7 @@ class ContractController extends Controller
     {
         $customers = User::customers()->active()->orderBy('name')->get();
         $proposals = Proposal::whereIn('status', ['accepted', 'sent'])->latest()->limit(50)->get();
+
         return view('admin.contracts.create', compact('customers', 'proposals'));
     }
 
@@ -46,6 +48,7 @@ class ContractController extends Controller
     public function show(Contract $contract)
     {
         $contract->load('customer', 'proposal');
+
         return view('admin.contracts.show', compact('contract'));
     }
 
@@ -61,11 +64,12 @@ class ContractController extends Controller
             'signed_by_name' => 'nullable|string|max:255',
         ]);
 
-        if (($data['status'] ?? null) === 'active' && !$contract->signed_at) {
+        if (($data['status'] ?? null) === 'active' && ! $contract->signed_at) {
             $data['signed_at'] = now();
         }
 
         $contract->update($data);
+
         return back()->with('success', 'Contract updated.');
     }
 
@@ -75,8 +79,9 @@ class ContractController extends Controller
      */
     public function renew(Request $request, Contract $contract)
     {
-        $data = $request->validate(['end_date' => 'required|date|after:' . ($contract->end_date?->format('Y-m-d') ?? 'yesterday')]);
+        $data = $request->validate(['end_date' => 'required|date|after:'.($contract->end_date?->format('Y-m-d') ?? 'yesterday')]);
         $contract->update(['end_date' => $data['end_date'], 'status' => 'active']);
+
         return back()->with('success', 'Contract renewed.');
     }
 }

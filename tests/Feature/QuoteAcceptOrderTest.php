@@ -26,7 +26,7 @@ class QuoteAcceptOrderTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => $verified ? now() : null,
             'phone' => '+447700900123',
             'phone_verified_at' => $verified ? now() : null,
@@ -37,7 +37,7 @@ class QuoteAcceptOrderTest extends TestCase
     private function sentQuote(User $customer, float $total = 600.0): Quotation
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-qao'], ['name' => 'QAO']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] QAO Service', 'slug' => 't-qao-' . Str::random(6), 'short_description' => 'x', 'starting_price' => $total, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] QAO Service', 'slug' => 't-qao-'.Str::random(6), 'short_description' => 'x', 'starting_price' => $total, 'is_active' => true]);
         $req = ServiceRequest::create([
             'user_id' => $customer->id, 'service_id' => $service->id, 'name' => $customer->name,
             'email' => $customer->email, 'requirements' => 'QAO scope.', 'status' => 'quoted', 'review_status' => 'quoted',
@@ -49,6 +49,7 @@ class QuoteAcceptOrderTest extends TestCase
             'valid_until' => now()->addDays(14), 'sent_at' => now(),
         ]);
         QuotationItem::create(['quotation_id' => $q->id, 'description' => 'QAO work', 'quantity' => 1, 'unit_price' => $total, 'total' => $total]);
+
         return $q->fresh();
     }
 
@@ -106,7 +107,7 @@ class QuoteAcceptOrderTest extends TestCase
 
         // Negotiating order with a proposed revision.
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-qao2'], ['name' => 'QAO2']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] QAO2', 'slug' => 't-qao2-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 100, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] QAO2', 'slug' => 't-qao2-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 100, 'is_active' => true]);
         $order = $svc->createCustomerOrder(['service_id' => $service->id, 'negotiate' => true, 'currency' => 'GBP'], $customer);
 
         $rev = $order->priceRevisions()->whereIn('status', ['proposed', 'pending_approval'])->firstOrFail();

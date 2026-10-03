@@ -15,7 +15,9 @@ class EmployeeManualWorkOrderTest extends TestCase
     use RefreshDatabase;
 
     private User $employee;
+
     private User $customer;
+
     private Service $service;
 
     protected function setUp(): void

@@ -30,6 +30,7 @@ class ProductionHardeningTest extends TestCase
     private function makeService(): Service
     {
         $cat = ServiceCategory::create(['name' => 'IT', 'slug' => 'it', 'is_active' => true]);
+
         return Service::create([
             'category_id' => $cat->id, 'name' => 'Support', 'slug' => 'support',
             'base_price' => 100, 'is_active' => true,

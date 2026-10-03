@@ -15,7 +15,9 @@ use Illuminate\Http\Request;
  */
 class StaffReportController extends Controller
 {
-    public function __construct(private ReportExportService $reports) {}
+    public function __construct(private ReportExportService $reports)
+    {
+    }
 
     public function myWork(Request $request)
     {
@@ -29,14 +31,14 @@ class StaffReportController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'status' => 'nullable|string|max:50',
         ]);
-        if (!empty($validated['date_from']) && !empty($validated['date_to'])) {
+        if (! empty($validated['date_from']) && ! empty($validated['date_to'])) {
             abort_if(\Carbon\Carbon::parse($validated['date_from'])->diffInDays(\Carbon\Carbon::parse($validated['date_to'])) > 366, 422, 'Report date range must not exceed 366 days.');
         }
         // Forced self-scope: spoofed employee_id values are ignored.
         $validated['employee_id'] = (int) $user->id;
 
         $report = $this->reports->build('employee-service', $validated, $user);
-        AuditLog::log('report.exported', 'reports', null, "Self work report exported as {$format} by {$user->name} (" . count($report['rows']) . ' rows).');
+        AuditLog::log('report.exported', 'reports', null, "Self work report exported as {$format} by {$user->name} (".count($report['rows']).' rows).');
 
         return ReportDownloadService::download('my-work', $report, $format);
     }

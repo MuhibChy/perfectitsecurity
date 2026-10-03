@@ -33,6 +33,7 @@ class ErrorLoggingService
                 'last_seen_at' => now(),
                 'route' => $route ?? $existing->route,
             ]);
+
             return $existing;
         }
 
@@ -57,10 +58,11 @@ class ErrorLoggingService
     public function markResolved(int $id, ?string $note = null): bool
     {
         $log = SystemErrorLog::findOrFail($id);
+
         return $log->update([
             'status' => 'resolved',
             'resolved_at' => now(),
-            'notes' => $note ? ($log->notes ? $log->notes . "\n" . $note : $note) : $log->notes,
+            'notes' => $note ? ($log->notes ? $log->notes."\n".$note : $note) : $log->notes,
         ]);
     }
 
@@ -70,9 +72,10 @@ class ErrorLoggingService
     public function addNote(int $id, string $note): bool
     {
         $log = SystemErrorLog::findOrFail($id);
-        $existingNotes = $log->notes ? $log->notes . "\n" : '';
+        $existingNotes = $log->notes ? $log->notes."\n" : '';
+
         return $log->update([
-            'notes' => $existingNotes . '[' . now()->toDateTimeString() . '] ' . $note,
+            'notes' => $existingNotes.'['.now()->toDateTimeString().'] '.$note,
         ]);
     }
 
@@ -85,6 +88,7 @@ class ErrorLoggingService
             '/(password|secret|token|apiKey|api_key|app_key|bearer\s+[a-zA-Z0-9_\-\.]+)=([^\s&]+)/i' => '$1=***REDACTED***',
             '/(Bearer\s+)[a-zA-Z0-9_\-\.]+/i' => '$1***REDACTED***',
         ];
+
         return preg_replace(array_keys($patterns), array_values($patterns), $text);
     }
 }

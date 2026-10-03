@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Services\TraceabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -29,6 +28,7 @@ class ProductionAuditTest extends TestCase
     protected function service(): Service
     {
         $cat = ServiceCategory::create(['name' => 'Audit Cat', 'slug' => 'audit-cat']);
+
         return Service::create(['category_id' => $cat->id, 'name' => 'Audit Service', 'slug' => 'audit-service']);
     }
 
@@ -75,7 +75,8 @@ class ProductionAuditTest extends TestCase
         $this->assertSame($customer->id, $task->project->customer_id);
 
         // Finance reconciles identically in every view.
-        $invoice->refresh(); $order->refresh();
+        $invoice->refresh();
+        $order->refresh();
         $this->assertSame(900.0, (float) $invoice->amount_paid);
         $this->assertSame(600.0, (float) $invoice->amount_due);
         $this->assertSame((float) $invoice->amount_due, (float) $order->amount_due);
@@ -86,7 +87,8 @@ class ProductionAuditTest extends TestCase
 
         // Final payment closes to exactly zero.
         Payment::create(['payment_number' => 'PAY-AUD-3', 'invoice_id' => $invoice->id, 'customer_id' => $customer->id, 'amount' => 600, 'status' => 'completed', 'payment_method' => 'bank_transfer', 'paid_at' => now()]);
-        $invoice->increment('amount_paid', 600); $invoice->decrement('amount_due', 600);
+        $invoice->increment('amount_paid', 600);
+        $invoice->decrement('amount_due', 600);
         $this->assertSame(0.0, (float) $invoice->fresh()->amount_due);
         $this->assertSame(0.0, TraceabilityService::customerOverview($customer)['outstanding']);
 
@@ -284,5 +286,3 @@ class ProductionAuditTest extends TestCase
         $this->assertDatabaseMissing('users', ['name' => 'X']);
     }
 }
-
-

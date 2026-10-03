@@ -33,7 +33,7 @@ class Proposal extends Model
     {
         static::creating(function ($p) {
             if (empty($p->proposal_number)) {
-                $p->proposal_number = 'PR-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $p->proposal_number = 'PR-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }

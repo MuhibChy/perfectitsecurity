@@ -41,9 +41,8 @@
  * - storage/backups/ directory structure (empty)
  * - storage/app/ directory structure (empty)
  */
-
 $projectRoot = __DIR__;
-$backupDir = $projectRoot . '/storage/backups/phase24-full-backup-' . date('Ymd-His');
+$backupDir = $projectRoot.'/storage/backups/phase24-full-backup-'.date('Ymd-His');
 
 $excludePatterns = [
     '/vendor/',
@@ -110,10 +109,11 @@ $includePatterns = [
     '/^docs\/',
 ];
 
-function shouldInclude($path, $includePatterns, $excludePatterns): bool {
+function shouldInclude($path, $includePatterns, $excludePatterns): bool
+{
     // Check explicit excludes first
     foreach ($excludePatterns as $pattern) {
-        $regex = '#' . str_replace('/', '\/', $pattern) . '#';
+        $regex = '#'.str_replace('/', '\/', $pattern).'#';
         if (preg_match($regex, $path)) {
             return false;
         }
@@ -121,7 +121,7 @@ function shouldInclude($path, $includePatterns, $excludePatterns): bool {
 
     // Check if path matches any include pattern
     foreach ($includePatterns as $pattern) {
-        $regex = '#' . str_replace('/', '\/', $pattern) . '#';
+        $regex = '#'.str_replace('/', '\/', $pattern).'#';
         if (preg_match($regex, $path)) {
             return true;
         }
@@ -131,7 +131,7 @@ function shouldInclude($path, $includePatterns, $excludePatterns): bool {
     foreach ($includePatterns as $pattern) {
         if (str_ends_with($pattern, '/')) {
             $dirPattern = rtrim($pattern, '/');
-            if (str_starts_with($path, $dirPattern . '/')) {
+            if (str_starts_with($path, $dirPattern.'/')) {
                 return true;
             }
         }
@@ -144,7 +144,7 @@ echo "Phase 24 - Creating scoped backup...\n";
 echo "Project root: {$projectRoot}\n";
 echo "Backup destination: {$backupDir}\n\n";
 
-if (!is_dir($backupDir)) {
+if (! is_dir($backupDir)) {
     mkdir($backupDir, 0755, true);
 }
 
@@ -163,22 +163,24 @@ foreach ($iterator as $file) {
     $relativePath = substr($relativePath, strlen($projectRoot) + 1);
     $relativePath = str_replace('\\', '/', $relativePath);
 
-    if (!shouldInclude($relativePath, $includePatterns, $excludePatterns)) {
+    if (! shouldInclude($relativePath, $includePatterns, $excludePatterns)) {
         $skippedCount++;
+
         continue;
     }
 
-    $destPath = $backupDir . '/' . $relativePath;
+    $destPath = $backupDir.'/'.$relativePath;
 
     if ($file->isDir()) {
-        if (!is_dir($destPath)) {
+        if (! is_dir($destPath)) {
             mkdir($destPath, 0755, true);
         }
+
         continue;
     }
 
     $dir = dirname($destPath);
-    if (!is_dir($dir)) {
+    if (! is_dir($dir)) {
         mkdir($dir, 0755, true);
     }
 
@@ -214,12 +216,12 @@ $manifest = [
     'production_env_excluded' => true,
 ];
 
-file_put_contents($backupDir . '/BACKUP_MANIFEST.json', json_encode($manifest, JSON_PRETTY_PRINT));
+file_put_contents($backupDir.'/BACKUP_MANIFEST.json', json_encode($manifest, JSON_PRETTY_PRINT));
 
 echo "\n=== BACKUP COMPLETE ===\n";
 echo "Files included: {$fileCount}\n";
 echo "Files skipped: {$skippedCount}\n";
-echo "Total size: " . round($totalSize / 1024 / 1024, 2) . " MB\n";
+echo 'Total size: '.round($totalSize / 1024 / 1024, 2)." MB\n";
 echo "Manifest: {$backupDir}/BACKUP_MANIFEST.json\n";
 echo "\nExcluded (documented):\n";
 foreach ($excludePatterns as $pattern) {
@@ -227,7 +229,7 @@ foreach ($excludePatterns as $pattern) {
 }
 
 echo "\n=== VERIFICATION ===\n";
-echo "Manifest hash: " . hash_file('sha256', $backupDir . '/BACKUP_MANIFEST.json') . "\n";
+echo 'Manifest hash: '.hash_file('sha256', $backupDir.'/BACKUP_MANIFEST.json')."\n";
 
 // Verify key files exist
 $keyFiles = [
@@ -253,9 +255,9 @@ $keyFiles = [
 
 echo "\nKey files verification:\n";
 foreach ($keyFiles as $keyFile) {
-    $fullPath = $backupDir . '/' . $keyFile;
+    $fullPath = $backupDir.'/'.$keyFile;
     if (file_exists($fullPath)) {
-        echo "  ✓ {$keyFile} (sha256: " . substr($hashes[$keyFile] ?? hash_file('sha256', $fullPath), 0, 16) . "...)\n";
+        echo "  ✓ {$keyFile} (sha256: ".substr($hashes[$keyFile] ?? hash_file('sha256', $fullPath), 0, 16)."...)\n";
     } else {
         echo "  ✗ {$keyFile} MISSING\n";
     }

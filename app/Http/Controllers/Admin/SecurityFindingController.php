@@ -36,12 +36,14 @@ class SecurityFindingController extends Controller
             'kev' => SecurityFinding::open()->kev()->count(),
             'critical' => SecurityFinding::open()->forSeverity('critical')->count(),
         ];
+
         return view('admin.security.index', compact('findings', 'stats'));
     }
 
     public function create()
     {
         $staff = User::staff()->active()->orderBy('name')->get();
+
         return view('admin.security.create', compact('staff'));
     }
 
@@ -51,18 +53,21 @@ class SecurityFindingController extends Controller
         $data['reported_by'] = auth()->id();
         $finding = SecurityFinding::create($data);
         AuditService::log('create', 'security_findings', $finding, "Security finding {$finding->finding_number} opened.");
+
         return redirect()->route('admin.security-findings.show', $finding)->with('success', 'Finding recorded.');
     }
 
     public function show(SecurityFinding $finding)
     {
         $finding->load('assignee', 'reporter');
+
         return view('admin.security.show', compact('finding'));
     }
 
     public function edit(SecurityFinding $finding)
     {
         $staff = User::staff()->active()->orderBy('name')->get();
+
         return view('admin.security.edit', compact('finding', 'staff'));
     }
 
@@ -71,7 +76,7 @@ class SecurityFindingController extends Controller
         $oldStatus = $finding->status;
         $data = $this->validated($request);
         $finding->update($data);
-        if (in_array($data['status'], ['resolved', 'verified'], true) && !$finding->resolved_at) {
+        if (in_array($data['status'], ['resolved', 'verified'], true) && ! $finding->resolved_at) {
             $finding->update(['resolved_at' => now()]);
         }
         if ($data['status'] === 'verified') {
@@ -80,6 +85,7 @@ class SecurityFindingController extends Controller
         if ($oldStatus !== $data['status']) {
             AuditService::log('update', 'security_findings', $finding->fresh(), "Finding {$finding->finding_number}: {$oldStatus} → {$data['status']}.");
         }
+
         return redirect()->route('admin.security-findings.show', $finding)->with('success', 'Finding updated.');
     }
 
@@ -87,6 +93,7 @@ class SecurityFindingController extends Controller
     {
         $finding->delete();
         AuditService::log('delete', 'security_findings', $finding, "Finding {$finding->finding_number} archived.");
+
         return redirect()->route('admin.security-findings.index')->with('success', 'Finding archived.');
     }
 

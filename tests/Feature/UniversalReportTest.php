@@ -210,6 +210,7 @@ class UniversalReportTest extends TestCase
     private function service(): \App\Models\Service
     {
         $cat = \App\Models\ServiceCategory::firstOrCreate(['slug' => 'rpt-probe'], ['name' => 'Report Probe']);
+
         return \App\Models\Service::firstOrCreate(['slug' => 'rpt-probe-svc'], [
             'category_id' => $cat->id, 'name' => '[TEST] Report Probe', 'short_description' => 'x', 'is_active' => true,
         ]);

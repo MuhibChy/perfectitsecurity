@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Commission;
 use App\Models\CommissionRule;
+use App\Models\User;
 use App\Services\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,6 +13,7 @@ class CommissionTest extends TestCase
     use RefreshDatabase;
 
     protected $worker;
+
     protected $admin;
 
     protected function setUp(): void

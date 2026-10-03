@@ -29,20 +29,22 @@ class BusinessHoursService
         while ($remaining > 0 && $guard < 20000) {
             $guard++;
 
-            if (!$this->isBusinessDay($cursor, $country, $days)) {
-                $cursor->addDay()->setTimeFromTimeString($start . ':00');
+            if (! $this->isBusinessDay($cursor, $country, $days)) {
+                $cursor->addDay()->setTimeFromTimeString($start.':00');
+
                 continue;
             }
 
-            $dayStart = $cursor->copy()->setTimeFromTimeString($start . ':00');
-            $dayEnd = $cursor->copy()->setTimeFromTimeString($end . ':00');
+            $dayStart = $cursor->copy()->setTimeFromTimeString($start.':00');
+            $dayEnd = $cursor->copy()->setTimeFromTimeString($end.':00');
 
             if ($cursor->lt($dayStart)) {
                 $cursor = $dayStart->copy();
             }
 
             if ($cursor->gte($dayEnd)) {
-                $cursor->addDay()->setTimeFromTimeString($start . ':00');
+                $cursor->addDay()->setTimeFromTimeString($start.':00');
+
                 continue;
             }
 
@@ -52,7 +54,7 @@ class BusinessHoursService
                 $remaining = 0;
             } else {
                 $remaining -= $available;
-                $cursor->addDay()->setTimeFromTimeString($start . ':00');
+                $cursor->addDay()->setTimeFromTimeString($start.':00');
             }
         }
 
@@ -61,7 +63,7 @@ class BusinessHoursService
 
     public function isBusinessDay(Carbon $date, ?Country $country, array $days): bool
     {
-        if (!in_array((int) $date->dayOfWeekIso, $days, true)) {
+        if (! in_array((int) $date->dayOfWeekIso, $days, true)) {
             return false;
         }
 
@@ -74,7 +76,7 @@ class BusinessHoursService
             $query->whereNull('country_id');
         }
 
-        return !$query->exists();
+        return ! $query->exists();
     }
 
     public function taxRateForCountry(?Country $country): float

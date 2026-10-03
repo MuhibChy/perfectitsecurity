@@ -30,10 +30,17 @@ class FinancialController extends Controller
     public function transactions(Request $request)
     {
         $query = FinancialTransaction::with('creator');
-        if ($request->type) $query->where('type', $request->type);
-        if ($request->date_from) $query->where('created_at', '>=', $request->date_from);
-        if ($request->date_to) $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+        if ($request->date_from) {
+            $query->where('created_at', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->where('created_at', '<=', $request->date_to.' 23:59:59');
+        }
         $transactions = $query->latest()->paginate(30);
+
         return view('admin.financials.transactions', compact('transactions'));
     }
 
@@ -44,6 +51,7 @@ class FinancialController extends Controller
         $to = $request->to ? Carbon::parse($request->to) : now()->endOfMonth();
 
         $data = $fs->getProfitAndLoss($from, $to);
+
         return view('admin.financials.profit-loss', $data);
     }
 
@@ -59,6 +67,7 @@ class FinancialController extends Controller
         if ($request->filled('order_id') && ($found = \App\Models\ServiceOrder::find($request->get('order_id')))) {
             $order = $svc->reconcileOrder($found);
         }
+
         return view('admin.financials.reconciliation', array_merge($result, ['order' => $order]));
     }
 
@@ -73,9 +82,15 @@ class FinancialController extends Controller
             abort_if(Carbon::parse($request->date_from)->diffInDays(Carbon::parse($request->date_to)) > 366, 422, 'Export date range must not exceed 366 days.');
         }
         $query = FinancialTransaction::with('creator');
-        if ($request->type) $query->where('type', $request->type);
-        if ($request->date_from) $query->where('created_at', '>=', $request->date_from);
-        if ($request->date_to) $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+        if ($request->date_from) {
+            $query->where('created_at', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->where('created_at', '<=', $request->date_to.' 23:59:59');
+        }
 
         $transactions = $query->latest()->limit(5000)->get();
 
@@ -92,7 +107,7 @@ class FinancialController extends Controller
             fclose($file);
         };
 
-        \App\Models\AuditLog::log('financial.exported', 'financial_transactions', null, 'Financial transactions exported as CSV (' . $transactions->count() . ' rows) by ' . auth()->user()->name . '.');
+        \App\Models\AuditLog::log('financial.exported', 'financial_transactions', null, 'Financial transactions exported as CSV ('.$transactions->count().' rows) by '.auth()->user()->name.'.');
 
         return response()->stream($callback, 200, $headers);
     }

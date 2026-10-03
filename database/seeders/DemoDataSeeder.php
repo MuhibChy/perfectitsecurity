@@ -9,7 +9,6 @@ use App\Models\CustomerDocument;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\KbArticle;
 use App\Models\KbCategory;
 use App\Models\KbTag;
@@ -46,6 +45,7 @@ use Illuminate\Support\Str;
  * - Display names/titles are realistic and professional (no demo labels).
  * - Every record carries is_demo=true (hidden machine flag) for safe
  *   targeting by tests and `demo:cleanup`. Operational markers that are
+ *
  *   never customer-visible (demo.*@example.test emails, DEMO-TXN refs,
  *   type=demo notifications, documents/demo-* paths) are retained.
  * - All emails use the reserved .test TLD (never real people).
@@ -59,6 +59,7 @@ class DemoDataSeeder extends Seeder
     {
         if (User::where('email', 'demo.customer.001@example.test')->exists()) {
             $this->command?->warn('Sample batch already present — skipping (use demo:cleanup to remove first).');
+
             return;
         }
 
@@ -151,6 +152,7 @@ class DemoDataSeeder extends Seeder
             ]);
             $users['customers'][$i]->update(['company_id' => $out[count($out) - 1]->id]);
         }
+
         return $out;
     }
 
@@ -172,8 +174,8 @@ class DemoDataSeeder extends Seeder
                 'customer_id' => $status === 'won' ? $users['customers'][0]->id : null,
                 'assigned_to' => $users['staff']['sales_agent']->id,
                 'name' => $name,
-                'email' => 'demo.lead.00' . ($i + 1) . '@example.test',
-                'phone' => '+1 555 020 000' . ($i + 1),
+                'email' => 'demo.lead.00'.($i + 1).'@example.test',
+                'phone' => '+1 555 020 000'.($i + 1),
                 'company_name' => $company,
                 'source' => $source,
                 'status' => $status,
@@ -181,7 +183,7 @@ class DemoDataSeeder extends Seeder
                 'estimated_value' => $value,
                 'currency' => $currency,
                 'notes' => $notes,
-                'tags' => ['verification-batch', "batch-00" . ($i + 1)],
+                'tags' => ['verification-batch', 'batch-00'.($i + 1)],
                 'next_follow_up_at' => $followUp ? \Carbon\Carbon::parse($followUp) : null,
                 'converted_at' => $status === 'won' ? now() : null,
             ]);
@@ -191,6 +193,7 @@ class DemoDataSeeder extends Seeder
             ]);
             $out[] = $lead;
         }
+
         return $out;
     }
 
@@ -215,9 +218,9 @@ class DemoDataSeeder extends Seeder
                 'is_demo' => true,
                 'category_id' => $category->id,
                 'name' => $name,
-                'slug' => $slug . '-' . Str::random(4),
+                'slug' => $slug.'-'.Str::random(4),
                 'short_description' => $short,
-                'description' => $short . "\nDelivered by qualified engineers with a written findings report.",
+                'description' => $short."\nDelivered by qualified engineers with a written findings report.",
                 'price_type' => $priceType,
                 'starting_price' => $price,
                 'hourly_rate' => $priceType === 'hourly' ? $price : null,
@@ -245,6 +248,7 @@ class DemoDataSeeder extends Seeder
             }
             $out[] = $service;
         }
+
         return $out;
     }
 
@@ -262,8 +266,8 @@ class DemoDataSeeder extends Seeder
                 'user_id' => $users['customers'][$i]->id,
                 'service_id' => $services[$i]->id,
                 'name' => $requesters[$i],
-                'email' => 'demo.request.00' . ($i + 1) . '@example.test',
-                'phone' => '+880 1700 00000' . ($i + 1),
+                'email' => 'demo.request.00'.($i + 1).'@example.test',
+                'phone' => '+880 1700 00000'.($i + 1),
                 'company' => $requestCompanies[$i],
                 'subject' => $requestSubjects[$i],
                 'requirements' => "Requirement details as discussed.\nTimeline and scope to be confirmed with the client.",
@@ -278,6 +282,7 @@ class DemoDataSeeder extends Seeder
             $leads[$i]->update(['service_request_id' => $sr->id]);
             $out[] = $sr;
         }
+
         return $out;
     }
 
@@ -299,7 +304,7 @@ class DemoDataSeeder extends Seeder
                 'customer_id' => $users['customers'][$i]->id,
                 'assigned_to' => $users['staff']['sales_agent']->id,
                 'currency' => ['USD', 'GBP', 'BDT', 'EUR', 'USD'][$i],
-                'notes' => 'Prepared following discovery call ' . ($i + 1) . '.',
+                'notes' => 'Prepared following discovery call '.($i + 1).'.',
                 'terms' => 'Standard terms: net 14.',
                 'valid_until' => \Carbon\Carbon::parse($valid),
                 'tax_rate' => $taxRate,
@@ -322,6 +327,7 @@ class DemoDataSeeder extends Seeder
             $q->save();
             $out[] = $q;
         }
+
         return $out;
     }
 
@@ -345,7 +351,7 @@ class DemoDataSeeder extends Seeder
                 'version' => 1,
                 'scope_of_work' => "Scope of work as discussed.\nDeliverables and timeline per attached schedule.",
                 'deliverables' => "- Deliverable A\n- Deliverable B",
-                'timeline' => ($i + 1) . ' weeks from kickoff.',
+                'timeline' => ($i + 1).' weeks from kickoff.',
                 'terms' => 'Standard proposal terms.',
                 'subtotal' => $subtotal,
                 'tax_rate' => $taxRate,
@@ -357,6 +363,7 @@ class DemoDataSeeder extends Seeder
             $p->sections()->create(['heading' => 'Scope Overview', 'body' => 'Scope details as discussed.', 'sort_order' => 0]);
             $out[] = $p;
         }
+
         return $out;
     }
 
@@ -380,6 +387,7 @@ class DemoDataSeeder extends Seeder
                 'end_date' => now()->addDays([300, 350, 30, -30, -10][$i])->toDateString(),
             ]);
         }
+
         return $out;
     }
 
@@ -403,6 +411,7 @@ class DemoDataSeeder extends Seeder
                 'amount_due' => [800.00, 0, 0, 10000.00, 99999.99][$i],
             ]);
         }
+
         return $out;
     }
 
@@ -416,8 +425,8 @@ class DemoDataSeeder extends Seeder
         foreach (range(0, 4) as $i) {
             $project = Project::create([
                 'is_demo' => true,
-                'project_number' => 'PRJ-00' . ($i + 1) . '-' . date('Y'),
-                'slug' => $projectSlugs[$i] . '-' . Str::random(4),
+                'project_number' => 'PRJ-00'.($i + 1).'-'.date('Y'),
+                'slug' => $projectSlugs[$i].'-'.Str::random(4),
                 'name' => $projectNames[$i],
                 'description' => "Delivery project.\nMilestones tracked against agreed dates.",
                 'customer_id' => $users['customers'][$i]->id,
@@ -436,7 +445,7 @@ class DemoDataSeeder extends Seeder
                 ProjectMilestone::create([
                     'project_id' => $project->id,
                     'name' => $m === 1 ? 'Phase 1 — Discovery complete' : 'Phase 2 — Delivery complete',
-                    'description' => "Milestone acceptance recorded on completion.",
+                    'description' => 'Milestone acceptance recorded on completion.',
                     'due_date' => now()->addDays($m * 15)->toDateString(),
                     'is_completed' => $m === 1 && $i === 3,
                     'completed_at' => $m === 1 && $i === 3 ? now() : null,
@@ -445,6 +454,7 @@ class DemoDataSeeder extends Seeder
             }
             $out[] = $project;
         }
+
         return $out;
     }
 
@@ -464,7 +474,7 @@ class DemoDataSeeder extends Seeder
                 'created_by' => $users['staff']['project_manager']->id,
                 'assigned_to' => $i % 2 ? $users['staff']['freelancer']->id : $users['staff']['support_agent']->id,
                 'title' => $taskTitles[$i],
-                'description' => "Delivery task with acceptance tracked on completion.",
+                'description' => 'Delivery task with acceptance tracked on completion.',
                 'priority' => ['low', 'medium', 'high', 'urgent', 'medium'][$i % 5],
                 'type' => $types[$i % 5],
                 'status' => $statuses[$i % 5],
@@ -542,8 +552,8 @@ class DemoDataSeeder extends Seeder
                 'category_id' => $category->id,
                 'author_id' => $users['staff']['support_agent']->id,
                 'title' => $title,
-                'slug' => $slug . '-' . Str::random(4),
-                'content' => $bodies[$idx] . "\nContact support if anything is unclear.",
+                'slug' => $slug.'-'.Str::random(4),
+                'content' => $bodies[$idx]."\nContact support if anything is unclear.",
                 'excerpt' => mb_substr($bodies[$idx], 0, 120),
                 'visibility' => $visibility,
                 'language' => 'en',
@@ -588,6 +598,7 @@ class DemoDataSeeder extends Seeder
             $invoice->recalculate();
             $out[] = $invoice->fresh();
         }
+
         return $out;
     }
 
@@ -603,7 +614,7 @@ class DemoDataSeeder extends Seeder
         ];
         foreach ($plan as [$idx, $mode, $method, $txn]) {
             $invoice = $invoices[$idx]->fresh();
-            if (!in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
+            if (! in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
                 continue;
             }
             $amount = $mode === 'full' ? $invoice->amount_due
@@ -689,7 +700,7 @@ class DemoDataSeeder extends Seeder
         $categories = ['general', 'project', 'ticket', 'invoice', 'contract'];
         $docNames = [['Network diagram', 'network-diagram.txt'], ['Asset inventory', 'asset-inventory.txt'], ['Support log extract', 'support-log-extract.txt'], ['Service checklist', 'service-checklist.txt'], ['Meeting notes', 'meeting-notes.txt']];
         foreach (range(0, 4) as $i) {
-            $filename = 'demo-document-00' . ($i + 1) . '.txt';
+            $filename = 'demo-document-00'.($i + 1).'.txt';
             $content = "Reference document for verification.\nLine 2.";
             Storage::disk('private')->put("documents/{$filename}", $content);
             CustomerDocument::create([

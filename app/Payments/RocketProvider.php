@@ -9,6 +9,13 @@ namespace App\Payments;
  */
 class RocketProvider extends AbstractMobileWalletProvider
 {
-    public function key(): string { return 'rocket'; }
-    public function label(): string { return 'Rocket (DBBL)'; }
+    public function key(): string
+    {
+        return 'rocket';
+    }
+
+    public function label(): string
+    {
+        return 'Rocket (DBBL)';
+    }
 }

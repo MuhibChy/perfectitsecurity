@@ -11,6 +11,7 @@ class CountryController extends Controller
     public function index()
     {
         $countries = Country::orderBy('sort_order')->paginate(25);
+
         return view('admin.countries.index', compact('countries'));
     }
 

@@ -26,12 +26,18 @@ class PaymentDashboardController extends Controller
         ]);
         $q = PaymentTransaction::with(['customer', 'invoice', 'provider'])->latestFirst();
         foreach (['provider' => 'provider_key', 'currency' => 'original_currency', 'status' => 'status'] as $in => $col) {
-            if (!empty($filters[$in])) $q->where($col, $filters[$in]);
+            if (! empty($filters[$in])) {
+                $q->where($col, $filters[$in]);
+            }
         }
-        if (!empty($filters['from'])) $q->whereDate('created_at', '>=', $filters['from']);
-        if (!empty($filters['to'])) $q->whereDate('created_at', '<=', $filters['to']);
-        if (!empty($filters['customer'])) {
-            $q->whereHas('customer', fn ($qq) => $qq->where('name', 'like', '%' . $filters['customer'] . '%')->orWhere('email', 'like', '%' . $filters['customer'] . '%'));
+        if (! empty($filters['from'])) {
+            $q->whereDate('created_at', '>=', $filters['from']);
+        }
+        if (! empty($filters['to'])) {
+            $q->whereDate('created_at', '<=', $filters['to']);
+        }
+        if (! empty($filters['customer'])) {
+            $q->whereHas('customer', fn ($qq) => $qq->where('name', 'like', '%'.$filters['customer'].'%')->orWhere('email', 'like', '%'.$filters['customer'].'%'));
         }
         $transactions = $q->paginate(20)->withQueryString();
 
@@ -63,6 +69,7 @@ class PaymentDashboardController extends Controller
         $summary = $recon->sweep(200);
         $records = PaymentReconciliationRecord::latest('id')->paginate(25);
         $needsReview = PaymentReconciliationRecord::needsReview()->count();
+
         return view('admin.payments.reconciliation', compact('summary', 'records', 'needsReview'));
     }
 }

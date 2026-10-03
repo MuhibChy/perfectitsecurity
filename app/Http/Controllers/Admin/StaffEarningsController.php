@@ -19,6 +19,7 @@ class StaffEarningsController extends Controller
         $user = auth()->user();
         abort_if($user->isCustomer(), 403);
         $user->loadMissing('compensation');
+
         return view('admin.earnings.show', [
             'user' => $user,
             'summary' => $earnings->forEmployee($user),

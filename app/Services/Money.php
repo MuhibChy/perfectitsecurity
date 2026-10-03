@@ -24,7 +24,7 @@ class Money
             foreach (Country::get(['currency_code', 'currency_symbol', 'currency_name', 'decimal_places', 'is_active']) as $c) {
                 $code = strtoupper($c->currency_code);
                 // First active row wins for shared codes (e.g. EUR).
-                if (!isset(self::$catalog[$code]) || ($c->is_active && !self::$catalog[$code]['active'])) {
+                if (! isset(self::$catalog[$code]) || ($c->is_active && ! self::$catalog[$code]['active'])) {
                     self::$catalog[$code] = [
                         'symbol' => $c->currency_symbol,
                         'name' => $c->currency_name,
@@ -34,6 +34,7 @@ class Money
                 }
             }
         }
+
         return self::$catalog;
     }
 
@@ -49,7 +50,7 @@ class Money
 
     public static function symbol(string $currency): string
     {
-        return self::catalog()[strtoupper($currency)]['symbol'] ?? (strtoupper($currency) . ' ');
+        return self::catalog()[strtoupper($currency)]['symbol'] ?? (strtoupper($currency).' ');
     }
 
     public static function isSupported(string $currency): bool
@@ -73,7 +74,8 @@ class Money
     public static function format(float $amount, string $currency): string
     {
         $code = strtoupper($currency);
-        return self::symbol($code) . number_format($amount, self::decimals($code));
+
+        return self::symbol($code).number_format($amount, self::decimals($code));
     }
 
     /**
@@ -83,6 +85,7 @@ class Money
     public static function formatCode(float $amount, string $currency): string
     {
         $code = strtoupper($currency);
-        return $code . ' ' . number_format($amount, self::decimals($code));
+
+        return $code.' '.number_format($amount, self::decimals($code));
     }
 }

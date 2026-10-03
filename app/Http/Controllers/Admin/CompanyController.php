@@ -16,10 +16,14 @@ class CompanyController extends Controller
             $query->where('name', 'like', "%{$request->search}%");
         }
         $companies = $query->latest()->paginate(20);
+
         return view('admin.companies.index', compact('companies'));
     }
 
-    public function create() { return view('admin.companies.create'); }
+    public function create()
+    {
+        return view('admin.companies.create');
+    }
 
     public function store(Request $request)
     {
@@ -32,10 +36,14 @@ class CompanyController extends Controller
         ]);
         $validated['slug'] = Str::slug($validated['name']);
         Company::create($validated);
+
         return redirect()->route('admin.companies.index')->with('success', 'Company created!');
     }
 
-    public function edit(Company $company) { return view('admin.companies.edit', compact('company')); }
+    public function edit(Company $company)
+    {
+        return view('admin.companies.edit', compact('company'));
+    }
 
     public function update(Request $request, Company $company)
     {
@@ -47,12 +55,14 @@ class CompanyController extends Controller
             'website' => 'nullable|url',
         ]);
         $company->update($validated);
+
         return redirect()->route('admin.companies.index')->with('success', 'Company updated!');
     }
 
     public function destroy(Company $company)
     {
         $company->delete();
+
         return redirect()->route('admin.companies.index')->with('success', 'Company deleted.');
     }
 }

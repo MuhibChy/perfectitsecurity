@@ -16,15 +16,15 @@ class ViewAuditTest extends TestCase
                 $content = file_get_contents($file->getPathname());
                 if (preg_match_all('/view\s*\(\s*[\'"]([^\'",]+)[\'"]/', $content, $matches)) {
                     foreach ($matches[1] as $viewName) {
-                        $viewPath = resource_path('views/' . str_replace('.', '/', $viewName) . '.blade.php');
-                        if (!file_exists($viewPath)) {
-                            $missing[] = $file->getFilename() . " references missing view: {$viewName} ({$viewPath})";
+                        $viewPath = resource_path('views/'.str_replace('.', '/', $viewName).'.blade.php');
+                        if (! file_exists($viewPath)) {
+                            $missing[] = $file->getFilename()." references missing view: {$viewName} ({$viewPath})";
                         }
                     }
                 }
             }
         }
 
-        $this->assertEmpty($missing, "Missing views detected:\n" . implode("\n", $missing));
+        $this->assertEmpty($missing, "Missing views detected:\n".implode("\n", $missing));
     }
 }

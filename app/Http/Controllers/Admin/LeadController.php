@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
 use App\Models\Lead;
 use App\Models\LeadActivity;
 use App\Models\User;
-use App\Models\Country;
 use Illuminate\Http\Request;
 
 class LeadController extends Controller
@@ -27,6 +27,7 @@ class LeadController extends Controller
             });
         }
         $leads = $query->paginate(20);
+
         return view('admin.leads.index', compact('leads'));
     }
 
@@ -34,6 +35,7 @@ class LeadController extends Controller
     {
         $staff = User::staff()->active()->orderBy('name')->get();
         $countries = Country::active()->orderBy('sort_order')->get();
+
         return view('admin.leads.create', compact('staff', 'countries'));
     }
 
@@ -71,6 +73,7 @@ class LeadController extends Controller
     {
         $lead->load('activities.user', 'assignee', 'country', 'proposals');
         $staff = User::staff()->active()->orderBy('name')->get();
+
         return view('admin.leads.show', compact('lead', 'staff'));
     }
 
@@ -86,9 +89,9 @@ class LeadController extends Controller
         ]);
 
         $oldStatus = $lead->status;
-        $lead->update(array_filter($data, fn ($v) => !is_null($v)));
+        $lead->update(array_filter($data, fn ($v) => ! is_null($v)));
 
-        if (!empty($data['status']) && $data['status'] !== $oldStatus) {
+        if (! empty($data['status']) && $data['status'] !== $oldStatus) {
             LeadActivity::create([
                 'lead_id' => $lead->id,
                 'user_id' => auth()->id(),

@@ -34,6 +34,7 @@ class EmergencyService
                     ServiceTrackingService::notify((int) $manager->id, 'emergency_critical', "CRITICAL emergency {$emergency->reference}", mb_substr($emergency->description, 0, 140));
                 }
             }
+
             return $emergency->fresh();
         });
     }
@@ -58,12 +59,19 @@ class EmergencyService
                 abort_unless(User::where('id', $assigneeId)->first()?->isStaff(), 422, 'Assignee must be staff.');
                 $patch['assignee_id'] = $assigneeId;
             }
-            if ($to === 'acknowledged') $patch['acknowledged_at'] = now();
-            if ($to === 'resolved') $patch['resolved_at'] = now();
-            if ($to === 'closed') $patch['closed_at'] = now();
+            if ($to === 'acknowledged') {
+                $patch['acknowledged_at'] = now();
+            }
+            if ($to === 'resolved') {
+                $patch['resolved_at'] = now();
+            }
+            if ($to === 'closed') {
+                $patch['closed_at'] = now();
+            }
             $emergency->update($patch);
             AuditLog::log('emergency.transition', 'emergency_requests', $emergency, "Emergency {$emergency->reference}: {$emergency->getOriginal('status')} → {$to} by {$actor->name}.");
             ServiceTrackingService::notify((int) $emergency->requester_id, 'emergency_update', "Emergency {$emergency->reference}: {$to}", "Your emergency request is now {$to}.");
+
             return $emergency->fresh();
         });
     }

@@ -20,7 +20,10 @@ class MemberIdCard extends Model
 
     protected $casts = ['issued_at' => 'datetime', 'revoked_at' => 'datetime', 'expires_at' => 'datetime'];
 
-    public function user() { return $this->belongsTo(User::class); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function scopeValid($query)
     {
@@ -29,8 +32,13 @@ class MemberIdCard extends Model
 
     public function isValid(): bool
     {
-        if ($this->status !== 'active') return false;
-        if ($this->expires_at && $this->expires_at->isPast()) return false;
+        if ($this->status !== 'active') {
+            return false;
+        }
+        if ($this->expires_at && $this->expires_at->isPast()) {
+            return false;
+        }
+
         return true;
     }
 }

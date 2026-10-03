@@ -24,9 +24,9 @@ class HelpCenterController extends Controller
             $lessons = array_values(array_filter($lessons, fn ($l) => $l['category'] === $category));
         }
         if ($q !== '') {
-            $lessons = array_values(array_filter($lessons, fn ($l) =>
-                stripos($l['title'] . ' ' . $l['summary'] . ' ' . $l['what'], $q) !== false));
+            $lessons = array_values(array_filter($lessons, fn ($l) => stripos($l['title'].' '.$l['summary'].' '.$l['what'], $q) !== false));
         }
+
         return view('admin.help.training-index', [
             'lessons' => $lessons,
             'categories' => TrainingCenterLessons::categories(),
@@ -46,6 +46,7 @@ class HelpCenterController extends Controller
         $relatedProblems = array_values(array_filter(array_map(
             fn ($s) => TrainingCenterProblems::find($s), $lesson['problems'] ?? []
         )));
+
         return view('admin.help.training-show', compact('lesson', 'prev', 'next', 'relatedProblems', 'pos', 'ordered'));
     }
 
@@ -58,11 +59,11 @@ class HelpCenterController extends Controller
             $articles = array_values(array_filter($articles, fn ($a) => $a['filter'] === $filter));
         }
         if ($q !== '') {
-            $articles = array_values(array_filter($articles, fn ($a) =>
-                stripos($a['title'] . ' ' . implode(' ', $a['symptoms']) . ' ' . $a['category'], $q) !== false));
+            $articles = array_values(array_filter($articles, fn ($a) => stripos($a['title'].' '.implode(' ', $a['symptoms']).' '.$a['category'], $q) !== false));
         }
         $quick = ['cannot-login', 'payment-not-showing', 'order-missing', 'cannot-access-task', 'customer-update-not-visible'];
         $quickCards = array_values(array_filter(array_map(fn ($s) => TrainingCenterProblems::find($s), $quick)));
+
         return view('admin.help.problems-index', [
             'articles' => $articles,
             'filters' => TrainingCenterProblems::filters(),
@@ -78,6 +79,7 @@ class HelpCenterController extends Controller
         $relatedLessons = array_values(array_filter(array_map(
             fn ($s) => TrainingCenterLessons::find($s), $article['related'] ?? []
         )));
+
         return view('admin.help.problem-show', compact('article', 'relatedLessons'));
     }
 }

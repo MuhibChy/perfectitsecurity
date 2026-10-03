@@ -23,6 +23,7 @@ class ServiceAgreementController extends Controller
             }))
             ->latest()->paginate(20);
         $customers = User::where('role', 'customer')->where('is_active', true)->limit(200)->get();
+
         return view('admin.agreements.index', compact('agreements', 'customers'));
     }
 
@@ -48,6 +49,7 @@ class ServiceAgreementController extends Controller
     public function show(ServiceAgreement $agreement)
     {
         $agreement->load('customer');
+
         return view('admin.agreements.show', compact('agreement'));
     }
 
@@ -76,6 +78,7 @@ class ServiceAgreementController extends Controller
         $breaches = SlaBreachLog::with('ticket', 'slaPolicy')
             ->when($request->breach_type, fn ($q) => $q->where('breach_type', $request->breach_type))
             ->latest('breached_at')->paginate(20);
+
         return view('admin.agreements.breaches', compact('breaches'));
     }
 
@@ -98,6 +101,7 @@ class ServiceAgreementController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->latest()->paginate(20);
+
         return view('admin.agreements.approvals', compact('approvals'));
     }
 

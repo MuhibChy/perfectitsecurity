@@ -112,6 +112,7 @@ class CustomerOrderController extends Controller
         $order = ServiceOrder::where('customer_id', $user->id)->findOrFail($id);
         $data = $request->validate(['reason' => 'required|string|max:1000', 'revision_id' => 'nullable|integer']);
         $this->workflowService->rejectPrice($order, $user, $data['revision_id'] ?? null, $data['reason']);
+
         return back()->with('success', 'Price proposal declined.');
     }
 
@@ -121,6 +122,7 @@ class CustomerOrderController extends Controller
         $order = ServiceOrder::where('customer_id', $user->id)->findOrFail($id);
         $data = $request->validate(['reason' => 'required|string|max:1000']);
         $this->workflowService->cancelOrder($order, $user, $data['reason']);
+
         return back()->with('success', 'Order cancelled. History is preserved.');
     }
 
@@ -137,7 +139,7 @@ class CustomerOrderController extends Controller
         $result = $this->workflowService->recordPayment($order, [
             'amount' => $request->amount,
             'payment_method' => $request->payment_method ?? 'credit_card',
-            'transaction_id' => 'TXN-' . strtoupper(\Illuminate\Support\Str::random(10)),
+            'transaction_id' => 'TXN-'.strtoupper(\Illuminate\Support\Str::random(10)),
         ], $user);
 
         return back()->with('success', "Payment of {$order->currency} {$request->amount} recorded! Receipt {$result['receipt']->receipt_number} issued.");
@@ -160,7 +162,7 @@ class CustomerOrderController extends Controller
     {
         $user = auth()->user();
         $order = ServiceOrder::where('customer_id', $user->id)->findOrFail($id);
-        abort_unless($order->task_completed_at || !$order->tasks()->where('status', '!=', 'completed')->exists(), 422, 'Service work is not yet complete.');
+        abort_unless($order->task_completed_at || ! $order->tasks()->where('status', '!=', 'completed')->exists(), 422, 'Service work is not yet complete.');
 
         \App\Services\ServiceTrackingService::record([
             'entity_type' => ServiceOrder::class, 'entity_id' => $order->id,

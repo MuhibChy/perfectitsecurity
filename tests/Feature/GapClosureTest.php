@@ -34,7 +34,7 @@ class GapClosureTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(5) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(5).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified',
         ]);
@@ -172,7 +172,7 @@ class GapClosureTest extends TestCase
         $admin = $this->person('admin', 'Gap Admin');
 
         $cat = ServiceCategory::firstOrCreate(['slug' => 'gap-cat'], ['name' => 'Gap']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] svc', 'slug' => 'gap-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] svc', 'slug' => 'gap-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
         $order = ServiceOrder::create(['customer_id' => $customer->id, 'service_id' => $service->id, 'created_by' => $customer->id, 'source' => 'test', 'requirements' => 'Gap synthetic scope statement here.', 'status' => 'confirmed', 'payment_authorization' => 'not_authorized', 'currency' => 'GBP', 'original_price' => 1500, 'final_price' => 1500, 'discount_amount' => 0, 'tax_rate' => 0, 'tax_amount' => 0, 'total' => 1500, 'amount_paid' => 0, 'amount_due' => 1500, 'price_locked' => true, 'customer_accepted_at' => now()]);
         app(ServiceOrderWorkflowService::class)->generateConnectedRecords($order->fresh(), $customer);
 

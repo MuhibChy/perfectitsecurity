@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
-use App\Models\CiRelationship;
 use App\Models\ConfigurationItem;
 use App\Models\ItsmChange;
 use App\Models\Problem;
@@ -25,8 +24,11 @@ class ItsmExtensionTest extends TestCase
     use RefreshDatabase;
 
     protected $customer;
+
     protected $otherCustomer;
+
     protected $agent;
+
     protected $manager;
 
     protected function setUp(): void

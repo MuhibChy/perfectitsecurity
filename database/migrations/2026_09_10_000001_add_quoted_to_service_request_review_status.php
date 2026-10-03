@@ -35,13 +35,15 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'mysql') {
-            $enum = "'" . implode("','", self::STATUSES_WITH_QUOTED) . "'";
+            $enum = "'".implode("','", self::STATUSES_WITH_QUOTED)."'";
             DB::statement("ALTER TABLE service_requests MODIFY review_status ENUM({$enum}) NOT NULL DEFAULT 'new'");
+
             return;
         }
 
         if ($driver === 'sqlite') {
             $this->rebuildSqliteTable(self::STATUSES_WITH_QUOTED);
+
             return;
         }
 
@@ -57,13 +59,15 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'mysql') {
-            $enum = "'" . implode("','", self::STATUSES_ORIGINAL) . "'";
+            $enum = "'".implode("','", self::STATUSES_ORIGINAL)."'";
             DB::statement("ALTER TABLE service_requests MODIFY review_status ENUM({$enum}) NOT NULL DEFAULT 'new'");
+
             return;
         }
 
         if ($driver === 'sqlite') {
             $this->rebuildSqliteTable(self::STATUSES_ORIGINAL);
+
             return;
         }
 
@@ -72,10 +76,10 @@ return new class extends Migration
 
     private function rebuildCheckConstraint(string $driver, array $statuses): void
     {
-        $list = "'" . implode("','", $statuses) . "'";
+        $list = "'".implode("','", $statuses)."'";
         // Best-effort for other drivers; wrapped so an unsupported driver
         // fails loudly instead of silently leaving the schema behind.
-        Schema::table('service_requests', function ($table) use ($list) {
+        Schema::table('service_requests', function ($table) {
             $table->string('review_status')->default('new')->change();
         });
     }
@@ -88,47 +92,47 @@ return new class extends Migration
      */
     private function rebuildSqliteTable(array $statuses): void
     {
-        $list = "'" . implode("','", $statuses) . "'";
+        $list = "'".implode("','", $statuses)."'";
 
         Schema::disableForeignKeyConstraints();
 
         try {
             DB::statement('CREATE TABLE "service_requests_new" ('
-                . '"id" integer not null primary key autoincrement, '
-                . '"request_number" varchar not null, '
-                . '"user_id" integer, '
-                . '"service_id" integer, '
-                . '"name" varchar not null, '
-                . '"email" varchar not null, '
-                . '"phone" varchar, '
-                . '"company" varchar, '
-                . '"requirements" text not null, '
-                . '"budget" numeric, '
-                . '"preferred_start_date" date, '
-                . '"status" varchar check ("status" in (\'new\', \'reviewing\', \'quoted\', \'accepted\', \'rejected\', \'expired\')) not null default \'new\', '
-                . '"created_at" datetime, '
-                . '"updated_at" datetime, '
-                . '"country_id" integer, '
-                . '"currency" varchar, '
-                . '"quoted_price" numeric, '
-                . '"currency_symbol" varchar, '
-                . '"assigned_to" varchar, '
-                . '"internal_notes" text, '
-                . '"attachment_paths" varchar, '
-                . '"scope_details" text, '
-                . '"exclusions" text, '
-                . '"estimated_delivery" varchar, '
-                . '"priority" varchar check ("priority" in (\'low\', \'medium\', \'high\', \'urgent\')) not null default \'medium\', '
-                . '"quotation_id" integer, '
-                . '"review_status" varchar check ("review_status" in (' . $list . ')) not null default \'new\', '
-                . '"subject" varchar, '
-                . '"service_interest" varchar, '
-                . '"budget_range" varchar, '
-                . '"timeline" varchar, '
-                . '"lead_source" varchar default \'website\', '
-                . 'foreign key("user_id") references "users"("id") on delete set null, '
-                . 'foreign key("service_id") references "services"("id") on delete set null'
-                . ')');
+                .'"id" integer not null primary key autoincrement, '
+                .'"request_number" varchar not null, '
+                .'"user_id" integer, '
+                .'"service_id" integer, '
+                .'"name" varchar not null, '
+                .'"email" varchar not null, '
+                .'"phone" varchar, '
+                .'"company" varchar, '
+                .'"requirements" text not null, '
+                .'"budget" numeric, '
+                .'"preferred_start_date" date, '
+                .'"status" varchar check ("status" in (\'new\', \'reviewing\', \'quoted\', \'accepted\', \'rejected\', \'expired\')) not null default \'new\', '
+                .'"created_at" datetime, '
+                .'"updated_at" datetime, '
+                .'"country_id" integer, '
+                .'"currency" varchar, '
+                .'"quoted_price" numeric, '
+                .'"currency_symbol" varchar, '
+                .'"assigned_to" varchar, '
+                .'"internal_notes" text, '
+                .'"attachment_paths" varchar, '
+                .'"scope_details" text, '
+                .'"exclusions" text, '
+                .'"estimated_delivery" varchar, '
+                .'"priority" varchar check ("priority" in (\'low\', \'medium\', \'high\', \'urgent\')) not null default \'medium\', '
+                .'"quotation_id" integer, '
+                .'"review_status" varchar check ("review_status" in ('.$list.')) not null default \'new\', '
+                .'"subject" varchar, '
+                .'"service_interest" varchar, '
+                .'"budget_range" varchar, '
+                .'"timeline" varchar, '
+                .'"lead_source" varchar default \'website\', '
+                .'foreign key("user_id") references "users"("id") on delete set null, '
+                .'foreign key("service_id") references "services"("id") on delete set null'
+                .')');
 
             DB::statement('INSERT INTO "service_requests_new" SELECT * FROM "service_requests"');
             DB::statement('DROP TABLE "service_requests"');

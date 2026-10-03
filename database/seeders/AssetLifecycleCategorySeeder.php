@@ -42,6 +42,7 @@ class AssetLifecycleCategorySeeder extends Seeder
         ];
         if (in_array(null, $countries, true)) {
             $this->command?->warn('UK/US/BD country rows missing — skipping asset lifecycle services.');
+
             return;
         }
 
@@ -62,7 +63,7 @@ class AssetLifecycleCategorySeeder extends Seeder
                     'category_id' => $category->id,
                     'name' => $name,
                     'short_description' => $short,
-                    'description' => $short . ' Delivered remotely with written findings; onsite available where scheduled.',
+                    'description' => $short.' Delivered remotely with written findings; onsite available where scheduled.',
                     'price_type' => $type,
                     'complexity_level' => 'standard',
                     'starting_price' => $us,

@@ -47,6 +47,7 @@ class SyntheticCustomerJourneyTest extends TestCase
     private function catalog(): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 'e2e-journey'], ['name' => 'E2E Journey']);
+
         return Service::firstOrCreate(['slug' => 'e2e-journey-service'], [
             'category_id' => $cat->id, 'name' => '[TEST] E2E Service',
             'short_description' => 'Synthetic journey service', 'is_active' => true,
@@ -57,7 +58,7 @@ class SyntheticCustomerJourneyTest extends TestCase
     {
         [$tag, $country, $code, $phone, $expected] = $row;
         $user = User::factory()->create([
-            'name' => 'TEST-CUSTOMER-' . $tag, 'role' => 'customer', 'is_active' => true,
+            'name' => 'TEST-CUSTOMER-'.$tag, 'role' => 'customer', 'is_active' => true,
             'is_demo' => true, 'email' => "e2e-customer-{$tag}@example.test",
             'email_verified_at' => now(), 'phone' => $phone, 'phone_verified_at' => now(),
             'verification_status' => 'fully_verified',
@@ -65,11 +66,13 @@ class SyntheticCustomerJourneyTest extends TestCase
             'preferred_currency' => $expected[0],
         ]);
         $this->assertSame($expected, $user->availableCurrencies(), "Currency contract for TEST-CUSTOMER-{$tag}");
+
         return $user;
     }
 
     /**
      * @test
+     *
      * @dataProvider matrix
      */
     public function full_customer_journey(array $row): void
@@ -82,7 +85,7 @@ class SyntheticCustomerJourneyTest extends TestCase
         // ── REGISTER (HTTP): synthetic identity, customer role enforced ──
         $regEmail = "e2e-register-{$tag}@example.test";
         $this->post('/register', [
-            'name' => 'TEST-CUSTOMER-REG-' . $tag, 'email' => $regEmail,
+            'name' => 'TEST-CUSTOMER-REG-'.$tag, 'email' => $regEmail,
             'password' => 'Password123!', 'password_confirmation' => 'Password123!',
             'role' => 'customer',
         ])->assertRedirect(route('verification.notice'));
@@ -92,7 +95,7 @@ class SyntheticCustomerJourneyTest extends TestCase
         // Role manipulation is neutralized at validation: a disallowed role
         // never creates a privileged account (redirected back, no user).
         $this->post('/register', [
-            'name' => 'TEST-CUSTOMER-ROLE-' . $tag, 'email' => "e2e-role-{$tag}@example.test",
+            'name' => 'TEST-CUSTOMER-ROLE-'.$tag, 'email' => "e2e-role-{$tag}@example.test",
             'password' => 'Password123!', 'password_confirmation' => 'Password123!',
             'role' => 'admin',
         ])->assertRedirect('/');
@@ -118,7 +121,7 @@ class SyntheticCustomerJourneyTest extends TestCase
         $this->actingAs($customer)->get(route('portal.service-request.create'))->assertStatus(200);
         $this->actingAs($customer)->post(route('portal.service-request.store'), [
             'service_id' => $service->id,
-            'requirements' => 'Synthetic E2E request for TEST-CUSTOMER-' . $tag . ' with full detail.',
+            'requirements' => 'Synthetic E2E request for TEST-CUSTOMER-'.$tag.' with full detail.',
         ])->assertRedirect(route('portal.dashboard'));
         $serviceRequest = ServiceRequest::where('user_id', $customer->id)->latest()->firstOrFail();
 
@@ -153,8 +156,8 @@ class SyntheticCustomerJourneyTest extends TestCase
 
         // ── TRACKING + HISTORY ──
         $project = \App\Models\Project::create([
-            'customer_id' => $customer->id, 'project_number' => 'PRJ-E2E-' . $tag,
-            'slug' => 'e2e-project-' . $tag, 'name' => '[TEST] E2E Project ' . $tag, 'status' => 'in_progress',
+            'customer_id' => $customer->id, 'project_number' => 'PRJ-E2E-'.$tag,
+            'slug' => 'e2e-project-'.$tag, 'name' => '[TEST] E2E Project '.$tag, 'status' => 'in_progress',
         ]);
         $this->actingAs($customer)->get(route('portal.tracking.index'))->assertStatus(200);
         $this->actingAs($customer)->get(route('portal.tracking.show', $project->id))->assertStatus(200);
@@ -171,7 +174,7 @@ class SyntheticCustomerJourneyTest extends TestCase
         // ── TICKET (create → reply) + NOTIFICATIONS ──
         $category = TicketCategory::firstOrCreate(['slug' => 'e2e-cat'], ['name' => 'E2E Category', 'is_active' => true]);
         $this->actingAs($customer)->post(route('portal.tickets.store'), [
-            'subject' => '[TEST] E2E ticket ' . $tag, 'description' => 'Synthetic journey ticket body.',
+            'subject' => '[TEST] E2E ticket '.$tag, 'description' => 'Synthetic journey ticket body.',
             'category_id' => $category->id, 'priority' => 'medium',
         ])->assertRedirect();
         $ticket = \App\Models\Ticket::where('customer_id', $customer->id)->latest()->firstOrFail();
@@ -189,11 +192,11 @@ class SyntheticCustomerJourneyTest extends TestCase
         $wallet = \App\Models\Wallet::where('user_id', $customer->id)->firstOrFail();
         $this->actingAs($customer)->get(route('portal.wallet.show', $wallet))->assertStatus(200);
         $this->actingAs($customer)->get(route('portal.wallet.statement', $wallet))->assertStatus(200);
-        $this->actingAs($customer)->get('/currency/' . $local)->assertRedirect();
+        $this->actingAs($customer)->get('/currency/'.$local)->assertRedirect();
         // A globally-supported but non-allowed currency is rejected for this account.
         $foreign = $local === 'BDT' ? 'GBP' : 'BDT';
-        if (!in_array($foreign, $expected, true)) {
-            $this->actingAs($customer)->get('/currency/' . $foreign)->assertStatus(422);
+        if (! in_array($foreign, $expected, true)) {
+            $this->actingAs($customer)->get('/currency/'.$foreign)->assertStatus(422);
         }
 
         // ── No duplicates from the journey ──
@@ -223,7 +226,7 @@ class SyntheticCustomerJourneyTest extends TestCase
             'amount_paid' => 0, 'amount_due' => 400,
         ]);
         $invoice = \App\Models\Invoice::create([
-            'invoice_number' => 'INV-ISOB-' . $a->id, 'customer_id' => $a->id,
+            'invoice_number' => 'INV-ISOB-'.$a->id, 'customer_id' => $a->id,
             'subtotal' => 400, 'total' => 400, 'amount_due' => 400, 'currency' => 'USD',
             'status' => 'sent', 'due_date' => now()->addDays(14),
         ]);

@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\Quotation;
 use App\Models\Service;
 use App\Models\ServiceCategory;
-use App\Models\Country;
 use App\Models\ServiceCountryPrice;
 use App\Models\ServiceRequest;
 use App\Models\User;
-use App\Models\Quotation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -49,6 +49,7 @@ class ServiceController extends Controller
     {
         $categories = ServiceCategory::where('is_active', true)->orderBy('sort_order')->get();
         $countries = Country::where('is_active', true)->orderBy('sort_order')->get();
+
         return view('admin.services.create', compact('categories', 'countries'));
     }
 
@@ -91,7 +92,7 @@ class ServiceController extends Controller
 
         // Handle JSON fields
         foreach (['deliverables', 'features', 'faq', 'tags'] as $field) {
-            if (!empty($validated[$field])) {
+            if (! empty($validated[$field])) {
                 $validated[$field] = array_map('trim', explode("\n", $validated[$field]));
                 $validated[$field] = array_filter($validated[$field]);
                 $validated[$field] = array_values($validated[$field]);
@@ -103,7 +104,7 @@ class ServiceController extends Controller
         $countryPrices = $validated['country_prices'] ?? [];
         unset($validated['country_prices']);
         foreach (['description', 'full_description'] as $htmlField) {
-            if (!empty($validated[$htmlField])) {
+            if (! empty($validated[$htmlField])) {
                 $validated[$htmlField] = \App\Services\HtmlSanitizer::clean($validated[$htmlField]);
             }
         }
@@ -111,7 +112,7 @@ class ServiceController extends Controller
         $service = Service::create($validated);
 
         // Save country prices
-        if (!empty($countryPrices)) {
+        if (! empty($countryPrices)) {
             foreach ($countryPrices as $cp) {
                 ServiceCountryPrice::create([
                     'service_id' => $service->id,
@@ -129,6 +130,7 @@ class ServiceController extends Controller
     public function show($id)
     {
         $service = Service::with('category', 'countryPrices.country', 'relatedServices')->findOrFail($id);
+
         return view('admin.services.show', compact('service'));
     }
 
@@ -189,7 +191,7 @@ class ServiceController extends Controller
 
         // Handle JSON fields
         foreach (['deliverables', 'features', 'faq', 'tags'] as $field) {
-            if (!empty($validated[$field])) {
+            if (! empty($validated[$field])) {
                 $validated[$field] = array_map('trim', explode("\n", $validated[$field]));
                 $validated[$field] = array_filter($validated[$field]);
                 $validated[$field] = array_values($validated[$field]);
@@ -201,7 +203,7 @@ class ServiceController extends Controller
         $countryPrices = $validated['country_prices'] ?? [];
         unset($validated['country_prices']);
         foreach (['description', 'full_description'] as $htmlField) {
-            if (!empty($validated[$htmlField])) {
+            if (! empty($validated[$htmlField])) {
                 $validated[$htmlField] = \App\Services\HtmlSanitizer::clean($validated[$htmlField]);
             }
         }
@@ -209,7 +211,7 @@ class ServiceController extends Controller
         $service->update($validated);
 
         // Sync country prices (removed rows are deleted — no stale prices linger).
-        if (!empty($countryPrices)) {
+        if (! empty($countryPrices)) {
             $kept = [];
             foreach ($countryPrices as $cp) {
                 $row = ServiceCountryPrice::updateOrCreate(
@@ -231,6 +233,7 @@ class ServiceController extends Controller
     public function destroy($id)
     {
         Service::findOrFail($id)->delete();
+
         return redirect()->route('admin.services.index')->with('success', 'Service deleted.');
     }
 
@@ -244,8 +247,9 @@ class ServiceController extends Controller
         $slug = $base;
         $i = 1;
         while (Service::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = $base . '-' . (++$i);
+            $slug = $base.'-'.(++$i);
         }
+
         return $slug;
     }
 
@@ -279,6 +283,7 @@ class ServiceController extends Controller
     public function showRequest($id)
     {
         $serviceRequest = ServiceRequest::with('service', 'user', 'country', 'assignedTo', 'quotation')->findOrFail($id);
+
         return view('admin.services.request-show', compact('serviceRequest'));
     }
 
@@ -371,7 +376,7 @@ class ServiceController extends Controller
                     break;
                 }
             }
-            if (!$assigned) {
+            if (! $assigned) {
                 $stages['inbound']['items']->push($sr);
             }
         }
@@ -414,7 +419,7 @@ class ServiceController extends Controller
 
         // Locate or create customer account
         $customerId = $serviceRequest->user_id;
-        if (!$customerId && $serviceRequest->email) {
+        if (! $customerId && $serviceRequest->email) {
             $user = User::where('email', $serviceRequest->email)->first();
             if ($user) {
                 $customerId = $user->id;

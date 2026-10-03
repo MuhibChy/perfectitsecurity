@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\PaymentTransaction;
 use App\Models\PaymentProvider;
+use App\Models\PaymentTransaction;
 use App\Models\PaymentWebhookEvent;
 use App\Notifications\PaymentStatusNotification;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,8 @@ class PaymentWebhookService
     public function __construct(
         protected PaymentProviderService $providers,
         protected PaymentSettlementService $settlement
-    ) {}
+    ) {
+    }
 
     /**
      * Ingest a raw webhook body. Idempotent on provider+event_id:
@@ -35,18 +36,20 @@ class PaymentWebhookService
                     $existing->increment('attempts');
                     $existing->update(['status' => 'duplicate']);
                 }
+
                 return $existing;
             }
             $row = PaymentProvider::where('key', $providerKey)->first();
             $signatureValid = false;
             if ($row && $row->webhook_secret && $signature) {
                 $signatureValid = hash_equals(hash_hmac('sha256', $rawBody, $row->webhook_secret), $signature);
-            } elseif (!$row || !$row->webhook_secret) {
+            } elseif (! $row || ! $row->webhook_secret) {
                 // No secret configured (test mode): payload accepted but
                 // flagged unverified — settlement still requires a
                 // matching, payable internal transaction.
                 $signatureValid = false;
             }
+
             return PaymentWebhookEvent::create([
                 'provider_key' => $providerKey,
                 'event_id' => $eventId,
@@ -80,10 +83,10 @@ class PaymentWebhookService
             try {
                 $payload = $event->payload ?? [];
                 $txn = null;
-                if (!empty($event->transaction_reference)) {
+                if (! empty($event->transaction_reference)) {
                     $txn = PaymentTransaction::where('reference', $event->transaction_reference)->first();
                 }
-                if (!$txn && !empty($payload['provider_reference'])) {
+                if (! $txn && ! empty($payload['provider_reference'])) {
                     $txn = PaymentTransaction::where('provider_reference', $payload['provider_reference'])->first();
                 }
                 abort_unless($txn, 422, 'Unknown transaction reference.');
@@ -95,18 +98,20 @@ class PaymentWebhookService
                     // internal reference + payable invoice instead.
                     $row = PaymentProvider::where('key', $event->provider_key)->first();
                     $strict = $row && $row->isLive() && in_array($event->provider_key, ['stripe', 'card'], true);
-                    if ($strict && !$event->signature_valid) {
+                    if ($strict && ! $event->signature_valid) {
                         throw new \RuntimeException('Invalid webhook signature for live provider.');
                     }
-                    $result = $this->settlement->settle($txn, null, $event->provider_key . ':' . $event->event_id);
+                    $result = $this->settlement->settle($txn, null, $event->provider_key.':'.$event->event_id);
                     $event->update(['status' => 'processed', 'processed_at' => now()]);
+
                     return ['settled' => true, 'duplicate' => $result['duplicate'], 'event' => $event->fresh()];
                 }
 
                 if (in_array($verdict, ['failed', 'cancelled', 'expired'], true)) {
-                    app(PaymentSettlementService::class)->markFailed($txn, 'Provider reported: ' . $verdict);
+                    app(PaymentSettlementService::class)->markFailed($txn, 'Provider reported: '.$verdict);
                     $event->update(['status' => 'processed', 'processed_at' => now()]);
-                    $this->notifyPaymentFailed($txn, 'Provider reported: ' . $verdict);
+                    $this->notifyPaymentFailed($txn, 'Provider reported: '.$verdict);
+
                     return ['settled' => false, 'event' => $event->fresh()];
                 }
 
@@ -114,9 +119,11 @@ class PaymentWebhookService
                 $txn->transitionTo('requires_verification');
                 $event->update(['status' => 'processed', 'processed_at' => now(), 'error' => 'Uncertain provider state; flagged for review.']);
                 $this->notifyFinanceReview($txn, 'Provider returned an uncertain state; payment requires verification.');
+
                 return ['settled' => false, 'needs_review' => true, 'event' => $event->fresh()];
             } catch (\Throwable $e) {
                 $event->update(['status' => 'failed', 'error' => mb_substr($e->getMessage(), 0, 1000)]);
+
                 return ['settled' => false, 'error' => $e->getMessage(), 'event' => $event->fresh()];
             }
         });

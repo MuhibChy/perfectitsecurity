@@ -29,21 +29,68 @@ class Task extends Model
     {
         static::creating(function ($task) {
             if (empty($task->task_number)) {
-                $task->task_number = 'TSK-' . strtoupper(\Illuminate\Support\Str::random(8));
+                $task->task_number = 'TSK-'.strtoupper(\Illuminate\Support\Str::random(8));
             }
         });
     }
 
-    public function project() { return $this->belongsTo(Project::class); }
-    public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
-    public function contributors() { return $this->belongsToMany(User::class, 'task_contributors', 'task_id', 'user_id')->withPivot('role')->withTimestamps(); }
-    public function creator() { return $this->belongsTo(User::class, 'created_by'); }
-    public function locker() { return $this->belongsTo(User::class, 'locked_by'); }
-    public function applications() { return $this->hasMany(TaskApplication::class); }
-    public function comments() { return $this->hasMany(TaskComment::class); }
-    public function attachments() { return $this->hasMany(TaskAttachment::class); }
-    public function commissions() { return $this->hasMany(Commission::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function ticket() { return $this->belongsTo(Ticket::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function contributors()
+    {
+        return $this->belongsToMany(User::class, 'task_contributors', 'task_id', 'user_id')->withPivot('role')->withTimestamps();
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function locker()
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(TaskApplication::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(TaskComment::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(Commission::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 }

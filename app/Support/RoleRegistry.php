@@ -148,8 +148,11 @@ class RoleRegistry
     public static function for(?string $role): ?array
     {
         foreach (self::definitions() as $def) {
-            if ($def['name'] === $role) return $def;
+            if ($def['name'] === $role) {
+                return $def;
+            }
         }
+
         return null;
     }
 
@@ -185,8 +188,12 @@ class RoleRegistry
         } catch (\Throwable $e) {
             // Table not yet migrated (e.g. early install): fall back to definitions.
         }
+
         return array_values(array_filter(array_map(function ($d) {
-            if (empty($d['registration_allowed'])) return null;
+            if (empty($d['registration_allowed'])) {
+                return null;
+            }
+
             return [
                 'name' => $d['name'], 'display_name' => $d['display_name'],
                 'description' => $d['description'], 'approval_required' => $d['approval_required'],
@@ -207,15 +214,16 @@ class RoleRegistry
     public static function registrationOutcome(string $requested, bool $isProduction): array
     {
         $def = self::for($requested);
-        if (!$def || ($def['status'] ?? 'active') !== 'active' || empty($def['registration_allowed'])) {
+        if (! $def || ($def['status'] ?? 'active') !== 'active' || empty($def['registration_allowed'])) {
             return ['assigned' => 'customer', 'requested' => null, 'status' => null];
         }
-        if (!empty($def['self_registration'])) {
+        if (! empty($def['self_registration'])) {
             return ['assigned' => $requested, 'requested' => null, 'status' => null];
         }
         if ($isProduction) {
             return ['assigned' => 'customer', 'requested' => $requested, 'status' => 'pending'];
         }
+
         return ['assigned' => $requested, 'requested' => $requested, 'status' => 'approved'];
     }
 
@@ -225,16 +233,17 @@ class RoleRegistry
         $def = self::for($role);
         $caps = self::capabilitiesOf($role);
         $names = array_map(fn ($c) => self::CAPABILITIES[$c] ?? $c, $caps);
-        $brief = 'Current user role: ' . self::displayName($role) . " (internal key: {$role}).\n";
-        $brief .= 'Allowed areas: ' . ($names ? implode('; ', $names) : 'standard customer access') . ".\n";
+        $brief = 'Current user role: '.self::displayName($role)." (internal key: {$role}).\n";
+        $brief .= 'Allowed areas: '.($names ? implode('; ', $names) : 'standard customer access').".\n";
         $brief .= "Rules: explain only workflows inside the user's allowed areas. "
-            . "If asked about a restricted area (e.g. a customer asking about expense management, finance administration, user management or other staff procedures), "
-            . "state plainly that it is not available to their role, never reveal restricted procedures, and redirect to what they CAN do "
-            . "(customer: orders /portal/orders, invoices /portal/invoices, payments, tickets /portal/tickets, projects /portal/projects). "
-            . "Link relevant help: Training Center /admin/help/training and Problem & Solution Center /admin/help/problems.\n";
-        if ($def && !empty($def['training_slugs'])) {
-            $brief .= 'Recommended training for this role: /admin/help/training pages: ' . implode(', ', $def['training_slugs']) . ".\n";
+            .'If asked about a restricted area (e.g. a customer asking about expense management, finance administration, user management or other staff procedures), '
+            .'state plainly that it is not available to their role, never reveal restricted procedures, and redirect to what they CAN do '
+            .'(customer: orders /portal/orders, invoices /portal/invoices, payments, tickets /portal/tickets, projects /portal/projects). '
+            ."Link relevant help: Training Center /admin/help/training and Problem & Solution Center /admin/help/problems.\n";
+        if ($def && ! empty($def['training_slugs'])) {
+            $brief .= 'Recommended training for this role: /admin/help/training pages: '.implode(', ', $def['training_slugs']).".\n";
         }
+
         return $brief;
     }
 }

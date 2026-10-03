@@ -108,10 +108,19 @@ class AdminNavigation
 
     protected static function gateOpen($user, ?string $gate): bool
     {
-        if (!$gate) return true;
-        if (!$user) return false;
-        if ($gate === 'isSupport') return $user->isSupportAgent() || $user->isSupportManager();
-        if (method_exists($user, $gate)) return (bool) $user->$gate();
+        if (! $gate) {
+            return true;
+        }
+        if (! $user) {
+            return false;
+        }
+        if ($gate === 'isSupport') {
+            return $user->isSupportAgent() || $user->isSupportManager();
+        }
+        if (method_exists($user, $gate)) {
+            return (bool) $user->$gate();
+        }
+
         return $user->role === $gate;
     }
 
@@ -126,19 +135,29 @@ class AdminNavigation
             $items = [];
             $groupActive = false;
             foreach ($group['items'] as $item) {
-                if (!self::gateOpen($user, $item['gate'] ?? null)) continue;
+                if (! self::gateOpen($user, $item['gate'] ?? null)) {
+                    continue;
+                }
                 $active = false;
                 foreach ($item['active'] ?? [] as $pattern) {
-                    if (request()->routeIs($pattern)) { $active = true; break; }
+                    if (request()->routeIs($pattern)) {
+                        $active = true;
+                        break;
+                    }
                 }
-                if ($active) $groupActive = true;
+                if ($active) {
+                    $groupActive = true;
+                }
                 $items[] = $item + ['isActive' => $active];
             }
-            if (empty($items)) continue;
+            if (empty($items)) {
+                continue;
+            }
             $group['items'] = $items;
             $group['isActive'] = $groupActive;
             $out[] = $group;
         }
+
         return $out;
     }
 }

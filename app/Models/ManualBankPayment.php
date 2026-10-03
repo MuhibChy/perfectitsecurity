@@ -35,20 +35,46 @@ class ManualBankPayment extends Model
     {
         static::creating(function ($m) {
             if (empty($m->reference)) {
-                $m->reference = 'MBP-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+                $m->reference = 'MBP-'.date('Ymd').'-'.strtoupper(Str::random(6));
             }
             if (empty($m->idempotency_key)) {
-                $m->idempotency_key = 'mbp_' . Str::uuid();
+                $m->idempotency_key = 'mbp_'.Str::uuid();
             }
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function invoice() { return $this->belongsTo(Invoice::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function bankAccount() { return $this->belongsTo(BankAccount::class); }
-    public function paymentTransaction() { return $this->belongsTo(PaymentTransaction::class); }
-    public function verifier() { return $this->belongsTo(User::class, 'verified_by'); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopePending($q) { return $q->where('status', 'pending_verification'); }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount::class);
+    }
+
+    public function paymentTransaction()
+    {
+        return $this->belongsTo(PaymentTransaction::class);
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function scopePending($q)
+    {
+        return $q->where('status', 'pending_verification');
+    }
 }

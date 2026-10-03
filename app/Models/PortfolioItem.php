@@ -26,7 +26,7 @@ class PortfolioItem extends Model
     {
         static::creating(function ($m) {
             if (empty($m->slug)) {
-                $m->slug = Str::slug($m->title) . '-' . Str::random(4);
+                $m->slug = Str::slug($m->title).'-'.Str::random(4);
             }
         });
     }

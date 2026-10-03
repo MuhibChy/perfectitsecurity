@@ -13,12 +13,23 @@ class CommissionPayout extends Model
     {
         static::creating(function ($p) {
             if (empty($p->payout_number)) {
-                $p->payout_number = 'PO-' . strtoupper(Str::random(8));
+                $p->payout_number = 'PO-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function worker() { return $this->belongsTo(User::class, 'worker_id'); }
-    public function processor() { return $this->belongsTo(User::class, 'processed_by'); }
-    public function items() { return $this->hasMany(CommissionPayoutItem::class, 'payout_id'); }
+    public function worker()
+    {
+        return $this->belongsTo(User::class, 'worker_id');
+    }
+
+    public function processor()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(CommissionPayoutItem::class, 'payout_id');
+    }
 }

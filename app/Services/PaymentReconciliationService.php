@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\FinancialTransaction;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\ServiceOrder;
@@ -29,13 +28,15 @@ class PaymentReconciliationService
         if (abs($netPaid - (float) $order->amount_paid) > 0.009) {
             $issues[] = "order amount_paid ({$order->amount_paid}) != net payments ({$netPaid})";
         }
-        if (!PaymentState::balancesReconcile((float) $order->total, (float) $order->amount_paid, (float) $order->amount_due)) {
+        if (! PaymentState::balancesReconcile((float) $order->total, (float) $order->amount_paid, (float) $order->amount_due)) {
             $issues[] = "order TOTAL ({$order->total}) != PAID ({$order->amount_paid}) + DUE ({$order->amount_due})";
         }
 
         foreach ($order->invoices as $invoice) {
             $r = $this->reconcileInvoice($invoice);
-            foreach ($r['issues'] as $i) $issues[] = "invoice {$invoice->invoice_number}: {$i}";
+            foreach ($r['issues'] as $i) {
+                $issues[] = "invoice {$invoice->invoice_number}: {$i}";
+            }
         }
 
         // Schedule vs actual.
@@ -48,12 +49,16 @@ class PaymentReconciliationService
         $dupes = $order->payments()->select('stripe_checkout_session_id', DB::raw('COUNT(*) c'))
             ->whereNotNull('stripe_checkout_session_id')
             ->groupBy('stripe_checkout_session_id')->having('c', '>', 1)->count();
-        if ($dupes > 0) $issues[] = "duplicate stripe session references detected";
+        if ($dupes > 0) {
+            $issues[] = 'duplicate stripe session references detected';
+        }
 
         $dupTxn = $order->payments()->select('transaction_id', DB::raw('COUNT(*) c'))
             ->whereNotNull('transaction_id')
             ->groupBy('transaction_id')->having('c', '>', 1)->count();
-        if ($dupTxn > 0) $issues[] = "duplicate transaction_id references detected";
+        if ($dupTxn > 0) {
+            $issues[] = 'duplicate transaction_id references detected';
+        }
 
         return [
             'order' => $order->order_number,
@@ -79,7 +84,7 @@ class PaymentReconciliationService
         if (abs($netPaid - (float) $invoice->amount_paid) > 0.009) {
             $issues[] = "amount_paid ({$invoice->amount_paid}) != net payments ({$netPaid})";
         }
-        if (!PaymentState::balancesReconcile((float) $invoice->total, (float) $invoice->amount_paid, (float) $invoice->amount_due)) {
+        if (! PaymentState::balancesReconcile((float) $invoice->total, (float) $invoice->amount_paid, (float) $invoice->amount_due)) {
             $issues[] = "TOTAL ({$invoice->total}) != PAID ({$invoice->amount_paid}) + DUE ({$invoice->amount_due})";
         }
         // Currency consistency.
@@ -112,12 +117,15 @@ class PaymentReconciliationService
         $results = [];
         foreach ($orders as $order) {
             $r = $this->reconcileOrder($order);
-            if (!$r['ok']) {
+            if (! $r['ok']) {
                 $bad++;
                 $results[] = $r;
-                if (count($results) >= 50) break;
+                if (count($results) >= 50) {
+                    break;
+                }
             }
         }
+
         return [
             'checked' => count($orders),
             'mismatched' => $bad,

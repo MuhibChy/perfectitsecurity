@@ -15,9 +15,13 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
     public function __construct(
         public Ticket $ticket,
         public string $assignedByName
-    ) {}
+    ) {
+    }
 
-    protected function preferenceType(): string { return 'ticket_updated'; }
+    protected function preferenceType(): string
+    {
+        return 'ticket_updated';
+    }
 
     public function via(object $notifiable): array
     {
@@ -34,7 +38,7 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
             ->line("You have been assigned a new support ticket by {$this->assignedByName}.")
             ->line("**Ticket:** {$this->ticket->ticket_number}")
             ->line("**Subject:** {$this->ticket->subject}")
-            ->line("**Priority:** " . ucfirst($this->ticket->priority))
+            ->line('**Priority:** '.ucfirst($this->ticket->priority))
             ->action('View Ticket', $ticketUrl)
             ->line('Please respond within the SLA timeframe.')
             ->line('Thank you for using TechSupport Solutions.');

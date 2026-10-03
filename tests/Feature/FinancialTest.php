@@ -2,13 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\ExpenseCategory;
+use App\Models\FinancialTransaction;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\FinancialTransaction;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
+use App\Models\User;
 use App\Services\FinancialService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,6 +17,7 @@ class FinancialTest extends TestCase
     use RefreshDatabase;
 
     protected $financeUser;
+
     protected $customer;
 
     protected function setUp(): void

@@ -27,15 +27,38 @@ class Payment extends Model
     {
         static::creating(function ($payment) {
             if (empty($payment->payment_number)) {
-                $payment->payment_number = 'PAY-' . date('Y') . '-' . str_pad((string) ((int) DB::table('payments')->lockForUpdate()->max('id') + 1), 6, '0', STR_PAD_LEFT);
+                $payment->payment_number = 'PAY-'.date('Y').'-'.str_pad((string) ((int) DB::table('payments')->lockForUpdate()->max('id') + 1), 6, '0', STR_PAD_LEFT);
             }
         });
     }
 
-    public function invoice() { return $this->belongsTo(Invoice::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function receipt() { return $this->hasOne(Receipt::class); }
-    public function cashMemo() { return $this->hasOne(CashMemo::class); }
-    public function financialTransactions() { return $this->hasMany(FinancialTransaction::class); }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class);
+    }
+
+    public function cashMemo()
+    {
+        return $this->hasOne(CashMemo::class);
+    }
+
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
 }

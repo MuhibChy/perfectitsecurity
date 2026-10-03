@@ -29,7 +29,7 @@ class Lead extends Model
     {
         static::creating(function ($lead) {
             if (empty($lead->lead_number)) {
-                $lead->lead_number = 'LD-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $lead->lead_number = 'LD-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }

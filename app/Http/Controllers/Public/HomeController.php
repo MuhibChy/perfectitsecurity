@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
 use App\Models\BlogPost;
+use App\Models\CaseStudy;
 use App\Models\KbArticle;
 use App\Models\PortfolioItem;
-use App\Models\CaseStudy;
+use App\Models\Service;
 use App\Models\ServiceCategory;
 
 class HomeController extends Controller

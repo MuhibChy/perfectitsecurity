@@ -66,8 +66,8 @@ class AgentStagingVerificationTest extends TestCase
         $this->enableGateway();
         $user = $this->customer('ks.b@example.test');
         foreach (['unknown_tool', 'delete_everything', 'execute_shell', 'grant_admin',
-                  'change_config', 'refund_payment', 'read_other_customer',
-                  'delete_customer', '../../etc/passwd', 'DROP TABLE users'] as $tool) {
+            'change_config', 'refund_payment', 'read_other_customer',
+            'delete_customer', '../../etc/passwd', 'DROP TABLE users'] as $tool) {
             $auth = app(AgentGateway::class)->authorizeTool($user, $tool);
             $this->assertFalse($auth['allowed'], "tool [{$tool}] must be DENIED");
         }

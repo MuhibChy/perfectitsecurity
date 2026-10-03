@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Commission;
-use App\Models\CommissionRule;
 use App\Models\CommissionPayout;
 use App\Models\CommissionPayoutItem;
+use App\Models\CommissionRule;
 use Illuminate\Support\Facades\DB;
 
 class CommissionService
@@ -13,7 +13,7 @@ class CommissionService
     public function calculateCommission($workerId, float $revenueAmount, $ruleId = null, array $related = []): Commission
     {
         $rule = $ruleId ? CommissionRule::findOrFail($ruleId) : CommissionRule::where('is_active', true)->first();
-        if (!$rule) {
+        if (! $rule) {
             throw new \Exception('No active commission rule found');
         }
 
@@ -80,6 +80,7 @@ class CommissionService
             'paid' => [],
             'rejected' => [],
         ];
+
         return DB::transaction(function () use ($commission, $to, $actorId, $reason, $allowed) {
             $commission = Commission::lockForUpdate()->findOrFail($commission->id);
             abort_unless(in_array($to, $allowed[$commission->status] ?? [], true), 422, "Commission cannot move from {$commission->status} to {$to}.");
@@ -95,6 +96,7 @@ class CommissionService
             }
             $commission->update($patch);
             \App\Models\AuditLog::log('commission.transition', 'commissions', $commission, "Commission {$commission->commission_number}: {$from} → {$to} by user #{$actorId}. Reason: {$reason}");
+
             return $commission->fresh();
         });
     }
@@ -119,6 +121,7 @@ class CommissionService
         if ($commission->status === 'submitted') {
             $commission = $this->transition($commission, 'under_review', (int) $approvedBy, 'auto-advance to approval');
         }
+
         return $this->transition($commission->fresh(), 'approved', (int) $approvedBy, 'approved');
     }
 
@@ -133,7 +136,8 @@ class CommissionService
         // cancellation is recorded as a rejected-with-reason row: history
         // stays queryable, nothing is silently deleted.
         abort_unless(trim($reason) !== '', 422, 'A cancellation reason is required.');
-        return $this->transition($commission, 'rejected', $actorId, 'CANCELLED: ' . $reason);
+
+        return $this->transition($commission, 'rejected', $actorId, 'CANCELLED: '.$reason);
     }
 
     /**
@@ -144,13 +148,15 @@ class CommissionService
     public function reversePaidCommission(Commission $commission, int $actorId, string $transferReference, string $reason = ''): Commission
     {
         abort_if(trim($transferReference) === '', 422, 'A completed reversal transfer reference is required.');
+
         return DB::transaction(function () use ($commission, $actorId, $transferReference, $reason) {
             $commission = Commission::lockForUpdate()->findOrFail($commission->id);
             abort_unless($commission->status === 'paid', 422, 'Only paid commissions can be reversed.');
             $transfer = \App\Models\BankTransfer::where('reference', $transferReference)->orWhere('external_reference', $transferReference)->first();
             abort_unless($transfer && $transfer->status === 'completed', 422, 'Reversal requires a completed bank transfer.');
-            $commission->update(['notes' => trim(($commission->notes ? $commission->notes . "\n" : '') . "REVERSED via {$transfer->reference}: {$reason}")]);
+            $commission->update(['notes' => trim(($commission->notes ? $commission->notes."\n" : '')."REVERSED via {$transfer->reference}: {$reason}")]);
             \App\Models\AuditLog::log('commission.reversed', 'commissions', $commission, "Commission {$commission->commission_number} reversed via transfer {$transfer->reference} by user #{$actorId}. Reason: {$reason}");
+
             return $commission->fresh();
         });
     }
@@ -169,9 +175,10 @@ class CommissionService
         abort_unless(in_array($commission->status, ['pending', 'submitted', 'under_review', 'approved'], true), 422, "Commission cannot be rejected from status {$commission->status}.");
         $commission = $this->transition($commission, 'rejected', (int) $rejectedBy, $reason ?? 'rejected');
         if ($reason !== null && $reason !== '') {
-            $commission->update(['notes' => trim(($commission->notes ? $commission->notes . "\n" : '') . $reason)]);
+            $commission->update(['notes' => trim(($commission->notes ? $commission->notes."\n" : '').$reason)]);
             $commission = $commission->fresh();
         }
+
         return $commission;
     }
 
@@ -222,12 +229,13 @@ class CommissionService
      * processPayout() leaves payouts pending; completion is a separate,
      * audited act that requires the external reference (no fabrication).
      */
-    public function completePayout(\App\Models\CommissionPayout $payout, string $externalReference): \App\Models\CommissionPayout
+    public function completePayout(CommissionPayout $payout, string $externalReference): CommissionPayout
     {
         abort_if(trim($externalReference) === '', 422, 'An external payment reference is required to complete a payout.');
+
         return DB::transaction(function () use ($payout, $externalReference) {
             $payout = \App\Models\CommissionPayout::lockForUpdate()->findOrFail($payout->id);
-            abort_unless(in_array($payout->status, ['pending', 'processing'], true), 422, 'Payout cannot be completed from status ' . $payout->status . '.');
+            abort_unless(in_array($payout->status, ['pending', 'processing'], true), 422, 'Payout cannot be completed from status '.$payout->status.'.');
             $payout->update([
                 'status' => 'completed',
                 'transaction_reference' => $externalReference,
@@ -240,6 +248,7 @@ class CommissionService
                 }
             }
             \App\Models\AuditLog::log('commission.payout_completed', 'commission_payouts', $payout, "Commission payout {$payout->payout_number} completed. Provider ref: {$externalReference}.");
+
             return $payout->fresh();
         });
     }
@@ -247,8 +256,12 @@ class CommissionService
     public function getWorkerEarnings($workerId, $startDate = null, $endDate = null): array
     {
         $query = Commission::where('worker_id', $workerId);
-        if ($startDate) $query->where('created_at', '>=', $startDate);
-        if ($endDate) $query->where('created_at', '<=', $endDate);
+        if ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->where('created_at', '<=', $endDate);
+        }
 
         return [
             'total_earned' => (float) $query->sum('commission_amount'),

@@ -6,12 +6,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 
 class EmailVerificationService
 {
     public const MAX_ATTEMPTS = 5;
+
     public const RESEND_COOLDOWN_SECONDS = 60;
+
     public const OTP_LIFETIME_MINUTES = 10;
 
     /**
@@ -26,7 +27,7 @@ class EmailVerificationService
         }
 
         // Rate limiting: max 3 per 10 minutes
-        $key = 'email-verification:' . $user->id;
+        $key = 'email-verification:'.$user->id;
         abort_if(RateLimiter::tooManyAttempts($key, 3), 429, 'Too many verification requests. Please wait.');
         RateLimiter::hit($key, 600);
 
@@ -45,7 +46,7 @@ class EmailVerificationService
         try {
             \Mail::to($user->email)->send(new \App\Mail\EmailOtpMail($code));
         } catch (\Throwable $e) {
-            Log::warning('Failed to send email OTP: ' . $e->getMessage());
+            Log::warning('Failed to send email OTP: '.$e->getMessage());
         }
 
         if (app()->environment('local', 'testing')) {
@@ -84,7 +85,7 @@ class EmailVerificationService
         }
 
         // Expiration
-        if (!$user->email_otp_expires_at || now()->isAfter($user->email_otp_expires_at)) {
+        if (! $user->email_otp_expires_at || now()->isAfter($user->email_otp_expires_at)) {
             $user->update([
                 'email_otp_hash' => null,
                 'email_otp_expires_at' => null,
@@ -97,7 +98,7 @@ class EmailVerificationService
         // Bcrypt primary; legacy plain-SHA256 hashes accepted once then upgraded path (invalidated on success).
         $valid = Hash::check($code, $stored)
             || (preg_match('/^[0-9a-f]{64}$/i', $stored) && hash_equals($stored, hash('sha256', $code)));
-        if (!$valid) {
+        if (! $valid) {
             $remaining = self::MAX_ATTEMPTS - (int) $user->email_otp_attempts;
             \App\Models\AuditLog::log('email_verification.failed', 'users', $user, 'Email OTP verification failed.');
             abort(422, "Invalid code. {$remaining} attempts remaining.");

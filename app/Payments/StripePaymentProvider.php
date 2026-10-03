@@ -8,8 +8,16 @@ use App\Services\StripePaymentService;
 
 class StripePaymentProvider implements PaymentProviderInterface
 {
-    public function key(): string { return 'stripe'; }
-    public function label(): string { return 'Stripe (card / hosted checkout)'; }
+    public function key(): string
+    {
+        return 'stripe';
+    }
+
+    public function label(): string
+    {
+        return 'Stripe (card / hosted checkout)';
+    }
+
     public function supportsCurrency(string $currencyCode): bool
     {
         return StripePaymentService::supportsCurrency($currencyCode);
@@ -20,7 +28,10 @@ class StripePaymentProvider implements PaymentProviderInterface
         $session = app(StripePaymentService::class)->createInvoiceCheckout(
             $invoice, $options['success_url'] ?? route('portal.dashboard'), $options['cancel_url'] ?? route('portal.dashboard')
         );
-        if (!$session) return ['provider' => 'stripe', 'provider_reference' => null, 'redirect_url' => null, 'degraded_to_manual' => true];
+        if (! $session) {
+            return ['provider' => 'stripe', 'provider_reference' => null, 'redirect_url' => null, 'degraded_to_manual' => true];
+        }
+
         return ['provider' => 'stripe', 'provider_reference' => $session->id, 'redirect_url' => $session->url ?? null];
     }
 
@@ -28,7 +39,10 @@ class StripePaymentProvider implements PaymentProviderInterface
     {
         $payment = Payment::where('stripe_checkout_session_id', $providerReference)
             ->orWhere('stripe_payment_intent_id', $providerReference)->first();
-        if (!$payment) return ['status' => 'PENDING', 'found' => false];
+        if (! $payment) {
+            return ['status' => 'PENDING', 'found' => false];
+        }
+
         return ['status' => \App\Services\PaymentState::canonicalTransactionStatus($payment->status), 'found' => true, 'payment_id' => $payment->id];
     }
 

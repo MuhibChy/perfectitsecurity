@@ -24,7 +24,9 @@ class WalletController extends Controller
             $query->where(fn ($w) => $w->where('wallet_reference', 'like', "%{$q}%")
                 ->orWhereHas('owner', fn ($o) => $o->where('name', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%")));
         }
-        if ($request->filled('status')) $query->where('status', $request->input('status'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
         $wallets = $query->paginate(20)->withQueryString();
 
         $stats = [
@@ -32,8 +34,9 @@ class WalletController extends Controller
             'payments' => WalletTransaction::where('type', 'invoice_payment')->where('status', 'completed')->sum('amount'),
             'refunds' => WalletTransaction::where('type', 'refund')->where('status', 'completed')->sum('amount'),
             'count' => WalletTransaction::where('status', 'completed')->count(),
-            'mismatches' => Wallet::where('status', 'active')->take(500)->get()->filter(fn ($w) => !$w->reconcile()['match'])->count(),
+            'mismatches' => Wallet::where('status', 'active')->take(500)->get()->filter(fn ($w) => ! $w->reconcile()['match'])->count(),
         ];
+
         return view('admin.wallets.index', compact('wallets', 'stats'));
     }
 
@@ -43,6 +46,7 @@ class WalletController extends Controller
         $wallet->load('owner');
         $transactions = $wallet->transactions()->latest()->paginate(25);
         $reconciliation = $wallet->reconcile();
+
         return view('admin.wallets.show', compact('wallet', 'transactions', 'reconciliation'));
     }
 
@@ -59,6 +63,7 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return back()->with('success', 'Adjustment posted with full audit trail.');
     }
 
@@ -67,6 +72,7 @@ class WalletController extends Controller
         $this->authorize('freeze', $wallet);
         $data = $request->validate(['reason' => 'nullable|string|max:1000']);
         app(WalletService::class)->freeze($wallet, auth()->id(), $data['reason'] ?? '');
+
         return back()->with('success', 'Wallet frozen. History remains accessible.');
     }
 
@@ -74,6 +80,7 @@ class WalletController extends Controller
     {
         $this->authorize('freeze', $wallet);
         app(WalletService::class)->unfreeze($wallet, auth()->id());
+
         return back()->with('success', 'Wallet reactivated.');
     }
 
@@ -87,6 +94,7 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return back()->with('success', 'Refund credited to wallet with linked records updated.');
     }
 
@@ -94,6 +102,7 @@ class WalletController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Wallet::class);
         $wallets = Wallet::where('user_id', $user->id)->withCount('transactions')->get();
+
         return view('admin.wallets.user', compact('user', 'wallets'));
     }
 
@@ -111,6 +120,7 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return back()->with('success', 'Ownership corrected with full audit trail. Ledger preserved.');
     }
 }

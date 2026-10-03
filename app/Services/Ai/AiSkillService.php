@@ -21,13 +21,16 @@ class AiSkillService
         $best = null;
         $bestScore = 0;
         foreach (AiSkill::enabled()->orderBy('priority')->get() as $skill) {
-            if (!$skill->allowsRole($user)) continue;
+            if (! $skill->allowsRole($user)) {
+                continue;
+            }
             $score = $skill->matchScore($message);
             if ($score > $bestScore) {
                 $best = $skill;
                 $bestScore = $score;
             }
         }
+
         return $best;
     }
 

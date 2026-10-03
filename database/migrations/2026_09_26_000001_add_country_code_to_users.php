@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'country_code')) {
+            if (! Schema::hasColumn('users', 'country_code')) {
                 $table->string('country_code', 2)->nullable()->after('country');
             }
         });

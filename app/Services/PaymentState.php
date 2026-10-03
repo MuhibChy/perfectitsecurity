@@ -19,24 +19,41 @@ namespace App\Services;
 class PaymentState
 {
     public const CREATED = 'CREATED';
+
     public const PENDING = 'PENDING';
+
     public const REQUIRES_ACTION = 'REQUIRES_ACTION';
+
     public const PROCESSING = 'PROCESSING';
+
     public const SUCCEEDED = 'SUCCEEDED';
+
     public const FAILED = 'FAILED';
+
     public const CANCELLED = 'CANCELLED';
+
     public const VOID = 'VOID';
+
     public const REFUND_PENDING = 'REFUND_PENDING';
+
     public const PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED';
+
     public const REFUNDED = 'REFUNDED';
+
     public const DISPUTED = 'DISPUTED';
 
     public const UNPAID = 'UNPAID';
+
     public const PARTIALLY_PAID = 'PARTIALLY_PAID';
+
     public const PAID = 'PAID';
+
     public const OVERDUE = 'OVERDUE';
+
     public const AGG_REFUNDED = 'REFUNDED';
+
     public const AGG_PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED';
+
     public const CLOSED = 'CLOSED';
 
     /**
@@ -63,11 +80,22 @@ class PaymentState
     {
         $total = round($total, 2);
         $paid = round($paid, 2);
-        if ($isClosed) return self::CLOSED;
-        if (strtolower($currentStored) === 'refunded') return self::AGG_REFUNDED;
-        if (strtolower($currentStored) === 'cancelled') return self::CANCELLED;
-        if ($paid <= 0) return $isOverdue ? self::OVERDUE : self::UNPAID;
-        if (round($total - $paid, 2) <= 0 && $total > 0) return self::PAID;
+        if ($isClosed) {
+            return self::CLOSED;
+        }
+        if (strtolower($currentStored) === 'refunded') {
+            return self::AGG_REFUNDED;
+        }
+        if (strtolower($currentStored) === 'cancelled') {
+            return self::CANCELLED;
+        }
+        if ($paid <= 0) {
+            return $isOverdue ? self::OVERDUE : self::UNPAID;
+        }
+        if (round($total - $paid, 2) <= 0 && $total > 0) {
+            return self::PAID;
+        }
+
         return self::PARTIALLY_PAID;
     }
 

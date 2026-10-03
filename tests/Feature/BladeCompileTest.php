@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Support\Facades\Blade;
+use Tests\TestCase;
 
 class BladeCompileTest extends TestCase
 {
@@ -18,11 +18,11 @@ class BladeCompileTest extends TestCase
                 try {
                     Blade::compileString($viewContent);
                 } catch (\Throwable $e) {
-                    $failed[] = $file->getPathname() . ': ' . $e->getMessage();
+                    $failed[] = $file->getPathname().': '.$e->getMessage();
                 }
             }
         }
 
-        $this->assertEmpty($failed, "Blade syntax errors found:\n" . implode("\n", $failed));
+        $this->assertEmpty($failed, "Blade syntax errors found:\n".implode("\n", $failed));
     }
 }

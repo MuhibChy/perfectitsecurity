@@ -17,9 +17,13 @@ class ExpenditureAndProfitabilityTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $tech;
+
     private User $admin;
+
     private ServiceOrder $order;
+
     private Task $task;
 
     protected function setUp(): void

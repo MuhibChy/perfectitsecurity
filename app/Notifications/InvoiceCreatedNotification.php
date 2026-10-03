@@ -15,7 +15,8 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
     public function __construct(
         public Invoice $invoice,
         public string $action = 'created'
-    ) {}
+    ) {
+    }
 
     protected function preferenceType(): string
     {
@@ -34,7 +35,7 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $invoiceUrl = route('portal.invoices.show', $this->invoice);
-        $subject = match($this->action) {
+        $subject = match ($this->action) {
             'sent' => "Invoice Sent: {$this->invoice->invoice_number}",
             'paid' => "Payment Received: {$this->invoice->invoice_number}",
             'overdue' => "Invoice Overdue: {$this->invoice->invoice_number}",
@@ -46,8 +47,8 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
             ->subject($subject)
             ->greeting("Hello {$notifiable->name},")
             ->line("**Invoice:** {$this->invoice->invoice_number}")
-            ->line("**Amount:** " . \App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'))
-            ->line("**Status:** " . ucfirst(str_replace('_', ' ', $this->invoice->status)));
+            ->line('**Amount:** '.\App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'))
+            ->line('**Status:** '.ucfirst(str_replace('_', ' ', $this->invoice->status)));
 
         if ($this->invoice->due_date) {
             $mail->line("**Due Date:** {$this->invoice->due_date->format('M d, Y')}");
@@ -71,8 +72,8 @@ class InvoiceCreatedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Invoice ' . ucfirst($this->action),
-            'message' => "Invoice {$this->invoice->invoice_number} — " . \App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'),
+            'title' => 'Invoice '.ucfirst($this->action),
+            'message' => "Invoice {$this->invoice->invoice_number} — ".\App\Services\Money::format((float) $this->invoice->total, $this->invoice->currency ?? 'USD'),
             'invoice_id' => $this->invoice->id,
             'invoice_number' => $this->invoice->invoice_number,
             'amount' => $this->invoice->total,

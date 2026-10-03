@@ -28,6 +28,7 @@ class SecurityController extends Controller
             'recent_events' => AuditLog::whereIn('module', ['auth', 'security_findings', 'backups', 'payments', 'users'])
                 ->latest()->limit(10)->get(),
         ];
+
         return view('admin.security.dashboard', compact('data'));
     }
 
@@ -58,6 +59,7 @@ class SecurityController extends Controller
                 }
             }
         }
+
         return view('admin.security.sbom', compact('packages', 'npm'));
     }
 }

@@ -28,19 +28,45 @@ class ItsmChange extends Model
     {
         static::creating(function ($change) {
             if (empty($change->change_number)) {
-                $change->change_number = 'CHG-' . strtoupper(Str::random(8));
+                $change->change_number = 'CHG-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function requester() { return $this->belongsTo(User::class, 'requested_by'); }
-    public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
-    public function approvals() { return $this->hasMany(ItsmChangeApproval::class, 'itsm_change_id'); }
-    public function workflowApprovals() { return $this->morphMany(ServiceApproval::class, 'approvable'); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeOpen($query) { return $query->whereNotIn('status', ['completed', 'failed', 'cancelled']); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(ItsmChangeApproval::class, 'itsm_change_id');
+    }
+
+    public function workflowApprovals()
+    {
+        return $this->morphMany(ServiceApproval::class, 'approvable');
+    }
+
+    public function scopeOpen($query)
+    {
+        return $query->whereNotIn('status', ['completed', 'failed', 'cancelled']);
+    }
 
     public function getIsApprovedAttribute(): bool
     {

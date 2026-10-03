@@ -16,7 +16,7 @@ class ServicePolicy
     public function view(User $user, Service $service): bool
     {
         // Public can view active services
-        if (!$service->is_active && !$user->isStaff()) {
+        if (! $service->is_active && ! $user->isStaff()) {
             return false;
         }
 

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiConversation;
-use App\Models\AiMessage;
 use App\Models\AiKnowledgeGap;
 use App\Models\AiSetting;
 use App\Models\AiUsageRecord;
@@ -45,12 +44,14 @@ class AiController extends Controller
     {
         $query = AiConversation::with('user');
 
-        if ($request->status) $query->where('status', $request->status);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('guest_name', 'like', "%{$request->search}%")
                   ->orWhere('guest_email', 'like', "%{$request->search}%")
-                  ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$request->search}%"));
+                  ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$request->search}%"));
             });
         }
 
@@ -175,7 +176,7 @@ class AiController extends Controller
             'top_score' => $topScore,
             'threshold' => $threshold,
             'source' => $internal ? 'internal' : 'ollama_general',
-            'ollama_used' => !$internal,
+            'ollama_used' => ! $internal,
             'model' => config('ollama.models.default', config('ollama.default_model')),
         ];
 
@@ -189,10 +190,18 @@ class AiController extends Controller
     {
         $query = AiUsageRecord::with('user');
 
-        if ($request->date_from) $query->where('recorded_date', '>=', $request->date_from);
-        if ($request->date_to) $query->where('recorded_date', '<=', $request->date_to);
-        if ($request->provider) $query->where('provider', $request->provider);
-        if ($request->success !== null) $query->where('success', $request->boolean('success'));
+        if ($request->date_from) {
+            $query->where('recorded_date', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->where('recorded_date', '<=', $request->date_to);
+        }
+        if ($request->provider) {
+            $query->where('provider', $request->provider);
+        }
+        if ($request->success !== null) {
+            $query->where('success', $request->boolean('success'));
+        }
 
         $records = $query->latest()->paginate(30);
 

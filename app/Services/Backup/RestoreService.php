@@ -70,22 +70,22 @@ class RestoreService
         $workDir = $this->workDir();
         try {
             $dbFile = $backup->files()->where('kind', 'db')->firstOrFail();
-            $staged = $workDir . DIRECTORY_SEPARATOR . 'test.enc';
+            $staged = $workDir.DIRECTORY_SEPARATOR.'test.enc';
             $adapter->get($dbFile->path, $staged);
             $payload = $staged;
             if ($dbFile->encrypted) {
-                $payload = $staged . '.dec';
+                $payload = $staged.'.dec';
                 BackupEncryptionService::decrypt($staged, $payload);
             }
             $probe = (new BackupDatabaseService())->validateArchive($payload);
             $filesOk = true;
             $filesEntry = $backup->files()->where('kind', 'files')->first();
             if ($filesEntry) {
-                $fstaged = $workDir . DIRECTORY_SEPARATOR . 'test-files.enc';
+                $fstaged = $workDir.DIRECTORY_SEPARATOR.'test-files.enc';
                 $adapter->get($filesEntry->path, $fstaged);
                 $fpayload = $fstaged;
                 if ($filesEntry->encrypted) {
-                    $fpayload = $fstaged . '.dec';
+                    $fpayload = $fstaged.'.dec';
                     BackupEncryptionService::decrypt($fstaged, $fpayload);
                 }
                 $filesOk = (new BackupFilesService())->validateArchive($fpayload) >= 0;
@@ -105,11 +105,11 @@ class RestoreService
     private function restoreDatabase(Backup $backup, BackupStorageAdapter $adapter, string $workDir): array
     {
         $dbFile = $backup->files()->where('kind', 'db')->firstOrFail();
-        $staged = $workDir . DIRECTORY_SEPARATOR . 'restore-db.enc';
+        $staged = $workDir.DIRECTORY_SEPARATOR.'restore-db.enc';
         $adapter->get($dbFile->path, $staged);
         $payload = $staged;
         if ($dbFile->encrypted) {
-            $payload = $staged . '.dec';
+            $payload = $staged.'.dec';
             BackupEncryptionService::decrypt($staged, $payload);
         }
         (new BackupDatabaseService())->validateArchive($payload);
@@ -118,7 +118,7 @@ class RestoreService
         if ($driver === 'sqlite') {
             $live = DB::connection()->getDatabaseName();
             // Decompress staged archive to temp, then atomic swap under a transaction pause.
-            $tmp = $workDir . DIRECTORY_SEPARATOR . 'database.sqlite';
+            $tmp = $workDir.DIRECTORY_SEPARATOR.'database.sqlite';
             $gz = gzopen($payload, 'rb');
             $out = fopen($tmp, 'wb');
             while (! gzeof($gz)) {
@@ -130,7 +130,7 @@ class RestoreService
             gzclose($gz);
             fclose($out);
             // Keep a copy of the current live file next to the safety backup.
-            @copy($live, $live . '.pre-restore-' . date('Ymd-His'));
+            @copy($live, $live.'.pre-restore-'.date('Ymd-His'));
             if (! @rename($tmp, $live)) {
                 throw new RuntimeException('SQLite restore swap failed.');
             }
@@ -167,7 +167,7 @@ class RestoreService
         fclose($pipes[2]);
         $exit = proc_close($proc);
         if ($exit !== 0) {
-            throw new RuntimeException('MySQL restore failed: ' . trim((string) $stderr));
+            throw new RuntimeException('MySQL restore failed: '.trim((string) $stderr));
         }
 
         return ['driver' => 'mysql', 'restored' => true];
@@ -176,11 +176,11 @@ class RestoreService
     private function restoreFiles(Backup $backup, BackupStorageAdapter $adapter, string $workDir): array
     {
         $filesEntry = $backup->files()->where('kind', 'files')->firstOrFail();
-        $staged = $workDir . DIRECTORY_SEPARATOR . 'restore-files.enc';
+        $staged = $workDir.DIRECTORY_SEPARATOR.'restore-files.enc';
         $adapter->get($filesEntry->path, $staged);
         $payload = $staged;
         if ($filesEntry->encrypted) {
-            $payload = $staged . '.dec';
+            $payload = $staged.'.dec';
             BackupEncryptionService::decrypt($staged, $payload);
         }
         $zip = new \ZipArchive();
@@ -199,7 +199,7 @@ class RestoreService
             if (str_starts_with($clean, '/') || str_starts_with($clean, 'backups/')) {
                 continue;
             }
-            $dest = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $clean);
+            $dest = $root.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $clean);
             $dir = dirname($dest);
             if (! is_dir($dir)) {
                 @mkdir($dir, 0755, true);
@@ -223,7 +223,7 @@ class RestoreService
 
     private function workDir(): string
     {
-        $dir = storage_path('app/backups/tmp/restore-' . uniqid('', true));
+        $dir = storage_path('app/backups/tmp/restore-'.uniqid('', true));
         @mkdir($dir, 0755, true);
 
         return $dir;
@@ -231,7 +231,7 @@ class RestoreService
 
     private function cleanup(string $dir): void
     {
-        foreach (glob($dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+        foreach (glob($dir.DIRECTORY_SEPARATOR.'*') ?: [] as $f) {
             @unlink($f);
         }
         @rmdir($dir);

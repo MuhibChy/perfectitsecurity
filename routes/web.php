@@ -1,51 +1,51 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BlogController as AdminBlog;
+use App\Http\Controllers\Admin\CommissionController;
+use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\ContentController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\InvoiceController as AdminInvoice;
+use App\Http\Controllers\Admin\KnowledgeBaseController as AdminKB;
+use App\Http\Controllers\Admin\LinkSubmissionController;
+use App\Http\Controllers\Admin\ManualController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\ProjectController as AdminProject;
+use App\Http\Controllers\Admin\QuotationController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ServiceController as AdminService;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TaskController;
+use App\Http\Controllers\Admin\TicketController as AdminTicket;
+use App\Http\Controllers\Admin\UsefulLinkController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\MfaController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Public\HomeController;
-use App\Http\Controllers\Public\ServiceController;
-use App\Http\Controllers\Public\AboutController;
-use App\Http\Controllers\Public\PricingController;
-use App\Http\Controllers\Public\ContactController;
-use App\Http\Controllers\Public\BlogController;
-use App\Http\Controllers\Public\KnowledgeBaseController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
-use App\Http\Controllers\Customer\TicketController as CustomerTicket;
 use App\Http\Controllers\Customer\InvoiceController as CustomerInvoice;
 use App\Http\Controllers\Customer\ProjectController as CustomerProject;
 use App\Http\Controllers\Customer\ServiceRequestController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\CompanyController;
-use App\Http\Controllers\Admin\TicketController as AdminTicket;
-use App\Http\Controllers\Admin\ProjectController as AdminProject;
-use App\Http\Controllers\Admin\TaskController;
-use App\Http\Controllers\Admin\ServiceController as AdminService;
-use App\Http\Controllers\Admin\InvoiceController as AdminInvoice;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\QuotationController;
-use App\Http\Controllers\Admin\ExpenseController;
-use App\Http\Controllers\Admin\CommissionController;
-use App\Http\Controllers\Admin\FinancialController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\BlogController as AdminBlog;
-use App\Http\Controllers\Admin\KnowledgeBaseController as AdminKB;
-use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\NotificationController;
-use App\Http\Controllers\Admin\UsefulLinkController;
-use App\Http\Controllers\Admin\LinkSubmissionController;
-use App\Http\Controllers\Public\UsefulLinksController;
-use App\Http\Controllers\Admin\ManualController;
-use App\Http\Controllers\Public\LegalController;
-use App\Http\Controllers\Auth\MfaController;
-use App\Http\Controllers\Admin\ContentController;
+use App\Http\Controllers\Customer\TicketController as CustomerTicket;
+use App\Http\Controllers\Public\AboutController;
+use App\Http\Controllers\Public\BlogController;
+use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\ContentPageController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\KnowledgeBaseController;
+use App\Http\Controllers\Public\LegalController;
+use App\Http\Controllers\Public\PricingController;
+use App\Http\Controllers\Public\ServiceController;
+use App\Http\Controllers\Public\UsefulLinksController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -108,6 +108,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/email/verify', fn () => view('auth.verify-email'))->middleware('auth')->name('verification.notice');
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
+
     return redirect()->route('portal.dashboard')->with('success', 'Your email address has been verified.');
 })->middleware(['auth', 'signed', 'throttle:6,1'])->name('verification.verify');
 Route::post('/email/verification-notification', function (Request $request) {
@@ -115,8 +116,10 @@ Route::post('/email/verification-notification', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
     } catch (\Throwable $e) {
         \Illuminate\Support\Facades\Log::warning('Verification resend failed: '.$e->getMessage(), ['user_id' => $request->user()->id]);
+
         return back()->withErrors(['email' => 'Could not send verification email. Mail server is unreachable. Please try again later.']);
     }
+
     return back()->with('success', 'A new verification link has been sent.');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
@@ -187,6 +190,7 @@ Route::middleware(['auth', 'verified', 'customer', 'mfa'])->prefix('portal')->na
             ->where('notifiable_id', $user->id)
             ->latest()
             ->paginate(20);
+
         return view('customer.notifications.index', compact('notifications'));
     })->name('notifications.index');
     Route::get('/notifications/preferences', [\App\Http\Controllers\Customer\NotificationPreferenceController::class, 'index'])->name('notifications.preferences');
@@ -389,80 +393,80 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
 
     // Support tickets contain customer data: only the support hierarchy may access them.
     Route::middleware('requires.role:isSupportAgent')->group(function () {
-    // Customers create tickets; the staff controller only implements review operations.
-    Route::resource('tickets', AdminTicket::class)->only(['index', 'show']);
-    Route::post('/tickets/{ticket}/assign', [AdminTicket::class, 'assign'])->name('tickets.assign');
-    Route::post('/tickets/{ticket}/reply', [AdminTicket::class, 'reply'])->name('tickets.reply');
-    Route::post('/tickets/{ticket}/status', [AdminTicket::class, 'updateStatus'])->name('tickets.status');
-    Route::post('/tickets/{ticket}/note', [AdminTicket::class, 'addNote'])->name('tickets.note');
-    Route::post('/tickets/{ticket}/tags', [AdminTicket::class, 'updateTags'])->name('tickets.tags');
-    Route::post('/tickets/{ticket}/merge', [AdminTicket::class, 'merge'])->name('tickets.merge');
-    Route::post('/tickets/{ticket}/reopen', [AdminTicket::class, 'reopen'])->name('tickets.reopen');
+        // Customers create tickets; the staff controller only implements review operations.
+        Route::resource('tickets', AdminTicket::class)->only(['index', 'show']);
+        Route::post('/tickets/{ticket}/assign', [AdminTicket::class, 'assign'])->name('tickets.assign');
+        Route::post('/tickets/{ticket}/reply', [AdminTicket::class, 'reply'])->name('tickets.reply');
+        Route::post('/tickets/{ticket}/status', [AdminTicket::class, 'updateStatus'])->name('tickets.status');
+        Route::post('/tickets/{ticket}/note', [AdminTicket::class, 'addNote'])->name('tickets.note');
+        Route::post('/tickets/{ticket}/tags', [AdminTicket::class, 'updateTags'])->name('tickets.tags');
+        Route::post('/tickets/{ticket}/merge', [AdminTicket::class, 'merge'])->name('tickets.merge');
+        Route::post('/tickets/{ticket}/reopen', [AdminTicket::class, 'reopen'])->name('tickets.reopen');
 
-    // ITSM extension: Problem Management (staff support hierarchy only).
-    Route::get('/problems', [\App\Http\Controllers\Admin\ProblemController::class, 'index'])->name('problems.index');
-    Route::get('/problems/create', [\App\Http\Controllers\Admin\ProblemController::class, 'create'])->name('problems.create');
-    Route::post('/problems', [\App\Http\Controllers\Admin\ProblemController::class, 'store'])->name('problems.store');
-    Route::get('/problems/{problem}', [\App\Http\Controllers\Admin\ProblemController::class, 'show'])->name('problems.show');
-    Route::patch('/problems/{problem}', [\App\Http\Controllers\Admin\ProblemController::class, 'update'])->name('problems.update');
-    Route::post('/problems/{problem}/transition', [\App\Http\Controllers\Admin\ProblemController::class, 'transition'])->name('problems.transition');
-    Route::post('/problems/{problem}/link-ticket', [\App\Http\Controllers\Admin\ProblemController::class, 'linkTicket'])->name('problems.link-ticket');
-    Route::delete('/problems/{problem}/tickets/{ticket}', [\App\Http\Controllers\Admin\ProblemController::class, 'unlinkTicket'])->name('problems.unlink-ticket');
+        // ITSM extension: Problem Management (staff support hierarchy only).
+        Route::get('/problems', [\App\Http\Controllers\Admin\ProblemController::class, 'index'])->name('problems.index');
+        Route::get('/problems/create', [\App\Http\Controllers\Admin\ProblemController::class, 'create'])->name('problems.create');
+        Route::post('/problems', [\App\Http\Controllers\Admin\ProblemController::class, 'store'])->name('problems.store');
+        Route::get('/problems/{problem}', [\App\Http\Controllers\Admin\ProblemController::class, 'show'])->name('problems.show');
+        Route::patch('/problems/{problem}', [\App\Http\Controllers\Admin\ProblemController::class, 'update'])->name('problems.update');
+        Route::post('/problems/{problem}/transition', [\App\Http\Controllers\Admin\ProblemController::class, 'transition'])->name('problems.transition');
+        Route::post('/problems/{problem}/link-ticket', [\App\Http\Controllers\Admin\ProblemController::class, 'linkTicket'])->name('problems.link-ticket');
+        Route::delete('/problems/{problem}/tickets/{ticket}', [\App\Http\Controllers\Admin\ProblemController::class, 'unlinkTicket'])->name('problems.unlink-ticket');
 
-    // ITSM extension: Change Management (lite, proportionate).
-    Route::get('/changes', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'index'])->name('changes.index');
-    Route::get('/changes/create', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'create'])->name('changes.create');
-    Route::post('/changes', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'store'])->name('changes.store');
-    Route::get('/changes/{change}', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'show'])->name('changes.show');
-    Route::patch('/changes/{change}', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'update'])->name('changes.update');
-    Route::post('/changes/{change}/transition', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'transition'])->name('changes.transition');
-    Route::post('/changes/{change}/approve', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'approve'])->name('changes.approve');
+        // ITSM extension: Change Management (lite, proportionate).
+        Route::get('/changes', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'index'])->name('changes.index');
+        Route::get('/changes/create', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'create'])->name('changes.create');
+        Route::post('/changes', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'store'])->name('changes.store');
+        Route::get('/changes/{change}', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'show'])->name('changes.show');
+        Route::patch('/changes/{change}', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'update'])->name('changes.update');
+        Route::post('/changes/{change}/transition', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'transition'])->name('changes.transition');
+        Route::post('/changes/{change}/approve', [\App\Http\Controllers\Admin\ItsmChangeController::class, 'approve'])->name('changes.approve');
 
-    // ITSM extension: Assets + lightweight CMDB.
-    Route::get('/assets', [\App\Http\Controllers\Admin\AssetController::class, 'index'])->name('assets.index');
-    Route::get('/assets/create', [\App\Http\Controllers\Admin\AssetController::class, 'create'])->name('assets.create');
-    Route::post('/assets', [\App\Http\Controllers\Admin\AssetController::class, 'store'])->name('assets.store');
-    Route::get('/assets/{asset}', [\App\Http\Controllers\Admin\AssetController::class, 'show'])->name('assets.show');
-    Route::patch('/assets/{asset}', [\App\Http\Controllers\Admin\AssetController::class, 'update'])->name('assets.update');
-    Route::get('/configuration-items', [\App\Http\Controllers\Admin\AssetController::class, 'ciIndex'])->name('ci.index');
-    Route::post('/configuration-items', [\App\Http\Controllers\Admin\AssetController::class, 'ciStore'])->name('ci.store');
-    Route::get('/configuration-items/{ci}', [\App\Http\Controllers\Admin\AssetController::class, 'ciShow'])->name('ci.show');
-    Route::post('/configuration-items/{ci}/relate', [\App\Http\Controllers\Admin\AssetController::class, 'ciRelate'])->name('ci.relate');
-    Route::delete('/configuration-items/{ci}/relationships/{relationship}', [\App\Http\Controllers\Admin\AssetController::class, 'ciUnrelate'])->name('ci.unrelate');
+        // ITSM extension: Assets + lightweight CMDB.
+        Route::get('/assets', [\App\Http\Controllers\Admin\AssetController::class, 'index'])->name('assets.index');
+        Route::get('/assets/create', [\App\Http\Controllers\Admin\AssetController::class, 'create'])->name('assets.create');
+        Route::post('/assets', [\App\Http\Controllers\Admin\AssetController::class, 'store'])->name('assets.store');
+        Route::get('/assets/{asset}', [\App\Http\Controllers\Admin\AssetController::class, 'show'])->name('assets.show');
+        Route::patch('/assets/{asset}', [\App\Http\Controllers\Admin\AssetController::class, 'update'])->name('assets.update');
+        Route::get('/configuration-items', [\App\Http\Controllers\Admin\AssetController::class, 'ciIndex'])->name('ci.index');
+        Route::post('/configuration-items', [\App\Http\Controllers\Admin\AssetController::class, 'ciStore'])->name('ci.store');
+        Route::get('/configuration-items/{ci}', [\App\Http\Controllers\Admin\AssetController::class, 'ciShow'])->name('ci.show');
+        Route::post('/configuration-items/{ci}/relate', [\App\Http\Controllers\Admin\AssetController::class, 'ciRelate'])->name('ci.relate');
+        Route::delete('/configuration-items/{ci}/relationships/{relationship}', [\App\Http\Controllers\Admin\AssetController::class, 'ciUnrelate'])->name('ci.unrelate');
 
-    // ITSM extension: Remote support + onsite visits (field service).
-    Route::get('/remote-sessions', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteIndex'])->name('remote.index');
-    Route::post('/remote-sessions', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteStore'])->name('remote.store');
-    Route::get('/remote-sessions/{session}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteShow'])->name('remote.show');
-    Route::patch('/remote-sessions/{session}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteUpdate'])->name('remote.update');
-    Route::get('/site-visits', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitIndex'])->name('visits.index');
-    Route::post('/site-visits', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitStore'])->name('visits.store');
-    Route::get('/site-visits/{visit}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitShow'])->name('visits.show');
-    Route::patch('/site-visits/{visit}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitUpdate'])->name('visits.update');
+        // ITSM extension: Remote support + onsite visits (field service).
+        Route::get('/remote-sessions', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteIndex'])->name('remote.index');
+        Route::post('/remote-sessions', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteStore'])->name('remote.store');
+        Route::get('/remote-sessions/{session}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteShow'])->name('remote.show');
+        Route::patch('/remote-sessions/{session}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'remoteUpdate'])->name('remote.update');
+        Route::get('/site-visits', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitIndex'])->name('visits.index');
+        Route::post('/site-visits', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitStore'])->name('visits.store');
+        Route::get('/site-visits/{visit}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitShow'])->name('visits.show');
+        Route::patch('/site-visits/{visit}', [\App\Http\Controllers\Admin\FieldServiceController::class, 'visitUpdate'])->name('visits.update');
 
-    // ITSM extension: Service agreements + SLA breach ledger + approvals.
-    Route::get('/service-agreements', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'index'])->name('agreements.index');
-    Route::post('/service-agreements', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'store'])->name('agreements.store');
-    Route::get('/service-agreements/{agreement}', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'show'])->name('agreements.show');
-    Route::patch('/service-agreements/{agreement}', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'update'])->name('agreements.update');
-    Route::get('/sla-breaches', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'breaches'])->name('sla-breaches.index');
-    Route::post('/sla-breaches/{breach}/acknowledge', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'acknowledgeBreach'])->name('sla-breaches.acknowledge');
-    Route::get('/approvals', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'approvals'])->name('approvals.index');
-    Route::post('/approvals/{approval}/decide', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'decideApproval'])->name('approvals.decide');
+        // ITSM extension: Service agreements + SLA breach ledger + approvals.
+        Route::get('/service-agreements', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'index'])->name('agreements.index');
+        Route::post('/service-agreements', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'store'])->name('agreements.store');
+        Route::get('/service-agreements/{agreement}', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'show'])->name('agreements.show');
+        Route::patch('/service-agreements/{agreement}', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'update'])->name('agreements.update');
+        Route::get('/sla-breaches', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'breaches'])->name('sla-breaches.index');
+        Route::post('/sla-breaches/{breach}/acknowledge', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'acknowledgeBreach'])->name('sla-breaches.acknowledge');
+        Route::get('/approvals', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'approvals'])->name('approvals.index');
+        Route::post('/approvals/{approval}/decide', [\App\Http\Controllers\Admin\ServiceAgreementController::class, 'decideApproval'])->name('approvals.decide');
     });
 
     // Project and task operations are restricted to the project-management hierarchy.
     Route::middleware('requires.role:isProjectManager')->group(function () {
-    Route::resource('projects', AdminProject::class);
-    Route::post('/projects/{project}/status', [AdminProject::class, 'updateStatus'])->name('projects.status');
+        Route::resource('projects', AdminProject::class);
+        Route::post('/projects/{project}/status', [AdminProject::class, 'updateStatus'])->name('projects.status');
 
-    // Tasks
-    Route::resource('tasks', TaskController::class);
-    Route::post('/tasks/{task}/assign', [TaskController::class, 'assign'])->name('tasks.assign');
-    Route::post('/tasks/{task}/pause', [TaskController::class, 'pause'])->name('tasks.pause');
-    Route::post('/tasks/{task}/resume', [TaskController::class, 'resume'])->name('tasks.resume');
-    Route::post('/tasks/{task}/approve', [TaskController::class, 'approve'])->name('tasks.approve');
-    Route::post('/tasks/{task}/reject', [TaskController::class, 'reject'])->name('tasks.reject');
+        // Tasks
+        Route::resource('tasks', TaskController::class);
+        Route::post('/tasks/{task}/assign', [TaskController::class, 'assign'])->name('tasks.assign');
+        Route::post('/tasks/{task}/pause', [TaskController::class, 'pause'])->name('tasks.pause');
+        Route::post('/tasks/{task}/resume', [TaskController::class, 'resume'])->name('tasks.resume');
+        Route::post('/tasks/{task}/approve', [TaskController::class, 'approve'])->name('tasks.approve');
+        Route::post('/tasks/{task}/reject', [TaskController::class, 'reject'])->name('tasks.reject');
     });
 
     // Financial records must not be exposed to all staff roles.
@@ -568,7 +572,9 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
     Route::get('/reports/my-work', [\App\Http\Controllers\Admin\StaffReportController::class, 'myWork'])->middleware('throttle:6,1')->name('reports.my-work');
 
     // Reports (finance + admin only)
-    Route::middleware('requires.role:isFinanceManager')->group(function () {        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');        Route::get('/reports/financial', [ReportController::class, 'financial'])->name('reports.financial');
+    Route::middleware('requires.role:isFinanceManager')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/financial', [ReportController::class, 'financial'])->name('reports.financial');
         Route::get('/reports/tickets', [ReportController::class, 'tickets'])->name('reports.tickets');
         Route::get('/reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
         Route::get('/reports/sla', [ReportController::class, 'sla'])->name('reports.sla');
@@ -582,24 +588,24 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
 
     // Published content and KB administration require administrator approval.
     Route::middleware('requires.role:isAdmin')->group(function () {
-    Route::resource('blog', AdminBlog::class)->except(['show']);
+        Route::resource('blog', AdminBlog::class)->except(['show']);
 
-    // Knowledge Base
-    Route::resource('knowledge-base', AdminKB::class)->except(['show']);
+        // Knowledge Base
+        Route::resource('knowledge-base', AdminKB::class)->except(['show']);
 
-    // Marketing content: case studies, careers, portfolio (ContentController).
-    Route::get('/content/case-studies', [ContentController::class, 'caseStudies'])->name('content.case-studies');
-    Route::post('/content/case-studies', [ContentController::class, 'storeCaseStudy'])->name('content.case-studies.store');
-    Route::put('/content/case-studies/{caseStudy}', [ContentController::class, 'updateCaseStudy'])->name('content.case-studies.update');
-    Route::delete('/content/case-studies/{caseStudy}', [ContentController::class, 'destroyCaseStudy'])->name('content.case-studies.destroy');
-    Route::get('/content/careers', [ContentController::class, 'careers'])->name('content.careers');
-    Route::post('/content/careers', [ContentController::class, 'storeCareer'])->name('content.careers.store');
-    Route::put('/content/careers/{career}', [ContentController::class, 'updateCareer'])->name('content.careers.update');
-    Route::delete('/content/careers/{career}', [ContentController::class, 'destroyCareer'])->name('content.careers.destroy');
-    Route::get('/content/portfolio', [ContentController::class, 'portfolio'])->name('content.portfolio');
-    Route::post('/content/portfolio', [ContentController::class, 'storePortfolio'])->name('content.portfolio.store');
-    Route::put('/content/portfolio/{portfolio}', [ContentController::class, 'updatePortfolio'])->name('content.portfolio.update');
-    Route::delete('/content/portfolio/{portfolio}', [ContentController::class, 'destroyPortfolio'])->name('content.portfolio.destroy');
+        // Marketing content: case studies, careers, portfolio (ContentController).
+        Route::get('/content/case-studies', [ContentController::class, 'caseStudies'])->name('content.case-studies');
+        Route::post('/content/case-studies', [ContentController::class, 'storeCaseStudy'])->name('content.case-studies.store');
+        Route::put('/content/case-studies/{caseStudy}', [ContentController::class, 'updateCaseStudy'])->name('content.case-studies.update');
+        Route::delete('/content/case-studies/{caseStudy}', [ContentController::class, 'destroyCaseStudy'])->name('content.case-studies.destroy');
+        Route::get('/content/careers', [ContentController::class, 'careers'])->name('content.careers');
+        Route::post('/content/careers', [ContentController::class, 'storeCareer'])->name('content.careers.store');
+        Route::put('/content/careers/{career}', [ContentController::class, 'updateCareer'])->name('content.careers.update');
+        Route::delete('/content/careers/{career}', [ContentController::class, 'destroyCareer'])->name('content.careers.destroy');
+        Route::get('/content/portfolio', [ContentController::class, 'portfolio'])->name('content.portfolio');
+        Route::post('/content/portfolio', [ContentController::class, 'storePortfolio'])->name('content.portfolio.store');
+        Route::put('/content/portfolio/{portfolio}', [ContentController::class, 'updatePortfolio'])->name('content.portfolio.update');
+        Route::delete('/content/portfolio/{portfolio}', [ContentController::class, 'destroyPortfolio'])->name('content.portfolio.destroy');
     });
 
     // Useful Links (controller has no public show action)
@@ -758,7 +764,8 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
     });
 
     // ── PerfectITSecurity Academy: employee learning (all staff) ──
-    Route::prefix('academy')->name('academy.')->group(function () {        Route::get('/', [\App\Http\Controllers\Admin\LearningController::class, 'index'])->name('index');
+    Route::prefix('academy')->name('academy.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\LearningController::class, 'index'])->name('index');
         Route::get('/my-learning', [\App\Http\Controllers\Admin\LearningController::class, 'my'])->name('my');
         Route::get('/courses/{course:slug}', [\App\Http\Controllers\Admin\LearningController::class, 'course'])->name('course');
         Route::get('/lessons/{lesson}', [\App\Http\Controllers\Admin\LearningController::class, 'lesson'])->name('lesson');
@@ -805,19 +812,19 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
 
     // Health data includes errors, disk usage and configuration details.
     Route::middleware('requires.role:isAdmin')->group(function () {
-    // Centralized Website Overview & System Health
-    Route::prefix('health')->name('health.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\HealthController::class, 'index'])->name('index');
-        Route::post('/run-check', [\App\Http\Controllers\Admin\HealthController::class, 'runCheck'])->name('run-check');
-        Route::get('/pages', [\App\Http\Controllers\Admin\HealthController::class, 'pages'])->name('pages');
-        Route::post('/pages/{id}/check', [\App\Http\Controllers\Admin\HealthController::class, 'checkSinglePage'])->name('check-page');
-        Route::get('/errors', [\App\Http\Controllers\Admin\HealthController::class, 'errors'])->name('errors');
-        Route::post('/errors/{id}/resolve', [\App\Http\Controllers\Admin\HealthController::class, 'resolveError'])->name('resolve-error');
-        Route::post('/errors/{id}/note', [\App\Http\Controllers\Admin\HealthController::class, 'addErrorNote'])->name('add-error-note');
-        Route::get('/history', [\App\Http\Controllers\Admin\HealthController::class, 'history'])->name('history');
-        Route::post('/history/cleanup', [\App\Http\Controllers\Admin\HealthController::class, 'cleanupHistory'])->name('cleanup-history');
-    Route::post('/maintenance', [\App\Http\Controllers\Admin\HealthController::class, 'maintenance'])->name('maintenance');
-    });
+        // Centralized Website Overview & System Health
+        Route::prefix('health')->name('health.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\HealthController::class, 'index'])->name('index');
+            Route::post('/run-check', [\App\Http\Controllers\Admin\HealthController::class, 'runCheck'])->name('run-check');
+            Route::get('/pages', [\App\Http\Controllers\Admin\HealthController::class, 'pages'])->name('pages');
+            Route::post('/pages/{id}/check', [\App\Http\Controllers\Admin\HealthController::class, 'checkSinglePage'])->name('check-page');
+            Route::get('/errors', [\App\Http\Controllers\Admin\HealthController::class, 'errors'])->name('errors');
+            Route::post('/errors/{id}/resolve', [\App\Http\Controllers\Admin\HealthController::class, 'resolveError'])->name('resolve-error');
+            Route::post('/errors/{id}/note', [\App\Http\Controllers\Admin\HealthController::class, 'addErrorNote'])->name('add-error-note');
+            Route::get('/history', [\App\Http\Controllers\Admin\HealthController::class, 'history'])->name('history');
+            Route::post('/history/cleanup', [\App\Http\Controllers\Admin\HealthController::class, 'cleanupHistory'])->name('cleanup-history');
+            Route::post('/maintenance', [\App\Http\Controllers\Admin\HealthController::class, 'maintenance'])->name('maintenance');
+        });
     });
 });
 
@@ -825,6 +832,7 @@ Route::middleware(['auth', 'staff', 'mfa'])->prefix('admin')->name('admin.')->gr
 Route::middleware('auth:sanctum')->get('/api/notifications/unread', function () {
     $user = auth()->user();
     $notifications = $user->notifications()->unread()->latest()->limit(20)->get();
+
     return response()->json([
         'notifications' => $notifications,
         'unread_count' => $user->notifications()->unread()->count(),
@@ -840,6 +848,7 @@ Route::get('/verify/certificate/{token}', [\App\Http\Controllers\VerifyCertifica
 Route::get('/healthz', function () {
     try {
         \Illuminate\Support\Facades\DB::connection()->getPdo();
+
         return response()->json(['status' => 'ok', 'db' => 'ok', 'time' => now()->toIso8601String()]);
     } catch (\Throwable $e) {
         return response()->json(['status' => 'degraded', 'db' => 'down'], 503);
@@ -853,14 +862,14 @@ Route::post('/api/health/frontend-error', [\App\Http\Controllers\Api\HealthApiCo
 
 // AI Chat API Routes (throttled: LLM-backed, abuse/cost sensitive).
 Route::middleware('throttle:60,1')->group(function () {
-Route::post('/api/ai/conversation', [\App\Http\Controllers\AiChatController::class, 'startConversation'])->name('ai.conversation.start');
-Route::post('/api/ai/message', [\App\Http\Controllers\AiChatController::class, 'sendMessage'])->name('ai.message.send');
-Route::post('/api/ai/ticket/confirm', [\App\Http\Controllers\AiChatController::class, 'confirmTicket'])->name('ai.ticket.confirm');
-Route::post('/api/ai/escalate', [\App\Http\Controllers\AiChatController::class, 'escalate'])->name('ai.escalate');
-Route::get('/api/ai/conversation/{id}/messages', [\App\Http\Controllers\AiChatController::class, 'getMessages'])->name('ai.messages');
-Route::post('/api/ai/conversation/{id}/close', [\App\Http\Controllers\AiChatController::class, 'close'])->name('ai.conversation.close');
-Route::post('/api/ai/rate', [\App\Http\Controllers\AiChatController::class, 'rate'])->name('ai.rate');
-Route::get('/api/ai/suggestions', [\App\Http\Controllers\AiChatController::class, 'suggestions'])->name('ai.suggestions');
+    Route::post('/api/ai/conversation', [\App\Http\Controllers\AiChatController::class, 'startConversation'])->name('ai.conversation.start');
+    Route::post('/api/ai/message', [\App\Http\Controllers\AiChatController::class, 'sendMessage'])->name('ai.message.send');
+    Route::post('/api/ai/ticket/confirm', [\App\Http\Controllers\AiChatController::class, 'confirmTicket'])->name('ai.ticket.confirm');
+    Route::post('/api/ai/escalate', [\App\Http\Controllers\AiChatController::class, 'escalate'])->name('ai.escalate');
+    Route::get('/api/ai/conversation/{id}/messages', [\App\Http\Controllers\AiChatController::class, 'getMessages'])->name('ai.messages');
+    Route::post('/api/ai/conversation/{id}/close', [\App\Http\Controllers\AiChatController::class, 'close'])->name('ai.conversation.close');
+    Route::post('/api/ai/rate', [\App\Http\Controllers\AiChatController::class, 'rate'])->name('ai.rate');
+    Route::get('/api/ai/suggestions', [\App\Http\Controllers\AiChatController::class, 'suggestions'])->name('ai.suggestions');
 });
 
 // Admin AI Management

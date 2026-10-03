@@ -3,11 +3,10 @@
 namespace App\Services\Ai;
 
 use App\Models\AiConversation;
+use App\Models\AiKnowledgeGap;
 use App\Models\AiMessage;
 use App\Models\AiUsageRecord;
-use App\Models\AiKnowledgeGap;
 use App\Models\KbArticle;
-use Carbon\Carbon;
 
 class AiAnalyticsService
 {
@@ -68,9 +67,12 @@ class AiAnalyticsService
     public function getEscalationRate(): float
     {
         $total = AiConversation::count();
-        if ($total === 0) return 0;
+        if ($total === 0) {
+            return 0;
+        }
 
         $escalated = AiConversation::where('status', 'escalated')->count();
+
         return round(($escalated / $total) * 100, 1);
     }
 
@@ -80,11 +82,14 @@ class AiAnalyticsService
     public function getResolutionRate(): float
     {
         $total = AiConversation::where('status', 'closed')->count();
-        if ($total === 0) return 0;
+        if ($total === 0) {
+            return 0;
+        }
 
         $resolved = AiConversation::where('status', 'closed')
             ->where('satisfied', true)
             ->count();
+
         return round(($resolved / $total) * 100, 1);
     }
 
@@ -108,7 +113,7 @@ class AiAnalyticsService
                     if (is_array($source)) {
                         $source = $source['id'] ?? $source['article_id'] ?? null;
                     }
-                    if (!is_int($source) && !(is_string($source) && ctype_digit($source))) {
+                    if (! is_int($source) && ! (is_string($source) && ctype_digit($source))) {
                         continue;
                     }
                     $articleId = (int) $source;
@@ -120,12 +125,14 @@ class AiAnalyticsService
         arsort($articleCounts);
         $topIds = array_slice(array_keys($articleCounts), 0, $limit);
 
-        if (empty($topIds)) return [];
+        if (empty($topIds)) {
+            return [];
+        }
 
         return KbArticle::whereIn('id', $topIds)
             ->with('category')
             ->get()
-            ->map(fn($article) => [
+            ->map(fn ($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
                 'category' => $article->category?->name ?? 'Uncategorized',

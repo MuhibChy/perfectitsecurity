@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -68,7 +67,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasMfaEnabled(): bool
     {
-        return (bool) $this->two_factor_enabled && !empty($this->two_factor_secret) && !is_null($this->two_factor_confirmed_at);
+        return (bool) $this->two_factor_enabled && ! empty($this->two_factor_secret) && ! is_null($this->two_factor_confirmed_at);
     }
 
     public function isSalesAgent(): bool
@@ -77,30 +76,97 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // Verification checks
-    public function isEmailVerified(): bool { return !is_null($this->email_verified_at); }
-    public function isPhoneVerified(): bool { return !is_null($this->phone_verified_at); }
+    public function isEmailVerified(): bool
+    {
+        return ! is_null($this->email_verified_at);
+    }
+
+    public function isPhoneVerified(): bool
+    {
+        return ! is_null($this->phone_verified_at);
+    }
+
     public function isFullyVerified(): bool
     {
-        return $this->isEmailVerified() && $this->isPhoneVerified() && !in_array($this->verification_status, ['suspended', 'blocked'], true);
+        return $this->isEmailVerified() && $this->isPhoneVerified() && ! in_array($this->verification_status, ['suspended', 'blocked'], true);
     }
-    public function isPendingVerification(): bool { return !$this->isFullyVerified() && !in_array($this->verification_status, ['suspended', 'blocked'], true); }
-    public function isSuspended(): bool { return $this->verification_status === 'suspended'; }
-    public function isBlocked(): bool { return $this->verification_status === 'blocked'; }
+
+    public function isPendingVerification(): bool
+    {
+        return ! $this->isFullyVerified() && ! in_array($this->verification_status, ['suspended', 'blocked'], true);
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->verification_status === 'suspended';
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->verification_status === 'blocked';
+    }
 
     // Role checks
-    public function isSuperAdmin() { return $this->role === 'super_admin'; }
-    public function isAdmin() { return in_array($this->role, ['super_admin', 'admin']); }
-    public function isFinanceManager() { return in_array($this->role, ['super_admin', 'admin', 'finance_manager']); }
-    public function isSupportManager() { return in_array($this->role, ['super_admin', 'admin', 'support_manager']); }
-    public function isSupportAgent() { return in_array($this->role, ['super_admin', 'admin', 'support_manager', 'support_agent']); }
-    public function isProjectManager() { return in_array($this->role, ['super_admin', 'admin', 'project_manager']); }
-    public function isEmployee() { return in_array($this->role, ['super_admin', 'admin', 'employee', 'support_agent', 'project_manager', 'support_manager', 'finance_manager', 'sales_agent']); }
-    public function isFreelancer() { return in_array($this->role, ['freelancer', 'commission_agent']); }
-    public function isCustomer() { return $this->role === 'customer'; }
-    public function isStaff() { return !$this->isCustomer() && !$this->isFreelancer(); }
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isAdmin()
+    {
+        return in_array($this->role, ['super_admin', 'admin']);
+    }
+
+    public function isFinanceManager()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'finance_manager']);
+    }
+
+    public function isSupportManager()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'support_manager']);
+    }
+
+    public function isSupportAgent()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'support_manager', 'support_agent']);
+    }
+
+    public function isProjectManager()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'project_manager']);
+    }
+
+    public function isEmployee()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'employee', 'support_agent', 'project_manager', 'support_manager', 'finance_manager', 'sales_agent']);
+    }
+
+    public function isFreelancer()
+    {
+        return in_array($this->role, ['freelancer', 'commission_agent']);
+    }
+
+    public function isCustomer()
+    {
+        return $this->role === 'customer';
+    }
+
+    public function isStaff()
+    {
+        return ! $this->isCustomer() && ! $this->isFreelancer();
+    }
+
     // Trainer / Academy access (admins inherit).
-    public function isTrainingManager() { return in_array($this->role, ['super_admin', 'admin', 'training_manager']); }
-    public function isTrainer() { return $this->isTrainingManager(); }
+    public function isTrainingManager()
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'training_manager']);
+    }
+
+    public function isTrainer()
+    {
+        return $this->isTrainingManager();
+    }
 
     /** Central-registry capability check (descriptive layer over is* gates). */
     public function hasCapability(string $capability): bool
@@ -133,10 +199,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasPendingRoleRequest(): bool
     {
-        return $this->role_approval_status === 'pending' && !empty($this->requested_role);
+        return $this->role_approval_status === 'pending' && ! empty($this->requested_role);
     }
 
-    public function approver() { return $this->belongsTo(User::class, 'role_approved_by'); }
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'role_approved_by');
+    }
 
     /** Foreground glove preference: normalized viewport coords, safe defaults. */
     public function glovePreference(): array
@@ -144,48 +213,179 @@ class User extends Authenticatable implements MustVerifyEmail
         $mode = in_array($this->glove_mode, ['moving', 'fixed'], true) ? $this->glove_mode : 'moving';
         $x = is_numeric($this->glove_x) ? (float) $this->glove_x : null;
         $y = is_numeric($this->glove_y) ? (float) $this->glove_y : null;
-        if ($x === null || $y === null || !is_finite($x) || !is_finite($y)) {
+        if ($x === null || $y === null || ! is_finite($x) || ! is_finite($y)) {
             return ['mode' => 'moving', 'x' => null, 'y' => null];
         }
+
         return ['mode' => $mode, 'x' => min(0.92, max(0.08, $x)), 'y' => min(0.92, max(0.08, $y))];
     }
 
-    public function accountApprover() { return $this->belongsTo(User::class, 'approved_by'); }
+    public function accountApprover()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 
-    public function company() { return $this->belongsTo(Company::class); }
-    public function tickets() { return $this->hasMany(Ticket::class, 'customer_id'); }
-    public function assignedTickets() { return $this->hasMany(Ticket::class, 'assigned_to'); }
-    public function projects() { return $this->hasMany(Project::class, 'customer_id'); }
-    public function managedProjects() { return $this->hasMany(Project::class, 'project_manager_id'); }
-    public function invoices() { return $this->hasMany(Invoice::class, 'customer_id'); }
-    public function serviceOrders() { return $this->hasMany(ServiceOrder::class, 'customer_id'); }
-    public function payments() { return $this->hasMany(Payment::class, 'customer_id'); }
-    public function commissions() { return $this->hasMany(Commission::class, 'worker_id'); }
-    public function tasks() { return $this->hasMany(Task::class, 'assigned_to'); }
-    public function createdTasks() { return $this->hasMany(Task::class, 'created_by'); }
-    public function expenses() { return $this->hasMany(Expense::class, 'created_by'); }
-    public function salaries() { return $this->hasMany(Salary::class); }
-    public function auditLogs() { return $this->hasMany(AuditLog::class); }
-    public function notificationPreferences() { return $this->hasMany(NotificationPreference::class); }
-    public function salary() { return $this->hasOne(Salary::class); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'customer_id');
+    }
+
+    public function assignedTickets()
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to');
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'customer_id');
+    }
+
+    public function managedProjects()
+    {
+        return $this->hasMany(Project::class, 'project_manager_id');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'customer_id');
+    }
+
+    public function serviceOrders()
+    {
+        return $this->hasMany(ServiceOrder::class, 'customer_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'customer_id');
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(Commission::class, 'worker_id');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function createdTasks()
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class, 'created_by');
+    }
+
+    public function salaries()
+    {
+        return $this->hasMany(Salary::class);
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(AuditLog::class);
+    }
+
+    public function notificationPreferences()
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
+    public function salary()
+    {
+        return $this->hasOne(Salary::class);
+    }
+
     // Member identity extensions (single identity; relations, never duplicate users).
-    public function settings() { return $this->hasMany(UserSetting::class); }
-    public function identityDocuments() { return $this->hasMany(IdentityDocument::class); }
-    public function idCards() { return $this->hasMany(MemberIdCard::class); }
-    public function activeIdCard() { return $this->hasOne(MemberIdCard::class)->where('status', 'active')->latestOfMany(); }
-    public function sentMessages() { return $this->hasMany(DirectMessage::class, 'sender_id'); }
-    public function receivedMessages() { return $this->hasMany(DirectMessage::class, 'recipient_id'); }
-    public function emergencyRequests() { return $this->hasMany(EmergencyRequest::class, 'requester_id'); }
-    public function bankTransfers() { return $this->hasMany(BankTransfer::class, 'beneficiary_id'); }
-    public function franchise() { return $this->belongsTo(Franchise::class); }
-    public function contributedTasks() { return $this->belongsToMany(Task::class, 'task_contributors', 'user_id', 'task_id')->withPivot('role')->withTimestamps(); }
+    public function settings()
+    {
+        return $this->hasMany(UserSetting::class);
+    }
+
+    public function identityDocuments()
+    {
+        return $this->hasMany(IdentityDocument::class);
+    }
+
+    public function idCards()
+    {
+        return $this->hasMany(MemberIdCard::class);
+    }
+
+    public function activeIdCard()
+    {
+        return $this->hasOne(MemberIdCard::class)->where('status', 'active')->latestOfMany();
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'recipient_id');
+    }
+
+    public function emergencyRequests()
+    {
+        return $this->hasMany(EmergencyRequest::class, 'requester_id');
+    }
+
+    public function bankTransfers()
+    {
+        return $this->hasMany(BankTransfer::class, 'beneficiary_id');
+    }
+
+    public function franchise()
+    {
+        return $this->belongsTo(Franchise::class);
+    }
+
+    public function contributedTasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_contributors', 'user_id', 'task_id')->withPivot('role')->withTimestamps();
+    }
+
     // Account-ecosystem extensions (single identity; relations, never duplicate users).
-    public function profileDetail() { return $this->hasOne(ProfileDetail::class); }
-    public function compensation() { return $this->hasOne(EmployeeCompensation::class); }
-    public function assignments() { return $this->hasMany(EmployeeAssignment::class, 'employee_id'); }
-    public function activeAssignments() { return $this->hasMany(EmployeeAssignment::class, 'employee_id')->where('status', 'active'); }
-    public function callLogs() { return $this->hasMany(CallLog::class, 'caller_id'); }
-    public function receivedCalls() { return $this->hasMany(CallLog::class, 'recipient_id'); }
+    public function profileDetail()
+    {
+        return $this->hasOne(ProfileDetail::class);
+    }
+
+    public function compensation()
+    {
+        return $this->hasOne(EmployeeCompensation::class);
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(EmployeeAssignment::class, 'employee_id');
+    }
+
+    public function activeAssignments()
+    {
+        return $this->hasMany(EmployeeAssignment::class, 'employee_id')->where('status', 'active');
+    }
+
+    public function callLogs()
+    {
+        return $this->hasMany(CallLog::class, 'caller_id');
+    }
+
+    public function receivedCalls()
+    {
+        return $this->hasMany(CallLog::class, 'recipient_id');
+    }
 
     public function getAvatarUrlAttribute()
     {
@@ -193,12 +393,24 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($this->avatar) {
             return route('avatar.show', $this->id);
         }
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=3b82f6&color=fff&bold=true';
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=3b82f6&color=fff&bold=true';
     }
 
-    public function scopeActive($query) { return $query->where('is_active', true); }
-    public function scopeStaff($query) { return $query->whereNotIn('role', ['customer', 'freelancer', 'commission_agent']); }
-    public function scopeCustomers($query) { return $query->where('role', 'customer'); }
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeStaff($query)
+    {
+        return $query->whereNotIn('role', ['customer', 'freelancer', 'commission_agent']);
+    }
+
+    public function scopeCustomers($query)
+    {
+        return $query->where('role', 'customer');
+    }
 
     /**
      * Enforce hashing at the model boundary so every account-creation path
@@ -227,7 +439,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     'project_manager' => 'PMG', 'finance_manager' => 'FIN',
                     'training_manager' => 'TRN', 'admin' => 'ADM', 'super_admin' => 'ADM',
                 ][$user->role] ?? 'MBR';
-                $user->forceFill(['member_number' => $prefix . '-' . str_pad((string) $user->id, 6, '0', STR_PAD_LEFT)])->saveQuietly();
+                $user->forceFill(['member_number' => $prefix.'-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT)])->saveQuietly();
             }
         });
     }
@@ -244,9 +456,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function effectivePresence(): string
     {
         $state = in_array($this->presence, self::PRESENCES, true) ? $this->presence : 'offline';
-        if ($state === 'offline') return 'offline';
+        if ($state === 'offline') {
+            return 'offline';
+        }
         $last = $this->last_activity_at;
-        if (!$last || $last->lt(now()->subMinutes(5))) return 'offline';
+        if (! $last || $last->lt(now()->subMinutes(5))) {
+            return 'offline';
+        }
+
         return $state;
     }
 
@@ -259,10 +476,11 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return ['online' => 'bg-emerald-500', 'away' => 'bg-amber-400', 'busy' => 'bg-red-500', 'dnd' => 'bg-purple-500', 'offline' => 'bg-gray-400'][$this->effectivePresence()];
     }
+
     // ── Identity / verification state (distinct from 2FA) ──
     public function isIdentityVerified(): bool
     {
-        return $this->identity_status === 'verified' && !is_null($this->identity_verified_at);
+        return $this->identity_status === 'verified' && ! is_null($this->identity_verified_at);
     }
 
     public function verificationSummary(): array
@@ -280,14 +498,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function consumeRecoveryCode(string $code): bool
     {
         $hashes = $this->two_factor_recovery_codes ?? [];
-        if (!is_array($hashes) || $hashes === []) return false;
+        if (! is_array($hashes) || $hashes === []) {
+            return false;
+        }
         foreach ($hashes as $i => $hash) {
             if (\Illuminate\Support\Facades\Hash::check($code, $hash)) {
                 unset($hashes[$i]);
                 $this->forceFill(['two_factor_recovery_codes' => array_values($hashes)])->save();
+
                 return true;
             }
         }
+
         return false;
     }
 }

@@ -53,7 +53,7 @@ class InvoicePolicy
 
     public function send(User $user, Invoice $invoice): bool
     {
-        if (!$user->isFinanceManager() && !$user->isAdmin()) {
+        if (! $user->isFinanceManager() && ! $user->isAdmin()) {
             return false;
         }
 
@@ -62,11 +62,11 @@ class InvoicePolicy
 
     public function recordPayment(User $user, Invoice $invoice): bool
     {
-        if (!$user->isFinanceManager() && !$user->isAdmin()) {
+        if (! $user->isFinanceManager() && ! $user->isAdmin()) {
             return false;
         }
 
-        return !in_array($invoice->status, ['paid', 'cancelled', 'refunded']);
+        return ! in_array($invoice->status, ['paid', 'cancelled', 'refunded']);
     }
 
     public function downloadPdf(User $user, Invoice $invoice): bool

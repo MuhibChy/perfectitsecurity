@@ -119,7 +119,7 @@ class PageHealthService
 
             $response = $kernel->handle($request);
             $httpStatus = $response->getStatusCode();
-            $durationMs = (int)((microtime(true) - $start) * 1000);
+            $durationMs = (int) ((microtime(true) - $start) * 1000);
 
             if (in_array($httpStatus, [200, 302, 301])) {
                 $status = 'healthy';
@@ -129,7 +129,7 @@ class PageHealthService
                 }
             } elseif ($httpStatus === 404) {
                 $status = 'error';
-                $errorSummary = "HTTP 404 Not Found";
+                $errorSummary = 'HTTP 404 Not Found';
             } elseif ($httpStatus >= 500) {
                 $status = 'error';
                 $errorSummary = "HTTP {$httpStatus} Server Error";
@@ -138,7 +138,7 @@ class PageHealthService
                 $errorSummary = "HTTP {$httpStatus}";
             }
         } catch (\Throwable $e) {
-            $durationMs = (int)((microtime(true) - $start) * 1000);
+            $durationMs = (int) ((microtime(true) - $start) * 1000);
             $status = 'error';
             $httpStatus = 500;
             $errorSummary = $e->getMessage();

@@ -42,6 +42,7 @@ class CustomerCurrencyService
         if ($explicit !== '' && $this->activeCountry($explicit)) {
             return $this->activeCountry($explicit)->code;
         }
+
         return $this->resolveCountryCode((string) ($user->country ?? ''));
     }
 
@@ -64,9 +65,10 @@ class CustomerCurrencyService
         // Lenient contains-match for values like "United Kingdom (London)".
         $match = Country::where('is_active', true)
             ->where(function ($q) use ($text) {
-                $q->whereRaw('UPPER(name) LIKE ?', ['%' . $text . '%'])
+                $q->whereRaw('UPPER(name) LIKE ?', ['%'.$text.'%'])
                     ->orWhereRaw('? LIKE \'%\' || UPPER(name) || \'%\'', [$text]);
             })->orderBy('sort_order')->first();
+
         return $match?->code;
     }
 
@@ -74,14 +76,15 @@ class CustomerCurrencyService
     public function localCurrencyFor(User $user): ?string
     {
         $code = $this->countryCodeFor($user);
-        if (!$code) {
+        if (! $code) {
             return null;
         }
         $country = $this->activeCountry($code);
-        if (!$country) {
+        if (! $country) {
             return null;
         }
         $ccy = strtoupper($country->currency_code);
+
         return Money::isActive($ccy) ? $ccy : null;
     }
 
@@ -94,14 +97,16 @@ class CustomerCurrencyService
      */
     public function availableFor(User $user): array
     {
-        $key = 'cust_ccy:' . $user->id . ':' . ($user->updated_at?->timestamp ?? 0)
-            . ':' . md5((string) ($user->country_code ?? '') . '|' . (string) ($user->country ?? ''));
+        $key = 'cust_ccy:'.$user->id.':'.($user->updated_at?->timestamp ?? 0)
+            .':'.md5((string) ($user->country_code ?? '').'|'.(string) ($user->country ?? ''));
+
         return Cache::remember($key, 600, function () use ($user) {
             $fresh = $user->fresh() ?? $user;
             $local = $this->localCurrencyFor($fresh);
-            if (!$local || $local === self::FALLBACK) {
+            if (! $local || $local === self::FALLBACK) {
                 return [self::FALLBACK];
             }
+
             return [$local, self::FALLBACK];
         });
     }
@@ -124,6 +129,7 @@ class CustomerCurrencyService
                 'currency_symbol' => $country->currency_symbol ?? $code,
             ];
         }
+
         return $out;
     }
 

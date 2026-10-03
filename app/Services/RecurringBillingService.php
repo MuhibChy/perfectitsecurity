@@ -30,7 +30,7 @@ class RecurringBillingService
                     });
                 } catch (\Throwable $e) {
                     $failed++;
-                    Log::error('Recurring billing failed: ' . $e->getMessage(), [
+                    Log::error('Recurring billing failed: '.$e->getMessage(), [
                         'subscription_id' => $subscription->id,
                     ]);
                 }
@@ -50,7 +50,7 @@ class RecurringBillingService
         $invoice = Invoice::create([
             'customer_id' => $subscription->customer_id,
             'subscription_id' => $subscription->id,
-            'notes' => 'Recurring billing for ' . $subscription->name,
+            'notes' => 'Recurring billing for '.$subscription->name,
             'terms' => 'Auto-generated subscription invoice.',
             'subtotal' => $subtotal,
             'discount_amount' => 0,
@@ -70,7 +70,7 @@ class RecurringBillingService
         InvoiceItem::create([
             'invoice_id' => $invoice->id,
             'service_id' => $subscription->service_id,
-            'description' => $subscription->name . ' (' . $subscription->interval . ')',
+            'description' => $subscription->name.' ('.$subscription->interval.')',
             'quantity' => 1,
             'unit_price' => $subtotal,
             'discount' => 0,

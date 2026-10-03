@@ -45,38 +45,99 @@ class Ticket extends Model
     {
         static::creating(function ($ticket) {
             if (empty($ticket->ticket_number)) {
-                $ticket->ticket_number = 'TK-' . strtoupper(Str::random(8));
+                $ticket->ticket_number = 'TK-'.strtoupper(Str::random(8));
             }
         });
     }
 
     // Relationships
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
-    public function team() { return $this->belongsTo(SupportTeam::class, 'team_id'); }
-    public function category() { return $this->belongsTo(TicketCategory::class); }
-    public function subcategory() { return $this->belongsTo(TicketSubcategory::class); }
-    public function slaPolicy() { return $this->belongsTo(SlaPolicy::class); }
-    public function messages() { return $this->hasMany(TicketMessage::class); }
-    public function attachments() { return $this->hasMany(TicketAttachment::class); }
-    public function timeEntries() { return $this->hasMany(TicketTimeEntry::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeOpen($query) { return $query->whereNotIn('status', ['resolved', 'closed', 'cancelled']); }
-    public function scopeForCustomer($query, $customerId) { return $query->where('customer_id', $customerId); }
-    public function scopeForAgent($query, $agentId) { return $query->where('assigned_to', $agentId); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(SupportTeam::class, 'team_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(TicketCategory::class);
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(TicketSubcategory::class);
+    }
+
+    public function slaPolicy()
+    {
+        return $this->belongsTo(SlaPolicy::class);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(TicketMessage::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TicketAttachment::class);
+    }
+
+    public function timeEntries()
+    {
+        return $this->hasMany(TicketTimeEntry::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function scopeOpen($query)
+    {
+        return $query->whereNotIn('status', ['resolved', 'closed', 'cancelled']);
+    }
+
+    public function scopeForCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
+
+    public function scopeForAgent($query, $agentId)
+    {
+        return $query->where('assigned_to', $agentId);
+    }
 
     public function getSlaStatusAttribute()
     {
-        if (!$this->sla_resolution_deadline) return null;
+        if (! $this->sla_resolution_deadline) {
+            return null;
+        }
         $now = now();
         $deadline = $this->sla_resolution_deadline;
         if ($this->status === 'resolved' || $this->status === 'closed') {
             return $this->resolved_at && $this->resolved_at->lte($deadline) ? 'met' : 'breached';
         }
-        if ($now->gt($deadline)) return 'breached';
-        if ($now->diffInHours($deadline) < 2) return 'warning';
+        if ($now->gt($deadline)) {
+            return 'breached';
+        }
+        if ($now->diffInHours($deadline) < 2) {
+            return 'warning';
+        }
+
         return 'ok';
     }
 

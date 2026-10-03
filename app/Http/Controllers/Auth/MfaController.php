@@ -22,7 +22,7 @@ class MfaController extends Controller
     public function challenge()
     {
         $user = Auth::user();
-        if (!$user || !$user->hasMfaEnabled()) {
+        if (! $user || ! $user->hasMfaEnabled()) {
             return redirect()->intended($user && $user->isCustomer() ? route('portal.dashboard') : route('admin.dashboard'));
         }
 
@@ -42,13 +42,14 @@ class MfaController extends Controller
         // Per-account brute-force guard on top of the route throttle:
         // 10 failures lock the challenge for 15 minutes (TOTP codes are
         // 6 digits — throttling alone leaves an unbounded window).
-        $lockKey = 'mfa-fail:' . $user->id;
+        $lockKey = 'mfa-fail:'.$user->id;
         abort_if(\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($lockKey, 10), 429, 'Too many incorrect codes. Try again in 15 minutes.');
 
         if ($totp->verify($user->two_factor_secret, $request->code)) {
             \Illuminate\Support\Facades\RateLimiter::clear($lockKey);
             session(['mfa_passed' => true]);
             AuditLog::log('mfa.challenge_passed', 'auth', $user, '2FA challenge passed (TOTP).');
+
             return redirect()->intended($user->isCustomer() ? route('portal.dashboard') : route('admin.dashboard'));
         }
 
@@ -57,12 +58,14 @@ class MfaController extends Controller
             session(['mfa_passed' => true]);
             AuditLog::log('mfa.recovery_used', 'auth', $user, '2FA recovery code consumed at login.');
             \App\Services\ServiceTrackingService::notify($user->id, 'mfa_recovery_used', 'Recovery code used', 'A two-factor recovery code was used to sign in. If this was not you, secure your account immediately.');
+
             return redirect()->intended($user->isCustomer() ? route('portal.dashboard') : route('admin.dashboard'))
                 ->with('warning', 'You signed in with a recovery code. Generate new codes in Security settings.');
         }
 
         \Illuminate\Support\Facades\RateLimiter::hit($lockKey, 900);
         AuditLog::log('mfa.challenge_failed', 'auth', $user, '2FA challenge failed (invalid code).');
+
         return back()->withErrors(['code' => 'Invalid authentication code.']);
     }
 
@@ -91,12 +94,12 @@ class MfaController extends Controller
         $secret = session('mfa_setup_secret');
         abort_unless($secret, 422, 'Start MFA setup again.');
 
-        if (!$totp->verify($secret, $request->code)) {
+        if (! $totp->verify($secret, $request->code)) {
             return back()->withErrors(['code' => 'Invalid code. Scan the QR code and try again.']);
         }
 
         // One-time recovery codes: shown once, stored as hashes only.
-        $codes = collect(range(1, 8))->map(fn () => strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4)))->all();
+        $codes = collect(range(1, 8))->map(fn () => strtoupper(Str::random(4)).'-'.strtoupper(Str::random(4)))->all();
         $user->forceFill([
             'two_factor_secret' => $secret,
             'two_factor_enabled' => true,
@@ -124,7 +127,7 @@ class MfaController extends Controller
 
         abort_unless(Hash::check($request->password, $user->password), 403, 'Password confirmation failed.');
 
-        if (!$totp->verify($user->two_factor_secret, $request->code)) {
+        if (! $totp->verify($user->two_factor_secret, $request->code)) {
             return back()->withErrors(['code' => 'Invalid authentication code.']);
         }
 
@@ -137,7 +140,7 @@ class MfaController extends Controller
         ])->save();
 
         session()->forget('mfa_passed');
-        AuditLog::log('mfa.disabled', 'auth', $user, '2FA disabled' . ($wasPrivileged ? ' on a PRIVILEGED account.' : '.'));
+        AuditLog::log('mfa.disabled', 'auth', $user, '2FA disabled'.($wasPrivileged ? ' on a PRIVILEGED account.' : '.'));
         \App\Services\ServiceTrackingService::notify($user->id, 'mfa_disabled', 'Two-factor disabled', 'Two-factor authentication was turned off. If this was not you, contact support immediately.');
 
         return redirect()->route('mfa.setup')->with('success', 'Two-factor authentication disabled.');
@@ -152,7 +155,7 @@ class MfaController extends Controller
         abort_unless(Hash::check($request->password, $user->password), 403, 'Password confirmation failed.');
         abort_unless($totp->verify($user->two_factor_secret, $request->code), 403, 'Invalid authentication code.');
 
-        $codes = collect(range(1, 8))->map(fn () => strtoupper(Str::random(4)) . '-' . strtoupper(Str::random(4)))->all();
+        $codes = collect(range(1, 8))->map(fn () => strtoupper(Str::random(4)).'-'.strtoupper(Str::random(4)))->all();
         $user->forceFill(['two_factor_recovery_codes' => array_map(fn ($c) => Hash::make($c), $codes)])->save();
         AuditLog::log('mfa.codes_regenerated', 'auth', $user, 'Recovery codes regenerated; previous codes invalidated.');
         \App\Services\ServiceTrackingService::notify($user->id, 'mfa_codes_regenerated', 'Recovery codes regenerated', 'New recovery codes were issued; old ones no longer work.');

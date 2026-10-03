@@ -35,7 +35,7 @@ class SidebarNavTest extends TestCase
             'Case Studies', 'Careers', 'Portfolio', 'Settings', 'Useful Links',
             'Link Submissions', 'AI Assistant', 'Audit Logs', 'Security Findings', 'Security Dashboard'];
         foreach ($labels as $label) {
-            $this->assertStringContainsString('>' . $label . '<', $content, "Missing sidebar item: {$label}");
+            $this->assertStringContainsString('>'.$label.'<', $content, "Missing sidebar item: {$label}");
         }
     }
 
@@ -45,12 +45,12 @@ class SidebarNavTest extends TestCase
         // Employee: no finance block, no admin block.
         $employee = $this->actingAs($this->staff('employee'))->get(route('admin.dashboard'))->getContent();
         foreach (['Invoices', 'Financials', 'Users', 'Security Dashboard', 'AI Assistant', 'Knowledge Base', 'Settings'] as $hidden) {
-            $this->assertStringNotContainsString('>' . $hidden . '<', $employee);
+            $this->assertStringNotContainsString('>'.$hidden.'<', $employee);
         }
         $this->assertStringNotContainsString('System & Health', $employee);
         // ...but keeps its own work items.
         foreach (['Work Orders', 'Projects', 'Tasks', 'Leads', 'My Work History'] as $visible) {
-            $this->assertStringContainsString('>' . $visible . '<', $employee);
+            $this->assertStringContainsString('>'.$visible.'<', $employee);
         }
 
         // Finance manager: finance items, no admin items.

@@ -9,14 +9,19 @@ use Illuminate\Http\Request;
 /** Emergency lane: any authenticated user may raise; only staff triage. */
 class EmergencyController extends Controller
 {
-    public function __construct(private EmergencyService $service) {}
+    public function __construct(private EmergencyService $service)
+    {
+    }
 
     public function index()
     {
         $me = auth()->user();
         $query = EmergencyRequest::with(['requester', 'assignee'])->latest();
-        if (!$me->isStaff()) $query->where('requester_id', $me->id);
+        if (! $me->isStaff()) {
+            $query->where('requester_id', $me->id);
+        }
         $emergencies = $query->paginate(20);
+
         return view('emergency.index', compact('emergencies'));
     }
 
@@ -34,6 +39,7 @@ class EmergencyController extends Controller
         ]);
         $emergency = $this->service->raise(auth()->user(), $data);
         $route = auth()->user()->isCustomer() ? 'portal.emergency.show' : 'admin.emergency.show';
+
         return redirect()->route($route, $emergency->id)->with('success', "Emergency {$emergency->reference} logged and queued for triage.");
     }
 
@@ -43,6 +49,7 @@ class EmergencyController extends Controller
         $me = auth()->user();
         abort_unless($me->isStaff() || (int) $emergency->requester_id === (int) $me->id, 403);
         $staff = $me->isStaff() ? \App\Models\User::staff()->where('is_active', true)->orderBy('name')->limit(50)->get() : collect();
+
         return view('emergency.show', compact('emergency', 'staff'));
     }
 
@@ -54,6 +61,7 @@ class EmergencyController extends Controller
         ]);
         $emergency = EmergencyRequest::findOrFail($id);
         $updated = $this->service->transition($emergency, $data['to'], auth()->user(), $data['assignee_id'] ?? null);
+
         return back()->with('success', "Emergency {$updated->reference} is now {$updated->status}.");
     }
 }

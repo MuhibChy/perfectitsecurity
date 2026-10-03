@@ -4,9 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BankTransfer;
 use App\Models\Commission;
-use App\Models\CommissionPayout;
 use App\Models\DirectMessage;
-use App\Models\EmergencyRequest;
 use App\Models\Franchise;
 use App\Models\Service;
 use App\Models\ServiceCategory;
@@ -36,7 +34,7 @@ class IndividualAccountsTest extends TestCase
     {
         return User::factory()->create(array_merge([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(5) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(5).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'country' => 'GB',
         ], $extra));
@@ -60,7 +58,7 @@ class IndividualAccountsTest extends TestCase
 
         // ── Customer workflow (§61): order → invoice → £500 advance ──
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-managed'], ['name' => 'Managed']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] Managed IT Support', 'slug' => 't-svc-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] Managed IT Support', 'slug' => 't-svc-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 1500, 'is_active' => true]);
         $svc = app(ServiceOrderWorkflowService::class);
         $order = ServiceOrder::create([
             'customer_id' => $customer->id, 'service_id' => $service->id, 'created_by' => $customer->id,
@@ -200,4 +198,3 @@ class IndividualAccountsTest extends TestCase
         $this->assertTrue($rep['ok'], implode('; ', $rep['issues']));
     }
 }
-

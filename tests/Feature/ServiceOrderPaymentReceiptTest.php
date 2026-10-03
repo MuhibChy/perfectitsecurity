@@ -16,7 +16,9 @@ class ServiceOrderPaymentReceiptTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private Service $service;
+
     private ServiceOrder $order;
 
     protected function setUp(): void

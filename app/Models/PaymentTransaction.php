@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -74,10 +73,10 @@ class PaymentTransaction extends Model
     {
         static::creating(function ($txn) {
             if (empty($txn->reference)) {
-                $txn->reference = 'PTXN-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+                $txn->reference = 'PTXN-'.date('Ymd').'-'.strtoupper(Str::random(6));
             }
             if (empty($txn->idempotency_key)) {
-                $txn->idempotency_key = 'ptxn_' . Str::uuid();
+                $txn->idempotency_key = 'ptxn_'.Str::uuid();
             }
         });
     }
@@ -86,11 +85,16 @@ class PaymentTransaction extends Model
     public function transitionTo(string $to, array $attrs = []): bool
     {
         $allowed = self::TRANSITIONS[$this->status] ?? [];
-        if (!in_array($to, $allowed, true)) return false;
+        if (! in_array($to, $allowed, true)) {
+            return false;
+        }
         $this->fill($attrs);
         $this->status = $to;
-        if ($to === 'paid' && !$this->paid_at) $this->paid_at = now();
+        if ($to === 'paid' && ! $this->paid_at) {
+            $this->paid_at = now();
+        }
         $this->save();
+
         return true;
     }
 
@@ -99,14 +103,48 @@ class PaymentTransaction extends Model
         return in_array($this->status, self::TERMINAL, true);
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function invoice() { return $this->belongsTo(Invoice::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function provider() { return $this->belongsTo(PaymentProvider::class, 'provider_id'); }
-    public function payment() { return $this->belongsTo(Payment::class); }
-    public function refunds() { return $this->hasMany(PaymentRefund::class); }
-    public function webhookEvents() { return $this->hasMany(PaymentWebhookEvent::class, 'transaction_reference', 'reference'); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeForCustomer($q, int $customerId) { return $q->where('customer_id', $customerId); }
-    public function scopeLatestFirst($q) { return $q->latest('id'); }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function provider()
+    {
+        return $this->belongsTo(PaymentProvider::class, 'provider_id');
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(PaymentRefund::class);
+    }
+
+    public function webhookEvents()
+    {
+        return $this->hasMany(PaymentWebhookEvent::class, 'transaction_reference', 'reference');
+    }
+
+    public function scopeForCustomer($q, int $customerId)
+    {
+        return $q->where('customer_id', $customerId);
+    }
+
+    public function scopeLatestFirst($q)
+    {
+        return $q->latest('id');
+    }
 }

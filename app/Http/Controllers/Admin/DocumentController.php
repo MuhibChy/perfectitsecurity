@@ -23,21 +23,24 @@ class DocumentController extends Controller
         // route-group slip can never expose customer PDFs to non-staff.
         abort_unless(auth()->user()?->isStaff(), 403);
         $order = ServiceOrder::with(['customer', 'service', 'invoices', 'payments'])->findOrFail($id);
-        return Pdf::loadView('documents.order', compact('order'))->setPaper('a4')->download('order-' . $order->order_number . '.pdf');
+
+        return Pdf::loadView('documents.order', compact('order'))->setPaper('a4')->download('order-'.$order->order_number.'.pdf');
     }
 
     public function receiptPdf(Receipt $receipt)
     {
         abort_unless(auth()->user()?->isFinanceManager(), 403);
         $receipt->load(['payment', 'invoice', 'customer', 'order.service']);
-        return Pdf::loadView('documents.receipt', compact('receipt'))->setPaper('a4')->download('receipt-' . $receipt->receipt_number . '.pdf');
+
+        return Pdf::loadView('documents.receipt', compact('receipt'))->setPaper('a4')->download('receipt-'.$receipt->receipt_number.'.pdf');
     }
 
     public function cashMemoPdf(CashMemo $memo)
     {
         abort_unless(auth()->user()?->isFinanceManager(), 403);
         $memo->load(['payment.invoice', 'payment.customer', 'payment.serviceOrder.service']);
-        return Pdf::loadView('documents.cash-memo', compact('memo'))->setPaper('a4')->download('cash-memo-' . $memo->cash_memo_number . '.pdf');
+
+        return Pdf::loadView('documents.cash-memo', compact('memo'))->setPaper('a4')->download('cash-memo-'.$memo->cash_memo_number.'.pdf');
     }
 
     public function serviceReport(Project $project)
@@ -46,6 +49,7 @@ class DocumentController extends Controller
         $project->load(['customer', 'service', 'projectManager', 'milestones', 'tasks.assignee']);
         $progress = ServiceTrackingService::projectProgress($project);
         $timeline = ServiceTrackingService::serviceTimeline(null, $project->id);
-        return Pdf::loadView('documents.service-report', compact('project', 'progress', 'timeline'))->setPaper('a4')->download('service-report-' . $project->project_number . '.pdf');
+
+        return Pdf::loadView('documents.service-report', compact('project', 'progress', 'timeline'))->setPaper('a4')->download('service-report-'.$project->project_number.'.pdf');
     }
 }

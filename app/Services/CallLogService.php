@@ -22,13 +22,22 @@ class CallLogService
         'order' => \App\Models\ServiceOrder::class,
     ];
 
-    public function __construct(private CallProvider $provider) {}
+    public function __construct(private CallProvider $provider)
+    {
+    }
 
     public function canCall(User $caller, User $recipient): bool
     {
-        if ((int) $caller->id === (int) $recipient->id) return false;
-        if ($caller->isCustomer()) return !$recipient->isCustomer();
-        if ($caller->isFreelancer()) return $recipient->isStaff();
+        if ((int) $caller->id === (int) $recipient->id) {
+            return false;
+        }
+        if ($caller->isCustomer()) {
+            return ! $recipient->isCustomer();
+        }
+        if ($caller->isFreelancer()) {
+            return $recipient->isStaff();
+        }
+
         return true;
     }
 
@@ -44,7 +53,9 @@ class CallLogService
         }
         // Customers can never create staff-only (hidden) call records.
         $visible = (bool) ($data['is_customer_visible'] ?? true);
-        if ($caller->isCustomer() || $recipient->isCustomer()) $visible = true;
+        if ($caller->isCustomer() || $recipient->isCustomer()) {
+            $visible = true;
+        }
 
         return DB::transaction(function () use ($actor, $caller, $recipient, $data, $relatedType, $relatedId, $visible) {
             $log = CallLog::create([
@@ -67,6 +78,7 @@ class CallLogService
             if ($log->outcome === 'missed') {
                 ServiceTrackingService::notify((int) $recipient->id, 'call_missed', "Missed call from {$caller->name}", (string) ($log->subject ?? 'Call'));
             }
+
             return $log->fresh();
         });
     }
@@ -78,6 +90,7 @@ class CallLogService
             $q->where(fn ($w) => $w->where(fn ($x) => $x->where('caller_id', $viewer->id)->where('recipient_id', $other->id))
                 ->orWhere(fn ($x) => $x->where('caller_id', $other->id)->where('recipient_id', $viewer->id)));
         }
+
         return $q->paginate(20);
     }
 }

@@ -13,17 +13,23 @@ class CommissionController extends Controller
     public function index(Request $request)
     {
         $query = Commission::with('worker', 'rule', 'task', 'customer');
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->worker_id) $query->where('worker_id', $request->worker_id);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->worker_id) {
+            $query->where('worker_id', $request->worker_id);
+        }
         $commissions = $query->latest()->paginate(20);
 
         $workers = User::whereIn('role', ['freelancer', 'commission_agent'])->get();
+
         return view('admin.commissions.index', compact('commissions', 'workers'));
     }
 
     public function show($id)
     {
         $commission = Commission::with('worker', 'rule', 'task', 'customer', 'approver')->findOrFail($id);
+
         return view('admin.commissions.show', compact('commission'));
     }
 
@@ -31,6 +37,7 @@ class CommissionController extends Controller
     {
         $commission = Commission::findOrFail($id);
         app(CommissionService::class)->approveCommission($commission, auth()->id());
+
         return redirect()->back()->with('success', 'Commission approved!');
     }
 
@@ -38,6 +45,7 @@ class CommissionController extends Controller
     {
         $commission = Commission::findOrFail($id);
         app(CommissionService::class)->rejectCommission($commission, auth()->id(), $request->notes);
+
         return redirect()->back()->with('info', 'Commission rejected.');
     }
 
@@ -63,6 +71,7 @@ class CommissionController extends Controller
         $data = $request->validate(['external_reference' => 'required|string|max:255']);
         $payout = \App\Models\CommissionPayout::findOrFail($payoutId);
         app(CommissionService::class)->completePayout($payout, $data['external_reference']);
+
         return back()->with('success', 'Payout completed against provider reference.');
     }
 
@@ -81,6 +90,7 @@ class CommissionController extends Controller
             'payable' => $svc->markPayable($commission, auth()->id(), $data['reason'] ?? ''),
             'cancelled' => $svc->cancelCommission($commission, auth()->id(), $data['reason'] ?? ''),
         };
+
         return back()->with('success', "Commission moved to {$data['to']}.");
     }
 }

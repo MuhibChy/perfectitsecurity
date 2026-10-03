@@ -15,7 +15,8 @@ class SlaBreachNotification extends Notification implements ShouldQueue
     public function __construct(
         public Ticket $ticket,
         public string $type = 'breach'
-    ) {}
+    ) {
+    }
 
     protected function preferenceType(): string
     {
@@ -39,13 +40,13 @@ class SlaBreachNotification extends Notification implements ShouldQueue
             ->subject($subject)
             ->greeting("Hello {$notifiable->name},")
             ->line($isBreach
-                ? "A support ticket has exceeded its SLA resolution deadline."
-                : "A support ticket is approaching its SLA resolution deadline.");
+                ? 'A support ticket has exceeded its SLA resolution deadline.'
+                : 'A support ticket is approaching its SLA resolution deadline.');
 
         $mail->line("**Ticket:** {$this->ticket->ticket_number}")
             ->line("**Subject:** {$this->ticket->subject}")
-            ->line("**Priority:** " . ucfirst($this->ticket->priority))
-            ->line("**Status:** " . ucfirst(str_replace('_', ' ', $this->ticket->status)));
+            ->line('**Priority:** '.ucfirst($this->ticket->priority))
+            ->line('**Status:** '.ucfirst(str_replace('_', ' ', $this->ticket->status)));
 
         if ($this->ticket->sla_resolution_deadline) {
             $mail->line("**Deadline:** {$this->ticket->sla_resolution_deadline->format('M d, Y H:i')}");
@@ -69,9 +70,10 @@ class SlaBreachNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $isBreach = $this->type === 'breach';
+
         return [
             'title' => $isBreach ? 'SLA Breach' : 'SLA Warning',
-            'message' => ($isBreach ? 'SLA breached' : 'SLA warning') . " for ticket {$this->ticket->ticket_number}: {$this->ticket->subject}",
+            'message' => ($isBreach ? 'SLA breached' : 'SLA warning')." for ticket {$this->ticket->ticket_number}: {$this->ticket->subject}",
             'ticket_id' => $this->ticket->id,
             'ticket_number' => $this->ticket->ticket_number,
             'type' => $this->type,

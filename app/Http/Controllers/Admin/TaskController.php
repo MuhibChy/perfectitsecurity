@@ -3,21 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Project;
 use App\Services\CommissionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
         $query = Task::with('assignee', 'creator', 'project');
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->priority) $query->where('priority', $request->priority);
-        if ($request->assigned_to) $query->where('assigned_to', $request->assigned_to);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->priority) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->assigned_to) {
+            $query->where('assigned_to', $request->assigned_to);
+        }
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', "%{$request->search}%")
@@ -25,6 +30,7 @@ class TaskController extends Controller
             });
         }
         $tasks = $query->latest()->paginate(20);
+
         return view('admin.tasks.index', compact('tasks'));
     }
 
@@ -32,6 +38,7 @@ class TaskController extends Controller
     {
         $users = User::where('is_active', true)->get();
         $projects = Project::where('status', '!=', 'completed')->get();
+
         return view('admin.tasks.create', compact('users', 'projects'));
     }
 
@@ -59,6 +66,7 @@ class TaskController extends Controller
     public function show($id)
     {
         $task = Task::with('assignee', 'creator', 'project', 'applications.user', 'comments.user', 'attachments')->findOrFail($id);
+
         return view('admin.tasks.show', compact('task'));
     }
 
@@ -67,6 +75,7 @@ class TaskController extends Controller
         $task = Task::findOrFail($id);
         $users = User::where('is_active', true)->get();
         $projects = Project::where('status', '!=', 'completed')->get();
+
         return view('admin.tasks.edit', compact('task', 'users', 'projects'));
     }
 
@@ -108,6 +117,7 @@ class TaskController extends Controller
                 'action' => 'completed', 'old' => $task->status, 'new' => 'completed',
                 'reason' => $request->input('reason'), 'visible' => true,
             ]);
+
             return redirect()->route('admin.tasks.index')->with('success', 'Task marked as completed! Order financial status updated.');
         }
 
@@ -116,7 +126,7 @@ class TaskController extends Controller
         $oldProgress = (int) ($task->progress ?? 0);
         $tracked = $validated;
         unset($tracked['reason']);
-        if ($validated['status'] === 'in_progress' && !$task->start_date) {
+        if ($validated['status'] === 'in_progress' && ! $task->start_date) {
             $tracked['start_date'] = now();
         }
         if ($validated['status'] === 'in_progress') {
@@ -131,7 +141,9 @@ class TaskController extends Controller
             'reason' => $request->input('reason')];
         if ($oldStatus !== $validated['status']) {
             $action = ($oldStatus === 'completed' && $validated['status'] === 'in_progress') ? 'reopened' : 'status_changed';
-            if ($validated['status'] === 'in_progress' && $oldStatus === 'pending') $action = 'started';
+            if ($validated['status'] === 'in_progress' && $oldStatus === 'pending') {
+                $action = 'started';
+            }
             $tracker::record($base + ['action' => $action, 'old' => $oldStatus, 'new' => $validated['status'],
                 'visible' => in_array($validated['status'], ['in_progress', 'completed'], true)]);
             if ($task->assigned_to) {
@@ -144,6 +156,7 @@ class TaskController extends Controller
         if ((int) ($validated['progress'] ?? $oldProgress) !== $oldProgress) {
             $tracker::record($base + ['action' => 'progress_updated', 'old' => (string) $oldProgress, 'new' => (string) ($validated['progress'] ?? $oldProgress), 'visible' => true]);
         }
+
         return redirect()->route('admin.tasks.index')->with('success', 'Task updated!');
     }
 
@@ -156,11 +169,12 @@ class TaskController extends Controller
             'entity_type' => \App\Models\Task::class, 'entity_id' => $task->id,
             'order_id' => $task->service_order_id, 'project_id' => $task->project_id,
             'customer_id' => $task->customer_id ?? $task->project?->customer_id,
-            'action' => !empty($data['waiting_for_customer']) ? 'waiting_for_customer' : 'paused',
+            'action' => ! empty($data['waiting_for_customer']) ? 'waiting_for_customer' : 'paused',
             'reason' => $data['reason'],
-            'comment' => !empty($data['waiting_for_customer']) ? 'Waiting for customer information.' : null,
-            'visible' => !empty($data['waiting_for_customer']),
+            'comment' => ! empty($data['waiting_for_customer']) ? 'Waiting for customer information.' : null,
+            'visible' => ! empty($data['waiting_for_customer']),
         ]);
+
         return back()->with('success', 'Task marked as waiting. Running time is frozen and the customer sees the reason where appropriate.');
     }
 
@@ -174,12 +188,14 @@ class TaskController extends Controller
             'customer_id' => $task->customer_id ?? $task->project?->customer_id,
             'action' => 'resumed', 'reason' => $request->input('reason'), 'visible' => true,
         ]);
+
         return back()->with('success', 'Task resumed.');
     }
 
     public function destroy($id)
     {
         Task::findOrFail($id)->delete();
+
         return redirect()->route('admin.tasks.index')->with('success', 'Task deleted.');
     }
 
@@ -228,6 +244,7 @@ class TaskController extends Controller
     {
         $task = Task::findOrFail($id);
         $task->update(['status' => 'rejected']);
+
         return redirect()->back()->with('info', 'Task rejected.');
     }
 }

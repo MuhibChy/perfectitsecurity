@@ -17,6 +17,7 @@ class PhoneVerificationController extends Controller
         $user = auth()->user();
         $phoneState = $this->verificationService->phoneStateFor($user);
         $phoneCountries = \App\Support\PhoneCountries::all();
+
         return view('customer.verification.phone', compact('user', 'phoneState', 'phoneCountries'));
     }
 
@@ -46,8 +47,8 @@ class PhoneVerificationController extends Controller
         $result = $this->verificationService->start($user, $phone);
 
         $msg = $result['message'];
-        if (app()->environment('local', 'testing') && !empty($result['code'])) {
-            $msg .= ' (Dev code: ' . $result['code'] . ')';
+        if (app()->environment('local', 'testing') && ! empty($result['code'])) {
+            $msg .= ' (Dev code: '.$result['code'].')';
         }
 
         return back()->with('success', $msg);

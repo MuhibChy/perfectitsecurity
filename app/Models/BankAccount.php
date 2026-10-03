@@ -22,6 +22,7 @@ class BankAccount extends Model
     ];
 
     protected $casts = ['is_active' => 'boolean', 'sort_order' => 'integer'];
+
     protected $hidden = ['account_number'];
 
     public function setAccountNumberAttribute($value): void
@@ -33,7 +34,9 @@ class BankAccount extends Model
 
     public function getAccountNumberAttribute($value): ?string
     {
-        if ($value === null || $value === '') return null;
+        if ($value === null || $value === '') {
+            return null;
+        }
         try {
             return Crypt::decryptString($value);
         } catch (\Throwable $e) {
@@ -45,12 +48,26 @@ class BankAccount extends Model
     public function maskedNumber(): string
     {
         $raw = $this->account_number;
-        if (!$raw) return '—';
+        if (! $raw) {
+            return '—';
+        }
         $len = strlen($raw);
-        return $len <= 4 ? '****' : '****' . substr($raw, -4);
+
+        return $len <= 4 ? '****' : '****'.substr($raw, -4);
     }
 
-    public function scopeActive($q) { return $q->where('is_active', true); }
-    public function scopeOrdered($q) { return $q->orderBy('sort_order')->orderBy('label'); }
-    public function scopeForCurrency($q, string $currency) { return $q->where('currency', strtoupper($currency)); }
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
+
+    public function scopeOrdered($q)
+    {
+        return $q->orderBy('sort_order')->orderBy('label');
+    }
+
+    public function scopeForCurrency($q, string $currency)
+    {
+        return $q->where('currency', strtoupper($currency));
+    }
 }

@@ -13,17 +13,23 @@ class ExpenseController extends Controller
     public function index(Request $request)
     {
         $query = Expense::with('category', 'creator', 'approver');
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->category_id) $query->where('category_id', $request->category_id);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
         $expenses = $query->latest()->paginate(20);
 
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('admin.expenses.index', compact('expenses', 'categories'));
     }
 
     public function create()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('admin.expenses.create', compact('categories'));
     }
 
@@ -42,7 +48,7 @@ class ExpenseController extends Controller
         ]);
 
         $validated['created_by'] = auth()->id();
-        $validated['expense_number'] = 'EXP-' . strtoupper(\Illuminate\Support\Str::random(6));
+        $validated['expense_number'] = 'EXP-'.strtoupper(\Illuminate\Support\Str::random(6));
         $validated['status'] = 'pending';
 
         if ($request->hasFile('receipt')) {
@@ -58,6 +64,7 @@ class ExpenseController extends Controller
     public function show($id)
     {
         $expense = Expense::with('category', 'creator', 'approver')->findOrFail($id);
+
         return view('admin.expenses.show', compact('expense'));
     }
 
@@ -70,6 +77,7 @@ class ExpenseController extends Controller
         // route middleware; record every download for the audit trail since
         // receipts may contain sensitive vendor data.
         \App\Services\AuditService::log('download_receipt', 'expenses', $expense, 'Expense receipt downloaded');
+
         return \Illuminate\Support\Facades\Storage::disk('local')->download($expense->receipt_path);
     }
 
@@ -100,6 +108,7 @@ class ExpenseController extends Controller
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
+
         return redirect()->back()->with('info', 'Expense rejected.');
     }
 
@@ -113,6 +122,7 @@ class ExpenseController extends Controller
     public function markPaid(Request $request, $id)
     {
         $data = $request->validate(['payment_reference' => 'required|string|max:255']);
+
         return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $id) {
             $expense = Expense::lockForUpdate()->findOrFail($id);
             abort_unless($expense->status === 'approved', 422, 'Only approved expenses can be marked paid.');
@@ -125,6 +135,7 @@ class ExpenseController extends Controller
             }
             $expense->update(['status' => 'paid', 'paid_at' => now(), 'payment_reference' => $data['payment_reference']]);
             \App\Services\AuditService::log('expense_paid', 'expenses', $expense, "Expense {$expense->expense_number} marked paid. Payment ref: {$data['payment_reference']}.");
+
             return redirect()->back()->with('success', 'Expense marked paid against its payment transaction.');
         });
     }

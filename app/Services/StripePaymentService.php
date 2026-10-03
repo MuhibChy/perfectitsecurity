@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
@@ -14,7 +13,7 @@ class StripePaymentService
 {
     public function isConfigured(): bool
     {
-        return !empty(config('services.stripe.secret'));
+        return ! empty(config('services.stripe.secret'));
     }
 
     public function configure(): void
@@ -40,14 +39,15 @@ class StripePaymentService
      */
     public function createInvoiceCheckout(Invoice $invoice, string $successUrl, string $cancelUrl): ?Session
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return null;
         }
 
         // Honest capability gate: unsupported currencies (e.g. BDT) never
         // mint a session; callers degrade to manual payment rails.
-        if (!self::supportsCurrency($invoice->currency ?? 'USD')) {
+        if (! self::supportsCurrency($invoice->currency ?? 'USD')) {
             Log::info('Stripe checkout skipped: currency unsupported', ['invoice' => $invoice->id, 'currency' => $invoice->currency]);
+
             return null;
         }
 
@@ -77,8 +77,8 @@ class StripePaymentService
                     'currency' => $currency,
                     'unit_amount' => (int) round($amountDue * 100),
                     'product_data' => [
-                        'name' => 'Invoice ' . $invoice->invoice_number,
-                        'description' => 'Payment for invoice ' . $invoice->invoice_number,
+                        'name' => 'Invoice '.$invoice->invoice_number,
+                        'description' => 'Payment for invoice '.$invoice->invoice_number,
                     ],
                 ],
             ]],
@@ -102,7 +102,7 @@ class StripePaymentService
             Log::warning('Stripe webhook without signature verification (non-production only).');
             // Local/dev/test fallback when webhook secret is unset — still parse JSON safely.
             $event = json_decode($payload);
-            if (!$event || empty($event->type)) {
+            if (! $event || empty($event->type)) {
                 throw new \InvalidArgumentException('Invalid Stripe payload.');
             }
         }
@@ -118,6 +118,7 @@ class StripePaymentService
             if ($purpose === 'wallet_topup') {
                 return $this->markWalletTopUpFromSession($data);
             }
+
             return $this->markInvoicePaidFromSession($data);
         }
 
@@ -140,20 +141,24 @@ class StripePaymentService
         $metaGet = fn ($k) => is_object($meta) ? ($meta->$k ?? null) : (is_array($meta) ? ($meta[$k] ?? null) : null);
         if (($get('payment_status') ?? null) !== 'paid') {
             Log::warning('Stripe webhook: wallet session not paid', ['session' => $get('id')]);
+
             return ['handled' => false, 'reason' => 'session_not_paid'];
         }
         $wallet = \App\Models\Wallet::find($metaGet('wallet_id'));
-        if (!$wallet) {
+        if (! $wallet) {
             Log::warning('Stripe webhook: wallet not found', ['session' => $get('id')]);
+
             return ['handled' => false, 'reason' => 'wallet_not_found'];
         }
         if ((int) $metaGet('user_id') !== (int) $wallet->user_id) {
             Log::warning('Stripe webhook: wallet owner mismatch', ['wallet' => $wallet->id]);
+
             return ['handled' => false, 'reason' => 'owner_mismatch'];
         }
         $currency = strtoupper($get('currency') ?? 'usd');
         if ($currency !== strtoupper($wallet->currency)) {
             Log::warning('Stripe webhook: wallet currency mismatch', ['wallet' => $wallet->id]);
+
             return ['handled' => false, 'reason' => 'currency_mismatch'];
         }
         $amount = round((($get('amount_total') ?? 0) / 100), 2);
@@ -164,10 +169,11 @@ class StripePaymentService
         $result = app(\App\Services\WalletService::class)->creditDeposit(
             $wallet, $amount, 'stripe',
             is_string($intent) ? $intent : null,
-            'stripe-session:' . $get('id'),
+            'stripe-session:'.$get('id'),
             null,
             ['stripe_session' => $get('id')]
         );
+
         return ['handled' => true, 'wallet_id' => $wallet->id, 'transaction_id' => $result['transaction']->id, 'duplicate' => $result['duplicate']];
     }
 
@@ -188,6 +194,7 @@ class StripePaymentService
         // or premature — acknowledge without any state change.
         if ($paymentStatus !== 'paid') {
             Log::warning('Stripe webhook: session not paid', ['session' => $sessionId, 'payment_status' => $paymentStatus]);
+
             return ['handled' => false, 'reason' => 'session_not_paid'];
         }
 
@@ -196,8 +203,9 @@ class StripePaymentService
                 ? Invoice::lockForUpdate()->find($invoiceId)
                 : ($sessionId ? Invoice::lockForUpdate()->where('stripe_checkout_session_id', $sessionId)->first() : null);
 
-            if (!$invoice) {
+            if (! $invoice) {
                 Log::warning('Stripe webhook: invoice not found', ['session' => $sessionId]);
+
                 return ['handled' => false, 'reason' => 'invoice_not_found'];
             }
 
@@ -208,6 +216,7 @@ class StripePaymentService
                 : null;
             if ($existing) {
                 Log::info('Stripe webhook: duplicate session ignored', ['session' => $sessionId, 'payment_id' => $existing->id]);
+
                 return ['handled' => true, 'reason' => 'duplicate_session', 'invoice_id' => $invoice->id, 'payment_id' => $existing->id];
             }
 
@@ -217,8 +226,9 @@ class StripePaymentService
 
             // Only issued invoices accept money — never drafts, cancelled,
             // or refunded ones (mirrors the manual finance path).
-            if (!in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
+            if (! in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
                 Log::warning('Stripe webhook: invoice not payable', ['invoice' => $invoice->id, 'status' => $invoice->status]);
+
                 return ['handled' => false, 'reason' => 'invoice_not_payable'];
             }
 
@@ -226,18 +236,22 @@ class StripePaymentService
             // acknowledged without state change (no retry storm, no money moved).
             if ($metaCustomerId && (int) $metaCustomerId !== (int) $invoice->customer_id) {
                 Log::warning('Stripe webhook: customer mismatch', ['invoice' => $invoice->id]);
+
                 return ['handled' => false, 'reason' => 'customer_mismatch'];
             }
             if ($customerEmail && $invoice->customer && strcasecmp(trim($customerEmail), trim($invoice->customer->email)) !== 0) {
                 Log::warning('Stripe webhook: customer email mismatch', ['invoice' => $invoice->id]);
+
                 return ['handled' => false, 'reason' => 'customer_mismatch'];
             }
             if (strtoupper($invoice->currency ?? 'USD') !== $currency) {
                 Log::warning('Stripe webhook: currency mismatch', ['invoice' => $invoice->id, 'currency' => $currency]);
+
                 return ['handled' => false, 'reason' => 'currency_mismatch'];
             }
             if (abs(round($amountTotal, 2) - round((float) $invoice->amount_due, 2)) > 0.009) {
                 Log::warning('Stripe webhook: amount mismatch', ['invoice' => $invoice->id, 'amount' => $amountTotal, 'due' => $invoice->amount_due]);
+
                 return ['handled' => false, 'reason' => 'amount_mismatch'];
             }
 
@@ -320,7 +334,7 @@ class StripePaymentService
             );
             \App\Services\AuditService::log('create', 'payments', $payment, "Stripe webhook payment {$payment->payment_number} confirmed.");
 
-            if (!$wasPaid && $due <= 0 && $invoice->customer) {
+            if (! $wasPaid && $due <= 0 && $invoice->customer) {
                 $invoice->customer->notify(new \App\Notifications\InvoiceCreatedNotification($invoice->fresh(), 'paid'));
             }
 
@@ -337,7 +351,7 @@ class StripePaymentService
     {
         $intentId = is_object($charge) ? ($charge->payment_intent ?? null) : ($charge['payment_intent'] ?? null);
         $refundedTotal = is_object($charge) ? (($charge->amount_refunded ?? 0) / 100) : (($charge['amount_refunded'] ?? 0) / 100);
-        if (!$intentId || $refundedTotal <= 0) {
+        if (! $intentId || $refundedTotal <= 0) {
             return ['handled' => false, 'reason' => 'not_a_refund'];
         }
 
@@ -346,7 +360,7 @@ class StripePaymentService
                 ->where('stripe_payment_intent_id', (string) $intentId)
                 ->where('status', 'completed')
                 ->first();
-            if (!$payment) {
+            if (! $payment) {
                 return ['handled' => false, 'reason' => 'payment_not_found'];
             }
             $unrecorded = round($refundedTotal - (float) $payment->refunded_amount, 2);
@@ -357,7 +371,7 @@ class StripePaymentService
 
             $invoice = Invoice::lockForUpdate()->findOrFail($payment->invoice_id);
             $refund = Payment::create([
-                'payment_number' => 'RFD-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'payment_number' => 'RFD-'.strtoupper(\Illuminate\Support\Str::random(8)),
                 'invoice_id' => $invoice->id,
                 'customer_id' => $payment->customer_id,
                 'service_order_id' => $payment->service_order_id,
@@ -366,7 +380,7 @@ class StripePaymentService
                 'status' => 'refunded',
                 'payment_method' => $payment->payment_method,
                 'gateway' => 'stripe',
-                'transaction_id' => 'STRIPE-DASHBOARD-REFUND-' . $payment->id,
+                'transaction_id' => 'STRIPE-DASHBOARD-REFUND-'.$payment->id,
                 'notes' => "External Stripe reversal for {$payment->payment_number}",
                 'paid_at' => now(),
             ]);

@@ -7,7 +7,6 @@ use App\Models\IdentityDocument;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Identity verification lifecycle:
@@ -38,7 +37,7 @@ class IdentityVerificationService
         abort_unless(in_array($meta['document_type'] ?? '', IdentityDocument::TYPES, true), 422, 'Unsupported document type.');
 
         return DB::transaction(function () use ($user, $file, $meta) {
-            $path = $file->store('identity-documents/' . $user->id, 'private');
+            $path = $file->store('identity-documents/'.$user->id, 'private');
             $doc = IdentityDocument::create([
                 'user_id' => $user->id,
                 'document_type' => $meta['document_type'],
@@ -50,6 +49,7 @@ class IdentityVerificationService
             ]);
             $this->setUserStatus($user, 'submitted', "Document #{$doc->id} submitted ({$doc->document_type}).");
             \App\Services\ServiceTrackingService::notify($user->id, 'identity_submitted', 'Identity document received', "Your {$doc->document_type} is pending review.");
+
             return $doc->fresh();
         });
     }
@@ -57,12 +57,14 @@ class IdentityVerificationService
     public function startReview(IdentityDocument $doc, User $reviewer): IdentityDocument
     {
         $this->requireVerifier($reviewer);
+
         return DB::transaction(function () use ($doc, $reviewer) {
             $doc = IdentityDocument::lockForUpdate()->findOrFail($doc->id);
             abort_unless($doc->status === 'submitted', 422, 'Only submitted documents can enter review.');
             $doc->update(['status' => 'under_review', 'reviewer_id' => $reviewer->id]);
             $this->setUserStatus($doc->user, 'under_review', "Document #{$doc->id} under review by {$reviewer->name}.");
             AuditLog::log('identity.review_started', 'identity', $doc, "Reviewer {$reviewer->name} opened document #{$doc->id} for {$doc->user->name}.");
+
             return $doc->fresh();
         });
     }
@@ -70,14 +72,16 @@ class IdentityVerificationService
     public function approve(IdentityDocument $doc, User $reviewer): IdentityDocument
     {
         $this->requireVerifier($reviewer);
+
         return DB::transaction(function () use ($doc, $reviewer) {
             $doc = IdentityDocument::lockForUpdate()->findOrFail($doc->id);
-            abort_unless(in_array($doc->status, ['submitted', 'under_review'], true), 422, 'Document cannot be verified from status ' . $doc->status . '.');
+            abort_unless(in_array($doc->status, ['submitted', 'under_review'], true), 422, 'Document cannot be verified from status '.$doc->status.'.');
             $doc->update(['status' => 'verified', 'reviewer_id' => $reviewer->id, 'reviewed_at' => now(), 'rejection_reason' => null]);
             $user = $doc->user;
             $user->forceFill(['identity_status' => 'verified', 'identity_verified_at' => now()])->save();
             AuditLog::log('identity.verified', 'identity', $doc, "Identity of {$user->name} ({$user->member_number}) VERIFIED by {$reviewer->name}.");
             \App\Services\ServiceTrackingService::notify($user->id, 'identity_verified', 'Identity verified', 'Your identity verification is complete.');
+
             return $doc->fresh();
         });
     }
@@ -86,12 +90,14 @@ class IdentityVerificationService
     {
         $this->requireVerifier($reviewer);
         abort_if(trim($reason) === '', 422, 'A rejection reason is required.');
+
         return DB::transaction(function () use ($doc, $reviewer, $reason, $allowResubmit) {
             $doc = IdentityDocument::lockForUpdate()->findOrFail($doc->id);
-            abort_unless(in_array($doc->status, ['submitted', 'under_review'], true), 422, 'Document cannot be rejected from status ' . $doc->status . '.');
+            abort_unless(in_array($doc->status, ['submitted', 'under_review'], true), 422, 'Document cannot be rejected from status '.$doc->status.'.');
             $doc->update(['status' => 'rejected', 'reviewer_id' => $reviewer->id, 'reviewed_at' => now(), 'rejection_reason' => $reason]);
             $this->setUserStatus($doc->user, $allowResubmit ? 'resubmission_required' : 'rejected', "Document #{$doc->id} rejected by {$reviewer->name}: {$reason}");
             \App\Services\ServiceTrackingService::notify($doc->user_id, 'identity_rejected', 'Identity verification needs attention', $reason);
+
             return $doc->fresh();
         });
     }
@@ -108,7 +114,7 @@ class IdentityVerificationService
     /** Sensitive document access is always audited; bodies never enter logs. */
     public function recordAccess(IdentityDocument $doc, User $viewer, string $action): void
     {
-        AuditLog::log('identity.document_' . $action, 'identity', $doc, "{$viewer->name} ({$viewer->role}) {$action} identity document #{$doc->id} of {$doc->user->name}.");
+        AuditLog::log('identity.document_'.$action, 'identity', $doc, "{$viewer->name} ({$viewer->role}) {$action} identity document #{$doc->id} of {$doc->user->name}.");
     }
 
     protected function setUserStatus(User $user, string $to, string $note): void

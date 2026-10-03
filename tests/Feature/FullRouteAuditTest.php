@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class FullRouteAuditTest extends TestCase
 {
     use RefreshDatabase;
+
     public function test_public_routes_load()
     {
         $publicRoutes = [

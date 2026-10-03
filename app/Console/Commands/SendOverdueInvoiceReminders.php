@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 class SendOverdueInvoiceReminders extends Command
 {
     protected $signature = 'invoices:send-overdue-reminders';
+
     protected $description = 'Send reminders for overdue invoices and mark them as overdue';
 
     public function handle(): int
@@ -55,7 +56,7 @@ class SendOverdueInvoiceReminders extends Command
                         'notifiable_id' => $admin->id,
                         'data' => [
                             'title' => 'Invoice Overdue',
-                            'message' => 'Invoice ' . $invoice->invoice_number . ' ($' . number_format($invoice->total, 2) . ') is overdue. Customer: ' . ($invoice->customer->name ?? 'Unknown'),
+                            'message' => 'Invoice '.$invoice->invoice_number.' ($'.number_format($invoice->total, 2).') is overdue. Customer: '.($invoice->customer->name ?? 'Unknown'),
                             'invoice_id' => $invoice->id,
                             'invoice_number' => $invoice->invoice_number,
                             'amount' => $invoice->total,
@@ -69,6 +70,7 @@ class SendOverdueInvoiceReminders extends Command
         }
 
         $this->info("Processed {$count} overdue invoice(s).");
+
         return Command::SUCCESS;
     }
 }

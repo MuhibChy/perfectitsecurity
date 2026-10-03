@@ -23,7 +23,9 @@ class AiLocalFirstTest extends TestCase
     use RefreshDatabase;
 
     private const LOCAL_CHAT = 'http://127.0.0.1:11434/api/chat';
+
     private const LOCAL_TAGS = 'http://127.0.0.1:11434/api/tags';
+
     private const CLOUD = 'https://openrouter.ai/api/v1/chat/completions';
 
     protected function setUp(): void
@@ -299,6 +301,7 @@ class AiLocalFirstTest extends TestCase
         Http::assertSent(function ($request) {
             $payload = $request->data();
             $sent = $payload['options']['num_predict'] ?? $payload['max_tokens'] ?? null;
+
             return $sent !== null && (int) $sent <= 512;
         });
     }

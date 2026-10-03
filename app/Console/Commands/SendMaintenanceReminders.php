@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 class SendMaintenanceReminders extends Command
 {
     protected $signature = 'maintenance:remind-due';
+
     protected $description = 'Notify customers and assignees of maintenance due within 7 days (idempotent per day)';
 
     public function handle(): int
@@ -29,9 +30,11 @@ class SendMaintenanceReminders extends Command
                 ->whereDate('created_at', today())
                 ->where('data->maintenance_id', $m->id)
                 ->exists();
-            if ($already) continue;
+            if ($already) {
+                continue;
+            }
 
-            $msg = "Maintenance '{$m->title}' is due " . $m->next_due_at->format('d M Y') . '.';
+            $msg = "Maintenance '{$m->title}' is due ".$m->next_due_at->format('d M Y').'.';
             foreach (array_filter([$m->customer_id, $m->assigned_to]) as $uid) {
                 Notification::create([
                     'id' => (string) Str::uuid(),
@@ -46,6 +49,7 @@ class SendMaintenanceReminders extends Command
         }
 
         $this->info("Maintenance reminders sent for {$count} plan(s).");
+
         return self::SUCCESS;
     }
 }

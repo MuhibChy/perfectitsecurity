@@ -13,6 +13,7 @@ class BankAccountController extends Controller
     public function index()
     {
         $accounts = BankAccount::ordered()->get();
+
         return view('admin.payments.bank-accounts.index', compact('accounts'));
     }
 
@@ -28,6 +29,7 @@ class BankAccountController extends Controller
         $account->created_by = auth()->id();
         $account->save();
         AuditLog::log('bank_account.created', 'bank_accounts', $account, "Bank account {$account->label} created.");
+
         return redirect()->route('admin.bank-accounts.index')->with('success', 'Bank account saved.');
     }
 
@@ -39,17 +41,21 @@ class BankAccountController extends Controller
     public function update(Request $request, BankAccount $account)
     {
         $account->fill($this->validated($request));
-        if ($request->filled('account_number')) $account->account_number = $request->input('account_number');
+        if ($request->filled('account_number')) {
+            $account->account_number = $request->input('account_number');
+        }
         $account->save();
         AuditLog::log('bank_account.updated', 'bank_accounts', $account, "Bank account {$account->label} updated.");
+
         return redirect()->route('admin.bank-accounts.index')->with('success', 'Bank account updated.');
     }
 
     public function toggle(BankAccount $account)
     {
-        $account->is_active = !$account->is_active;
+        $account->is_active = ! $account->is_active;
         $account->save();
-        AuditLog::log('bank_account.toggled', 'bank_accounts', $account, "Bank account {$account->label} " . ($account->is_active ? 'activated' : 'deactivated') . '.');
+        AuditLog::log('bank_account.toggled', 'bank_accounts', $account, "Bank account {$account->label} ".($account->is_active ? 'activated' : 'deactivated').'.');
+
         return back()->with('success', 'Bank account status updated.');
     }
 
@@ -72,6 +78,7 @@ class BankAccountController extends Controller
         ]);
         $data['currency'] = strtoupper($data['currency']);
         $data['is_active'] = (bool) ($data['is_active'] ?? true);
+
         return $data;
     }
 }

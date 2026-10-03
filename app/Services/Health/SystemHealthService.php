@@ -2,21 +2,15 @@
 
 namespace App\Services\Health;
 
-use App\Models\SystemHealthCheck;
-use App\Models\User;
-use App\Models\Company;
-use App\Models\Service;
-use App\Models\Ticket;
-use App\Models\Project;
 use App\Models\Invoice;
-use App\Models\Payment;
 use App\Models\KbArticle;
-use App\Models\Setting;
+use App\Models\Service;
+use App\Models\SystemHealthCheck;
+use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Mail;
 
 class SystemHealthService
 {
@@ -134,16 +128,16 @@ class SystemHealthService
     public function checkApplication(): array
     {
         $start = microtime(true);
-        $appKeySet = !empty(config('app.key'));
+        $appKeySet = ! empty(config('app.key'));
         $appEnv = config('app.env');
         $appDebug = config('app.debug');
 
         $status = 'healthy';
-        $message = "Laravel " . app()->version() . " running in [{$appEnv}] environment.";
+        $message = 'Laravel '.app()->version()." running in [{$appEnv}] environment.";
 
-        if (!$appKeySet) {
+        if (! $appKeySet) {
             $status = 'critical';
-            $message = "APP_KEY is missing! Application encryption is insecure.";
+            $message = 'APP_KEY is missing! Application encryption is insecure.';
         }
         if ($appEnv === 'production' && $appDebug) {
             $status = 'critical';
@@ -154,7 +148,7 @@ class SystemHealthService
             'module' => 'Application & Environment',
             'check_name' => 'Laravel Framework & App Configuration',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'laravel_version' => app()->version(),
@@ -163,7 +157,7 @@ class SystemHealthService
                 'debug_mode' => $appDebug,
                 'url' => config('app.url'),
                 'timezone' => config('app.timezone'),
-            ]
+            ],
         ];
     }
 
@@ -174,7 +168,7 @@ class SystemHealthService
             DB::connection()->getPdo();
             $pingStart = microtime(true);
             DB::select('SELECT 1');
-            $pingMs = (int)((microtime(true) - $pingStart) * 1000);
+            $pingMs = (int) ((microtime(true) - $pingStart) * 1000);
 
             $driver = DB::connection()->getDriverName();
             $tablesCount = count(Schema::getAllTables());
@@ -184,30 +178,30 @@ class SystemHealthService
 
             if ($pingMs > 500) {
                 $status = 'warning';
-                $message .= " High latency detected.";
+                $message .= ' High latency detected.';
             }
 
             return [
                 'module' => 'Database',
                 'check_name' => 'Database Connectivity & Query Latency',
                 'status' => $status,
-                'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+                'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
                 'message' => $message,
                 'details' => [
                     'driver' => $driver,
                     'database' => DB::connection()->getDatabaseName(),
                     'tables_count' => $tablesCount,
                     'ping_ms' => $pingMs,
-                ]
+                ],
             ];
         } catch (\Throwable $e) {
             return [
                 'module' => 'Database',
                 'check_name' => 'Database Connectivity & Query Latency',
                 'status' => 'critical',
-                'response_time_ms' => (int)((microtime(true) - $start) * 1000),
-                'message' => "Database connection failed: " . $e->getMessage(),
-                'details' => ['error' => $e->getMessage()]
+                'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
+                'message' => 'Database connection failed: '.$e->getMessage(),
+                'details' => ['error' => $e->getMessage()],
             ];
         }
     }
@@ -226,10 +220,10 @@ class SystemHealthService
 
         $unwritable = [];
         foreach ($pathsToCheck as $name => $path) {
-            if (!File::exists($path)) {
+            if (! File::exists($path)) {
                 @File::makeDirectory($path, 0775, true);
             }
-            if (!File::isWritable($path)) {
+            if (! File::isWritable($path)) {
                 $unwritable[] = $name;
             }
         }
@@ -240,19 +234,19 @@ class SystemHealthService
         $status = empty($unwritable) ? 'healthy' : 'critical';
         $message = empty($unwritable)
             ? "All critical application storage directories are writable. Free space: {$freeGb} GB."
-            : "Storage write permissions missing for: " . implode(', ', $unwritable);
+            : 'Storage write permissions missing for: '.implode(', ', $unwritable);
 
         return [
             'module' => 'File Storage',
             'check_name' => 'Storage Directory Writable Permissions',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'free_space_gb' => $freeGb,
                 'unwritable_paths' => $unwritable,
                 'public_storage_linked' => file_exists(public_path('storage')),
-            ]
+            ],
         ];
     }
 
@@ -260,7 +254,7 @@ class SystemHealthService
     {
         $start = microtime(true);
         $driver = config('queue.default');
-        
+
         $failedJobsCount = 0;
         if (Schema::hasTable('failed_jobs')) {
             $failedJobsCount = DB::table('failed_jobs')->count();
@@ -282,12 +276,12 @@ class SystemHealthService
             'module' => 'Queue Workers',
             'check_name' => 'Queue Worker & Failed Jobs Monitor',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'default_driver' => $driver,
                 'failed_jobs_count' => $failedJobsCount,
-            ]
+            ],
         ];
     }
 
@@ -305,13 +299,13 @@ class SystemHealthService
             'module' => 'Task Scheduler',
             'check_name' => 'Task Scheduler Heartbeat & Crons',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'scheduler_timezone' => config('app.timezone'),
                 'registered_events' => $eventsCount,
                 'now' => now()->toIso8601String(),
-            ]
+            ],
         ];
     }
 
@@ -332,13 +326,13 @@ class SystemHealthService
             'module' => 'Static Assets & Vite',
             'check_name' => 'Stylesheet, Script & Build Asset Health',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'app_css_present' => $hasAppCss,
                 'app_js_present' => $hasAppJs,
                 'manifest_built' => $hasViteManifest,
-            ]
+            ],
         ];
     }
 
@@ -356,14 +350,14 @@ class SystemHealthService
             'module' => 'Authentication',
             'check_name' => 'User Directory & Authentication Security',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'total_users' => $usersCount,
                 'admin_users' => $adminCount,
                 'active_users' => $activeUsers,
                 'guards' => array_keys(config('auth.guards', [])),
-            ]
+            ],
         ];
     }
 
@@ -378,11 +372,11 @@ class SystemHealthService
             'module' => 'Public Website',
             'check_name' => 'Marketing & Landing Page Engine',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'active_services' => $servicesCount,
-            ]
+            ],
         ];
     }
 
@@ -397,11 +391,11 @@ class SystemHealthService
             'module' => 'Customer Portal',
             'check_name' => 'Client Portal, Tickets & Invoicing',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'total_customers' => $customersCount,
-            ]
+            ],
         ];
     }
 
@@ -409,13 +403,13 @@ class SystemHealthService
     {
         $start = microtime(true);
         $status = 'healthy';
-        $message = "Admin panel active with role-based access control and system management tools.";
+        $message = 'Admin panel active with role-based access control and system management tools.';
 
         return [
             'module' => 'Admin Dashboard',
             'check_name' => 'Administrator Workspace & Controls',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
         ];
     }
@@ -438,12 +432,12 @@ class SystemHealthService
             'module' => 'Ticketing System',
             'check_name' => 'Helpdesk Dispatcher & SLA Engine',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
             'details' => [
                 'open_tickets' => $openTickets,
                 'unassigned_tickets' => $unassignedTickets,
-            ]
+            ],
         ];
     }
 
@@ -456,9 +450,9 @@ class SystemHealthService
             'module' => 'Knowledge Base',
             'check_name' => 'Self-Help Articles & Technical Docs',
             'status' => 'healthy',
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => "{$articlesCount} published self-help articles and technical guides available.",
-            'details' => ['published_articles' => $articlesCount]
+            'details' => ['published_articles' => $articlesCount],
         ];
     }
 
@@ -468,16 +462,16 @@ class SystemHealthService
         $aiEnabled = config('services.ai.enabled', true);
         $status = $aiEnabled ? 'healthy' : 'warning';
         $message = $aiEnabled
-            ? "AI Assistant engine active with conversational support and automated triage."
-            : "AI Assistant disabled in configuration.";
+            ? 'AI Assistant engine active with conversational support and automated triage.'
+            : 'AI Assistant disabled in configuration.';
 
         return [
             'module' => 'AI Assistant',
             'check_name' => 'Conversational Support & AI Triage',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $message,
-            'details' => ['enabled' => $aiEnabled]
+            'details' => ['enabled' => $aiEnabled],
         ];
     }
 
@@ -488,28 +482,30 @@ class SystemHealthService
         $pendingAmount = Invoice::whereIn('status', ['sent', 'overdue', 'partially_paid'])->sum('amount_due');
 
         $status = in_array($mailDriver, ['log', 'array']) ? 'warning' : 'healthy';
+
         return [
             'module' => 'Financial System',
             'check_name' => 'Invoicing, Expenses & Profit/Loss',
             'status' => $status,
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => "{$invoicesCount} total invoices recorded (${$pendingAmount} pending collection).",
             'details' => [
                 'total_invoices' => $invoicesCount,
-                'pending_receivables' => (float)$pendingAmount,
-            ]
+                'pending_receivables' => (float) $pendingAmount,
+            ],
         ];
     }
 
     public function checkCommissionSystem(): array
     {
         $start = microtime(true);
+
         return [
             'module' => 'Commission System',
             'check_name' => 'Technician Payouts & Commission Rules',
             'status' => 'healthy',
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
-            'message' => "Commission calculation rules active with automated percentage and fixed payouts.",
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
+            'message' => 'Commission calculation rules active with automated percentage and fixed payouts.',
         ];
     }
 
@@ -522,11 +518,11 @@ class SystemHealthService
             'module' => 'Email & Notifications',
             'check_name' => 'Transactional Email & Realtime Alerts',
             'status' => 'healthy',
-            'response_time_ms' => (int)((microtime(true) - $start) * 1000),
+            'response_time_ms' => (int) ((microtime(true) - $start) * 1000),
             'message' => $status === 'healthy'
                 ? "Notification dispatcher configured with [{$mailDriver}] mail delivery driver."
                 : "Mail driver [{$mailDriver}] does not deliver production email; configure a transactional mail provider.",
-            'details' => ['mail_driver' => $mailDriver]
+            'details' => ['mail_driver' => $mailDriver],
         ];
     }
 }

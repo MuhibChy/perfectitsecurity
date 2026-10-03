@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Ticket;
-use App\Models\SlaPolicy;
-use App\Models\Notification;
-use App\Models\User;
 use App\Models\Country;
-use Carbon\Carbon;
+use App\Models\Notification;
+use App\Models\SlaPolicy;
+use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class SlaService
@@ -15,10 +14,12 @@ class SlaService
     public function applySla(Ticket $ticket, ?Country $country = null): Ticket
     {
         $policy = $ticket->slaPolicy ?? $ticket->category?->slaPolicy;
-        if (!$policy) {
+        if (! $policy) {
             $policy = SlaPolicy::where('priority', $ticket->priority)->first();
         }
-        if (!$policy) return $ticket;
+        if (! $policy) {
+            return $ticket;
+        }
 
         // NOTE: users.country is a plain string code (e.g. "GB"), not a
         // relation — resolve it to a Country model. addBusinessMinutes()
@@ -43,9 +44,10 @@ class SlaService
 
     public function recordFirstResponse(Ticket $ticket): Ticket
     {
-        if (!$ticket->first_response_at) {
+        if (! $ticket->first_response_at) {
             $ticket->update(['first_response_at' => now()]);
         }
+
         return $ticket;
     }
 
@@ -55,17 +57,25 @@ class SlaService
             'resolved_at' => now(),
             'status' => 'resolved',
         ]);
+
         return $ticket;
     }
 
     public function getSlaStatus(Ticket $ticket): string
     {
-        if (!$ticket->sla_resolution_deadline) return 'no_sla';
+        if (! $ticket->sla_resolution_deadline) {
+            return 'no_sla';
+        }
         if (in_array($ticket->status, ['resolved', 'closed'])) {
             return $ticket->resolved_at && $ticket->resolved_at->lte($ticket->sla_resolution_deadline) ? 'met' : 'breached';
         }
-        if (now()->gt($ticket->sla_resolution_deadline)) return 'breached';
-        if (now()->diffInHours($ticket->sla_resolution_deadline) < 2) return 'warning';
+        if (now()->gt($ticket->sla_resolution_deadline)) {
+            return 'breached';
+        }
+        if (now()->diffInHours($ticket->sla_resolution_deadline) < 2) {
+            return 'warning';
+        }
+
         return 'ok';
     }
 
@@ -89,20 +99,28 @@ class SlaService
 
         foreach ($tickets as $ticket) {
             $deadline = $ticket->sla_resolution_deadline;
-            if ($deadline->isPast() && !$ticket->sla_breached_at) {
+            if ($deadline->isPast() && ! $ticket->sla_breached_at) {
                 $ticket->update(['sla_breached_at' => now(), 'status' => 'escalated']);
                 $this->notifySlaOwners($ticket, 'sla_breached', 'SLA breach', "Ticket {$ticket->ticket_number} has exceeded its resolution deadline.");
                 // Additive ITSM ledger: persistent breach record (idempotent).
-                try { app(ItsmService::class)->recordBreach($ticket->fresh(), 'resolution'); } catch (\Throwable $e) { report($e); }
+                try {
+                    app(ItsmService::class)->recordBreach($ticket->fresh(), 'resolution');
+                } catch (\Throwable $e) {
+                    report($e);
+                }
                 $breachCount++;
-            } elseif (!$ticket->sla_warning_sent_at && now()->diffInMinutes($deadline, false) <= 120) {
+            } elseif (! $ticket->sla_warning_sent_at && now()->diffInMinutes($deadline, false) <= 120) {
                 $ticket->update(['sla_warning_sent_at' => now()]);
                 $this->notifySlaOwners($ticket, 'sla_warning', 'SLA warning', "Ticket {$ticket->ticket_number} is within two hours of its resolution deadline.");
                 $warningCount++;
             }
             // Additive: response-breach ledger entry (no status change — existing behaviour preserved).
-            if ($ticket->sla_response_deadline && !$ticket->first_response_at && $ticket->sla_response_deadline->isPast()) {
-                try { app(ItsmService::class)->recordBreach($ticket, 'response'); } catch (\Throwable $e) { report($e); }
+            if ($ticket->sla_response_deadline && ! $ticket->first_response_at && $ticket->sla_response_deadline->isPast()) {
+                try {
+                    app(ItsmService::class)->recordBreach($ticket, 'response');
+                } catch (\Throwable $e) {
+                    report($e);
+                }
             }
         }
 
@@ -115,7 +133,7 @@ class SlaService
             ->where('is_active', true)
             ->whereIn('role', ['super_admin', 'admin', 'support_manager'])
             ->get();
-        if ($ticket->assignee && !$recipients->contains('id', $ticket->assignee->id)) {
+        if ($ticket->assignee && ! $recipients->contains('id', $ticket->assignee->id)) {
             $recipients->push($ticket->assignee);
         }
 

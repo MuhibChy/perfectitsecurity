@@ -31,6 +31,7 @@ class DocumentChainTest extends TestCase
     private function service(): \App\Models\Service
     {
         $cat = \App\Models\ServiceCategory::firstOrCreate(['slug' => 'doc-chain'], ['name' => 'Doc Chain']);
+
         return \App\Models\Service::firstOrCreate(['slug' => 'doc-chain-svc'], [
             'category_id' => $cat->id, 'name' => '[TEST] Chain Service', 'short_description' => 'x', 'is_active' => true,
         ]);
@@ -50,6 +51,7 @@ class DocumentChainTest extends TestCase
             'created_by' => $customer->id, 'title' => '[TEST] Chain task',
             'description' => 'Work performed.', 'status' => 'completed', 'priority' => 'medium',
         ]);
+
         return $order->fresh();
     }
 

@@ -20,6 +20,7 @@ class WorkspaceController extends Controller
     {
         $user = auth()->user();
         abort_unless($user && in_array($user->role, ['freelancer', 'commission_agent'], true), 403);
+
         return $user;
     }
 
@@ -34,6 +35,7 @@ class WorkspaceController extends Controller
             ->latest()->paginate(15);
         $earnings = app(\App\Services\CommissionService::class)->getWorkerEarnings($user->id);
         $salaryPaid = (float) $user->salaries()->where('status', 'paid')->sum('net_salary');
+
         return view('workspace.index', compact('user', 'tasks', 'earnings', 'salaryPaid'));
     }
 
@@ -44,6 +46,7 @@ class WorkspaceController extends Controller
         $mine = (int) $task->assigned_to === (int) $user->id
             || $task->contributors()->where('user_id', $user->id)->exists();
         abort_unless($mine, 403, 'Task is not assigned to you.');
+
         return view('workspace.task', compact('user', 'task'));
     }
 
@@ -54,6 +57,7 @@ class WorkspaceController extends Controller
             ->where('worker_id', $user->id)->latest()->paginate(15);
         $payouts = CommissionPayout::where('worker_id', $user->id)->latest()->limit(10)->get();
         $earnings = app(\App\Services\CommissionService::class)->getWorkerEarnings($user->id);
+
         return view('workspace.commissions', compact('user', 'commissions', 'payouts', 'earnings'));
     }
 
@@ -62,7 +66,7 @@ class WorkspaceController extends Controller
      * Scope is forced to the authenticated worker; peer/customer filters
      * are ignored. Read-only: never recalculates commissions.
      */
-    public function commissionsReport(\Illuminate\Http\Request $request)
+    public function commissionsReport(Request $request)
     {
         $user = $this->contractor();
         $format = strtolower($request->get('format', 'pdf'));
@@ -72,18 +76,19 @@ class WorkspaceController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'status' => 'nullable|string|max:50',
         ]);
-        if (!empty($validated['date_from']) && !empty($validated['date_to'])) {
+        if (! empty($validated['date_from']) && ! empty($validated['date_to'])) {
             abort_if(\Carbon\Carbon::parse($validated['date_from'])->diffInDays(\Carbon\Carbon::parse($validated['date_to'])) > 366, 422, 'Report date range must not exceed 366 days.');
         }
         $report = app(\App\Services\ReportExportService::class)->build('commission', $validated, $user);
-        \App\Models\AuditLog::log('report.exported', 'reports', null, "Commission self-report exported as {$format} by {$user->name} (" . count($report['rows']) . ' rows).');
+        \App\Models\AuditLog::log('report.exported', 'reports', null, "Commission self-report exported as {$format} by {$user->name} (".count($report['rows']).' rows).');
+
         return \App\Services\ReportDownloadService::download('my-commissions', $report, $format);
     }
 
     /**
      * Contractor self-service work report (own assigned tasks only).
      */
-    public function workReport(\Illuminate\Http\Request $request)
+    public function workReport(Request $request)
     {
         $user = $this->contractor();
         $format = strtolower($request->get('format', 'pdf'));
@@ -93,12 +98,13 @@ class WorkspaceController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'status' => 'nullable|string|max:50',
         ]);
-        if (!empty($validated['date_from']) && !empty($validated['date_to'])) {
+        if (! empty($validated['date_from']) && ! empty($validated['date_to'])) {
             abort_if(\Carbon\Carbon::parse($validated['date_from'])->diffInDays(\Carbon\Carbon::parse($validated['date_to'])) > 366, 422, 'Report date range must not exceed 366 days.');
         }
         $validated['employee_id'] = (int) $user->id;
         $report = app(\App\Services\ReportExportService::class)->build('employee-service', $validated, $user);
-        \App\Models\AuditLog::log('report.exported', 'reports', null, "Contractor work report exported as {$format} by {$user->name} (" . count($report['rows']) . ' rows).');
+        \App\Models\AuditLog::log('report.exported', 'reports', null, "Contractor work report exported as {$format} by {$user->name} (".count($report['rows']).' rows).');
+
         return \App\Services\ReportDownloadService::download('my-work', $report, $format);
     }
 }

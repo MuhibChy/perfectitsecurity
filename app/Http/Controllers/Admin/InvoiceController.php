@@ -4,28 +4,28 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\User;
 use App\Models\Service;
-use App\Services\FinancialService;
+use App\Models\User;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
         $query = Invoice::with('customer', 'project');
-        if ($request->status) $query->where('status', $request->status);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
         if ($request->search) {
             $search = addcslashes($request->search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhereHas('customer', fn($cq) => $cq->where('name', 'like', "%{$search}%"));
+                  ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
             });
         }
         $invoices = $query->latest()->paginate(20);
+
         return view('admin.invoices.index', compact('invoices'));
     }
 
@@ -33,6 +33,7 @@ class InvoiceController extends Controller
     {
         $customers = User::customers()->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.invoices.create', compact('customers', 'services'));
     }
 
@@ -77,6 +78,7 @@ class InvoiceController extends Controller
             }
 
             $invoice->recalculate();
+
             return $invoice;
         });
         AuditService::log('create', 'invoices', $invoice, 'Invoice created');
@@ -89,12 +91,14 @@ class InvoiceController extends Controller
         $invoice = Invoice::with('items', 'customer')->findOrFail($id);
         $customers = User::customers()->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.invoices.edit', compact('invoice', 'customers', 'services'));
     }
 
     public function show($id)
     {
         $invoice = Invoice::with('items', 'customer', 'payments')->findOrFail($id);
+
         return view('admin.invoices.show', compact('invoice'));
     }
 
@@ -170,6 +174,6 @@ class InvoiceController extends Controller
             ->setPaper('a4')
             ->setOption('isRemoteEnabled', false);
 
-        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+        return $pdf->download('invoice-'.$invoice->invoice_number.'.pdf');
     }
 }

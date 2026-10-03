@@ -30,7 +30,7 @@ class BackupDatabaseService
     {
         $binary = $this->findMysqldump();
         $cfg = config('database.connections.mysql');
-        $out = $workDir . DIRECTORY_SEPARATOR . 'database.sql.gz';
+        $out = $workDir.DIRECTORY_SEPARATOR.'database.sql.gz';
 
         $cmd = sprintf(
             '%s --single-transaction --quick --routines --triggers --events --set-gtid-purged=OFF --default-character-set=utf8mb4 -h %s -P %s -u %s %s',
@@ -67,7 +67,7 @@ class BackupDatabaseService
 
         if ($exit !== 0) {
             @unlink($out);
-            throw new RuntimeException('mysqldump failed: ' . trim((string) $stderr));
+            throw new RuntimeException('mysqldump failed: '.trim((string) $stderr));
         }
 
         $version = '';
@@ -76,7 +76,7 @@ class BackupDatabaseService
         } catch (\Throwable) {
         }
 
-        return $this->describe($out, 'MySQL ' . $version);
+        return $this->describe($out, 'MySQL '.$version);
     }
 
     private function dumpSqlite(string $workDir): array
@@ -91,17 +91,17 @@ class BackupDatabaseService
             DB::statement('PRAGMA wal_checkpoint(TRUNCATE)');
         } catch (\Throwable) {
         }
-        $copy = $workDir . DIRECTORY_SEPARATOR . 'database.sqlite';
+        $copy = $workDir.DIRECTORY_SEPARATOR.'database.sqlite';
         if (! @copy($source, $copy)) {
             throw new RuntimeException('SQLite backup copy failed.');
         }
         // Also copy WAL/SHM sidecars when present for completeness.
         foreach (['-wal', '-shm', '-journal'] as $suffix) {
-            if (is_file($source . $suffix)) {
-                @copy($source . $suffix, $copy . $suffix);
+            if (is_file($source.$suffix)) {
+                @copy($source.$suffix, $copy.$suffix);
             }
         }
-        $out = $workDir . DIRECTORY_SEPARATOR . 'database.sqlite.gz';
+        $out = $workDir.DIRECTORY_SEPARATOR.'database.sqlite.gz';
         $gz = gzopen($out, 'wb9');
         $in = fopen($copy, 'rb');
         if (! $gz || ! $in) {
@@ -117,7 +117,7 @@ class BackupDatabaseService
         gzclose($gz);
         @unlink($copy);
         foreach (['-wal', '-shm', '-journal'] as $suffix) {
-            @unlink($copy . $suffix);
+            @unlink($copy.$suffix);
         }
 
         try {
@@ -126,7 +126,7 @@ class BackupDatabaseService
             $sqliteVersion = 'unknown';
         }
 
-        return $this->describe($out, 'SQLite ' . $sqliteVersion);
+        return $this->describe($out, 'SQLite '.$sqliteVersion);
     }
 
     /**
@@ -136,22 +136,22 @@ class BackupDatabaseService
     private function dumpSqliteLogical(string $workDir): array
     {
         $pdo = DB::connection()->getPdo();
-        $out = $workDir . DIRECTORY_SEPARATOR . 'database.sql.gz';
+        $out = $workDir.DIRECTORY_SEPARATOR.'database.sql.gz';
         $gz = gzopen($out, 'wb9');
         if (! $gz) {
             throw new RuntimeException('Cannot stage SQLite backup archive.');
         }
-        gzwrite($gz, "-- TechSupport sqlite logical backup " . now()->toIso8601String() . "\nPRAGMA foreign_keys=OFF;\n");
+        gzwrite($gz, '-- TechSupport sqlite logical backup '.now()->toIso8601String()."\nPRAGMA foreign_keys=OFF;\n");
         $tables = $pdo->query("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($tables as $t) {
-            gzwrite($gz, "\n" . $t['sql'] . ";\n");
+            gzwrite($gz, "\n".$t['sql'].";\n");
         }
         foreach ($tables as $t) {
             $name = str_replace('"', '""', $t['name']);
             $rows = $pdo->query("SELECT * FROM \"{$name}\"")->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 $vals = array_map(fn ($v) => $v === null ? 'NULL' : $pdo->quote((string) $v), array_values($row));
-                gzwrite($gz, "INSERT INTO \"{$name}\" VALUES (" . implode(',', $vals) . ");\n");
+                gzwrite($gz, "INSERT INTO \"{$name}\" VALUES (".implode(',', $vals).");\n");
             }
         }
         gzwrite($gz, "PRAGMA foreign_keys=ON;\n");
@@ -162,7 +162,7 @@ class BackupDatabaseService
             $sqliteVersion = 'unknown';
         }
 
-        return $this->describe($out, 'SQLite ' . $sqliteVersion . ' (logical)');
+        return $this->describe($out, 'SQLite '.$sqliteVersion.' (logical)');
     }
 
     /** Validate a staged DB archive without touching the live database. */

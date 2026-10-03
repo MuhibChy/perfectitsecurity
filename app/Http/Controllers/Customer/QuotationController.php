@@ -10,12 +10,14 @@ class QuotationController extends Controller
     public function index()
     {
         $quotations = Quotation::where('customer_id', auth()->id())->latest()->paginate(15);
+
         return view('customer.quotations.index', compact('quotations'));
     }
 
     public function show($id)
     {
         $quotation = Quotation::where('customer_id', auth()->id())->with('items')->findOrFail($id);
+
         return view('customer.quotations.show', compact('quotation'));
     }
 
@@ -23,6 +25,7 @@ class QuotationController extends Controller
     {
         $quotation = Quotation::where('customer_id', auth()->id())->findOrFail($id);
         $order = $orders->createOrderFromQuotation($quotation, auth()->user());
+
         return redirect()->route('portal.orders.show', $order->id)
             ->with('success', "Quotation accepted! Order {$order->order_number} created.");
     }
@@ -32,6 +35,7 @@ class QuotationController extends Controller
         $quotation = Quotation::where('customer_id', auth()->id())->findOrFail($id);
         abort_unless($quotation->status === 'sent', 422, 'This quotation is not available for rejection.');
         $quotation->update(['status' => 'rejected']);
+
         return redirect()->back()->with('info', 'Quotation rejected.');
     }
 
@@ -46,7 +50,6 @@ class QuotationController extends Controller
             ->setPaper('a4')
             ->setOption('isRemoteEnabled', false);
 
-        return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
+        return $pdf->download('quotation-'.$quotation->quotation_number.'.pdf');
     }
 }
-

@@ -21,11 +21,33 @@ class BlogPost extends Model
         'published_at' => 'datetime',
     ];
 
-    public function author() { return $this->belongsTo(User::class, 'author_id'); }
-    public function category() { return $this->belongsTo(BlogCategory::class, 'category_id'); }
-    public function tags() { return $this->belongsToMany(BlogTag::class, 'blog_post_tag', 'post_id', 'tag_id'); }
-    public function comments() { return $this->hasMany(BlogComment::class)->where('is_approved', true); }
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 
-    public function scopePublished($query) { return $query->where('is_published', true)->whereNotNull('published_at'); }
-    public function scopeFeatured($query) { return $query->where('is_featured', true); }
+    public function category()
+    {
+        return $this->belongsTo(BlogCategory::class, 'category_id');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(BlogTag::class, 'blog_post_tag', 'post_id', 'tag_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(BlogComment::class)->where('is_approved', true);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true)->whereNotNull('published_at');
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
 }

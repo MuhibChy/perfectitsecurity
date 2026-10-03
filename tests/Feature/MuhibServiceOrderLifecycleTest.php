@@ -50,8 +50,9 @@ class MuhibServiceOrderLifecycleTest extends TestCase
     private function service(): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 'muhib-cat'], ['name' => 'Muhib Cat']);
+
         return Service::create([
-            'category_id' => $cat->id, 'name' => 'Business PC Setup', 'slug' => 'biz-pc-setup-' . Str::random(6),
+            'category_id' => $cat->id, 'name' => 'Business PC Setup', 'slug' => 'biz-pc-setup-'.Str::random(6),
             'short_description' => 'Five office computer setups', 'starting_price' => 1000.00,
             'is_active' => true,
         ]);
@@ -136,7 +137,7 @@ class MuhibServiceOrderLifecycleTest extends TestCase
         $this->assertEquals(1000.00, $paidSum);
         $this->assertEquals(1000.00, (float) $order->amount_paid);
         $ledger = round((float) FinancialTransaction::where('type', 'income')
-            ->where('description', 'like', '%' . $order->order_number . '%')->sum('amount'), 2);
+            ->where('description', 'like', '%'.$order->order_number.'%')->sum('amount'), 2);
         $this->assertEquals(1000.00, $ledger);
 
         // J: closure + histories.

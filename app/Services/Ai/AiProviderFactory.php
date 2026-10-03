@@ -10,7 +10,9 @@ class AiProviderFactory
 
     public static function make(): AiProviderInterface
     {
-        if (self::$instance) return self::$instance;
+        if (self::$instance) {
+            return self::$instance;
+        }
 
         $provider = AiSetting::get('ai_provider', config('services.ai.default_provider', 'ollama'));
 

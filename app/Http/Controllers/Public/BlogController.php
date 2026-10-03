@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
-use App\Models\BlogPost;
 use App\Models\BlogComment;
+use App\Models\BlogPost;
 use Illuminate\Http\Request;
 
 class BlogController extends Controller

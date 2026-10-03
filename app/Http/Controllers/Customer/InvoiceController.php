@@ -10,12 +10,14 @@ class InvoiceController extends Controller
     public function index()
     {
         $invoices = Invoice::where('customer_id', auth()->id())->latest()->paginate(15);
+
         return view('customer.invoices.index', compact('invoices'));
     }
 
     public function show($id)
     {
         $invoice = Invoice::where('customer_id', auth()->id())->with('items', 'payments')->findOrFail($id);
+
         return view('customer.invoices.show', compact('invoice'));
     }
 
@@ -29,6 +31,6 @@ class InvoiceController extends Controller
             ->setPaper('a4')
             ->setOption('isRemoteEnabled', false);
 
-        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+        return $pdf->download('invoice-'.$invoice->invoice_number.'.pdf');
     }
 }

@@ -19,8 +19,10 @@ class PaymentProviderController extends Controller
         $rows = PaymentProvider::ordered()->get()->map(function ($p) use ($providers) {
             $p->mode_label = $providers->modeLabel($p);
             $p->webhook_endpoint = $providers->webhookUrl($p);
+
             return $p;
         });
+
         return view('admin.payments.providers.index', ['providers' => $rows]);
     }
 
@@ -39,6 +41,7 @@ class PaymentProviderController extends Controller
         $provider->updated_by = auth()->id();
         $provider->save();
         AuditLog::log('provider.created', 'payment_providers', $provider, "Provider {$provider->key} created.");
+
         return redirect()->route('admin.payment-providers.index')->with('success', 'Provider saved. Secrets are stored encrypted.');
     }
 
@@ -52,34 +55,40 @@ class PaymentProviderController extends Controller
         $data = $this->validated($request, $provider->id);
         $provider->fill($this->scalar($data));
         $creds = $this->credentialsInput($request);
-        if ($creds !== null) $provider->credentials = $creds; // blank = keep existing
-        if ($request->filled('webhook_secret')) $provider->webhook_secret = $request->input('webhook_secret');
+        if ($creds !== null) {
+            $provider->credentials = $creds;
+        } // blank = keep existing
+        if ($request->filled('webhook_secret')) {
+            $provider->webhook_secret = $request->input('webhook_secret');
+        }
         $provider->updated_by = auth()->id();
         $provider->save();
         AuditLog::log('provider.updated', 'payment_providers', $provider, "Provider {$provider->key} updated.");
+
         return redirect()->route('admin.payment-providers.index')->with('success', 'Provider updated.');
     }
 
     public function toggle(PaymentProvider $provider)
     {
-        $provider->is_active = !$provider->is_active;
+        $provider->is_active = ! $provider->is_active;
         $provider->updated_by = auth()->id();
         $provider->save();
-        AuditLog::log('provider.toggled', 'payment_providers', $provider, "Provider {$provider->key} " . ($provider->is_active ? 'enabled' : 'disabled') . '.');
+        AuditLog::log('provider.toggled', 'payment_providers', $provider, "Provider {$provider->key} ".($provider->is_active ? 'enabled' : 'disabled').'.');
+
         return back()->with('success', 'Provider status updated.');
     }
 
     protected function validated(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
-            'key' => 'required|string|max:60|regex:/^[a-z0-9_]+$/|unique:payment_providers,key' . ($ignoreId ? ',' . $ignoreId : ''),
+            'key' => 'required|string|max:60|regex:/^[a-z0-9_]+$/|unique:payment_providers,key'.($ignoreId ? ','.$ignoreId : ''),
             'name' => 'required|string|max:120',
-            'type' => 'required|in:' . implode(',', PaymentProvider::TYPES),
+            'type' => 'required|in:'.implode(',', PaymentProvider::TYPES),
             'country' => 'nullable|string|max:100',
             'currencies' => 'nullable|string|max:255',
             'payment_methods' => 'nullable|string|max:255',
             'environment' => 'required|in:test,live',
-            'status' => 'required|in:' . implode(',', PaymentProvider::STATUSES),
+            'status' => 'required|in:'.implode(',', PaymentProvider::STATUSES),
             'priority' => 'required|integer|min:1|max:1000',
             'min_amount' => 'nullable|numeric|min:0',
             'max_amount' => 'nullable|numeric|min:0',
@@ -98,6 +107,7 @@ class PaymentProviderController extends Controller
             $data[$k] = empty($data[$k]) ? null : array_values(array_filter(array_map(fn ($v) => strtoupper(trim($v)), preg_split('/[,\s]+/', (string) $data[$k]))));
         }
         $data['is_active'] = (bool) ($data['is_active'] ?? true);
+
         return $data;
     }
 
@@ -109,8 +119,10 @@ class PaymentProviderController extends Controller
     {
         $out = [];
         foreach (['api_key', 'secret_key', 'merchant_id', 'account_id', 'public_key', 'username'] as $k) {
-            $v = trim((string) $request->input('cred_' . $k, ''));
-            if ($v !== '') $out[$k] = $v;
+            $v = trim((string) $request->input('cred_'.$k, ''));
+            if ($v !== '') {
+                $out[$k] = $v;
+            }
         }
         $extra = trim((string) $request->input('cred_extra', ''));
         if ($extra !== '') {
@@ -118,6 +130,7 @@ class PaymentProviderController extends Controller
             abort_unless(is_array($decoded), 422, 'Extra credentials must be valid JSON.');
             $out = array_merge($out, $decoded);
         }
+
         return $out === [] ? null : $out;
     }
 }

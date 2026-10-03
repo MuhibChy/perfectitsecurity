@@ -15,8 +15,12 @@ class ProblemController extends Controller
     public function index(Request $request)
     {
         $query = Problem::with('customer', 'assignee');
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->priority) $query->where('priority', $request->priority);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->priority) {
+            $query->where('priority', $request->priority);
+        }
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('problem_number', 'like', "%{$request->search}%")
@@ -24,6 +28,7 @@ class ProblemController extends Controller
             });
         }
         $problems = $query->latest()->paginate(20);
+
         return view('admin.problems.index', compact('problems'));
     }
 
@@ -32,6 +37,7 @@ class ProblemController extends Controller
         $agents = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin'])
             ->where('is_active', true)->get();
         $tickets = Ticket::open()->latest()->limit(100)->get(['id', 'ticket_number', 'subject']);
+
         return view('admin.problems.create', compact('agents', 'tickets'));
     }
 
@@ -52,7 +58,9 @@ class ProblemController extends Controller
         unset($data['ticket_ids']);
 
         $problem = Problem::create($data);
-        if ($ticketIds) $problem->tickets()->sync($ticketIds);
+        if ($ticketIds) {
+            $problem->tickets()->sync($ticketIds);
+        }
         AuditService::log('problem.create', 'itsm', $problem, "Problem {$problem->problem_number} created");
 
         return redirect()->route('admin.problems.show', $problem)->with('success', 'Problem created.');
@@ -64,6 +72,7 @@ class ProblemController extends Controller
         $agents = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin'])
             ->where('is_active', true)->get();
         $openTickets = Ticket::open()->latest()->limit(100)->get(['id', 'ticket_number', 'subject']);
+
         return view('admin.problems.show', compact('problem', 'agents', 'openTickets'));
     }
 

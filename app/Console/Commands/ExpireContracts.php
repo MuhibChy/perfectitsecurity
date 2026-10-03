@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class ExpireContracts extends Command
 {
     protected $signature = 'contracts:expire';
+
     protected $description = 'Mark active contracts past their end date as expired';
 
     public function handle(): int

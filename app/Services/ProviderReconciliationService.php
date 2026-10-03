@@ -12,7 +12,9 @@ use App\Models\PaymentTransaction;
  */
 class ProviderReconciliationService
 {
-    public function __construct(protected PaymentProviderService $providers) {}
+    public function __construct(protected PaymentProviderService $providers)
+    {
+    }
 
     public function sweep(int $limit = 200): array
     {
@@ -32,7 +34,7 @@ class ProviderReconciliationService
             $providerOk = in_array($providerStatus, ['SUCCEEDED', 'REFUNDED', 'PARTIALLY_REFUNDED', 'PENDING'], true);
             if ($txn->status === 'requires_verification' || $providerStatus === 'UNKNOWN') {
                 $result = 'requires_verification';
-            } elseif ($amountOk && ($providerOk || !$settled)) {
+            } elseif ($amountOk && ($providerOk || ! $settled)) {
                 $result = 'matched';
             } else {
                 $result = 'mismatch';
@@ -66,6 +68,7 @@ class ProviderReconciliationService
                 }
             });
         }
+
         return $summary;
     }
 }

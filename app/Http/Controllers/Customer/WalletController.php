@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use App\Services\WalletService;
 use App\Services\Wallet\StripeWalletGateway;
 use App\Services\Wallet\TestWalletGateway;
+use App\Services\WalletService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -20,9 +20,14 @@ class WalletController extends Controller
     protected function gatewayFor(Wallet $wallet)
     {
         $stripe = new StripeWalletGateway();
-        if ($stripe->isAvailable($wallet)) return $stripe;
+        if ($stripe->isAvailable($wallet)) {
+            return $stripe;
+        }
         $test = new TestWalletGateway();
-        if ($test->isAvailable($wallet)) return $test;
+        if ($test->isAvailable($wallet)) {
+            return $test;
+        }
+
         return null;
     }
 
@@ -37,6 +42,7 @@ class WalletController extends Controller
         $payable = Invoice::where('customer_id', $user->id)
             ->whereIn('status', ['sent', 'viewed', 'overdue', 'partially_paid'])
             ->where('amount_due', '>', 0)->latest()->take(10)->get();
+
         return view('customer.wallet.index', compact('wallets', 'recent', 'payable'));
     }
 
@@ -44,6 +50,7 @@ class WalletController extends Controller
     {
         $wallet = Wallet::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
         $transactions = $wallet->transactions()->latest()->paginate(20);
+
         return view('customer.wallet.show', compact('wallet', 'transactions'));
     }
 
@@ -55,7 +62,7 @@ class WalletController extends Controller
             return back()->with('error', 'Wallet is not active and cannot receive funds.');
         }
         $gateway = $this->gatewayFor($wallet);
-        if (!$gateway) {
+        if (! $gateway) {
             return back()->with('error', 'Online top-ups are currently unavailable. Please contact support for manual payment options.');
         }
         try {
@@ -68,6 +75,7 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return redirect()->away($session['redirect_url']);
     }
 
@@ -77,14 +85,14 @@ class WalletController extends Controller
         $gateway = $provider === 'test' ? new TestWalletGateway() : new StripeWalletGateway();
         $verified = $gateway->verifyReturn($request->all() + ['user_id' => auth()->id()]);
         if (empty($verified['verified'])) {
-            return redirect()->route('portal.wallet.index')->with('error', 'Top-up could not be verified (' . ($verified['reason'] ?? 'unknown') . '). No money was moved.');
+            return redirect()->route('portal.wallet.index')->with('error', 'Top-up could not be verified ('.($verified['reason'] ?? 'unknown').'). No money was moved.');
         }
         $wallet = Wallet::where('id', $verified['wallet_id'])->where('user_id', auth()->id())->firstOrFail();
         if (strtoupper($verified['currency']) !== strtoupper($wallet->currency)) {
             return redirect()->route('portal.wallet.index')->with('error', 'Currency mismatch. No money was moved.');
         }
         try {
-            if (!empty($verified['topup_id'])) {
+            if (! empty($verified['topup_id'])) {
                 $pending = WalletTransaction::where('id', $verified['topup_id'])->where('wallet_id', $wallet->id)->firstOrFail();
                 $result = app(WalletService::class)->completeTopUp($pending, $verified['provider_txn'] ?? null);
             } else {
@@ -97,7 +105,8 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return redirect()->route('portal.wallet.index')->with('error', $e->getMessage());
         }
-        $msg = !empty($result['duplicate']) ? 'Top-up already recorded. No duplicate credit.' : 'Wallet credited successfully.';
+        $msg = ! empty($result['duplicate']) ? 'Top-up already recorded. No duplicate credit.' : 'Wallet credited successfully.';
+
         return redirect()->route('portal.wallet.show', $wallet)->with('success', $msg);
     }
 
@@ -115,6 +124,7 @@ class WalletController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
+
         return redirect()->route('portal.invoices.show', $invoice)->with('success', "Paid {$invoice->currency} {$amount} from wallet. Due now {$result['invoice']->currency} {$result['invoice']->amount_due}.");
     }
 
@@ -131,21 +141,33 @@ class WalletController extends Controller
             'export' => 'nullable|in:pdf',
         ]);
         $query = $wallet->transactions()->latest();
-        if (!empty($filters['type'])) $query->where('type', $filters['type']);
-        if (!empty($filters['direction'])) {
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+        if (! empty($filters['direction'])) {
             $query->whereIn('type', $filters['direction'] === 'credit' ? Wallet::CREDIT_TYPES : Wallet::DEBIT_TYPES);
         }
-        if (!empty($filters['status'])) $query->where('status', $filters['status']);
-        if (!empty($filters['reference'])) $query->where('transaction_reference', 'like', '%' . addcslashes($filters['reference'], '%_\\') . '%');
-        if (!empty($filters['from'])) $query->whereDate('created_at', '>=', $filters['from']);
-        if (!empty($filters['to'])) $query->whereDate('created_at', '<=', $filters['to']);
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (! empty($filters['reference'])) {
+            $query->where('transaction_reference', 'like', '%'.addcslashes($filters['reference'], '%_\\').'%');
+        }
+        if (! empty($filters['from'])) {
+            $query->whereDate('created_at', '>=', $filters['from']);
+        }
+        if (! empty($filters['to'])) {
+            $query->whereDate('created_at', '<=', $filters['to']);
+        }
         $transactions = $query->paginate(25)->withQueryString();
 
         if (($filters['export'] ?? null) === 'pdf') {
             $pdf = Pdf::loadView('customer.wallet.statement-pdf', ['wallet' => $wallet, 'transactions' => (clone $query)->take(200)->get()])
                 ->setPaper('a4');
-            return $pdf->download('wallet-statement-' . $wallet->wallet_reference . '.pdf');
+
+            return $pdf->download('wallet-statement-'.$wallet->wallet_reference.'.pdf');
         }
+
         return view('customer.wallet.statement', compact('wallet', 'transactions'));
     }
 }

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\EmailVerificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class EmailVerificationController extends Controller
 {
@@ -33,6 +32,7 @@ class EmailVerificationController extends Controller
         /** @var User $user */
         $user = $request->user();
         $result = $this->service->send($user);
+
         return back()->with('status', $result['message'] ?? 'OTP sent');
     }
 
@@ -47,6 +47,7 @@ class EmailVerificationController extends Controller
 
         $user = $request->user();
         $this->service->verify($user, $request->input('code'));
+
         return redirect()->route('portal.dashboard')->with('success', 'Email address successfully verified.');
     }
 }

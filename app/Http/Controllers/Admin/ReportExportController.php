@@ -16,7 +16,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ReportExportController extends Controller
 {
-    public function __construct(private ReportExportService $reports) {}
+    public function __construct(private ReportExportService $reports)
+    {
+    }
 
     public function export(Request $request, string $type)
     {
@@ -39,12 +41,12 @@ class ReportExportController extends Controller
             'branch' => 'nullable|string|max:100',
         ]);
         // Bound export windows: an unbounded range can dump full tables.
-        if (!empty($validated['date_from']) && !empty($validated['date_to'])) {
+        if (! empty($validated['date_from']) && ! empty($validated['date_to'])) {
             abort_if(\Carbon\Carbon::parse($validated['date_from'])->diffInDays(\Carbon\Carbon::parse($validated['date_to'])) > 366, 422, 'Export date range must not exceed 366 days.');
         }
         $report = $this->reports->build($type, $validated, auth()->user());
 
-        AuditLog::log('report.exported', 'reports', null, "Report '{$type}' exported as {$format} by " . auth()->user()->name . ' with filters: ' . json_encode($request->except(['_token'])) . " (" . count($report['rows']) . ' rows).');
+        AuditLog::log('report.exported', 'reports', null, "Report '{$type}' exported as {$format} by ".auth()->user()->name.' with filters: '.json_encode($request->except(['_token'])).' ('.count($report['rows']).' rows).');
 
         return match ($format) {
             'pdf' => $this->pdf($type, $report),
@@ -58,23 +60,29 @@ class ReportExportController extends Controller
         $path = app(\App\Services\XlsxExportService::class)->build(
             $report['title'], $report['period'] ?? '—', $report['summary'], $report['columns'], $report['rows']
         );
-        return response()->download($path, "perfectit-{$type}-" . now()->format('Ymd-His') . '.xlsx', [
+
+        return response()->download($path, "perfectit-{$type}-".now()->format('Ymd-His').'.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
 
     protected function csv(string $type, array $report): StreamedResponse
     {
-        $filename = "perfectit-{$type}-" . now()->format('Ymd-His') . '.csv';
+        $filename = "perfectit-{$type}-".now()->format('Ymd-His').'.csv';
+
         return response()->streamDownload(function () use ($report) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
             fputcsv($out, [self::csvCell($report['title'])]);
             fputcsv($out, ['Generated', now()->format('Y-m-d H:i'), 'Period', self::csvCell($report['period'] ?? '—')]);
-            foreach ($report['summary'] as $k => $v) fputcsv($out, [self::csvCell($k), self::csvCell($v)]);
+            foreach ($report['summary'] as $k => $v) {
+                fputcsv($out, [self::csvCell($k), self::csvCell($v)]);
+            }
             fputcsv($out, []);
             fputcsv($out, array_map([self::class, 'csvCell'], $report['columns']));
-            foreach ($report['rows'] as $row) fputcsv($out, array_map(fn ($v) => self::csvCell($v === null ? '' : (string) $v), $row));
+            foreach ($report['rows'] as $row) {
+                fputcsv($out, array_map(fn ($v) => self::csvCell($v === null ? '' : (string) $v), $row));
+            }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
@@ -88,8 +96,9 @@ class ReportExportController extends Controller
     {
         $s = (string) $value;
         if (preg_match('/^[\s]*[=+\-@]/', $s)) {
-            return "'" . $s;
+            return "'".$s;
         }
+
         return $s;
     }
 
@@ -100,6 +109,7 @@ class ReportExportController extends Controller
             'generatedBy' => auth()->user()->name,
             'generatedAt' => now()->format('Y-m-d H:i'),
         ])->setPaper('a4', 'landscape');
-        return $pdf->download("perfectit-{$type}-" . now()->format('Ymd-His') . '.pdf');
+
+        return $pdf->download("perfectit-{$type}-".now()->format('Ymd-His').'.pdf');
     }
 }

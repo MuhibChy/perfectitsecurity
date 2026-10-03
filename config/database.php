@@ -43,8 +43,13 @@ return [
             // root; dev default still resolves to database/database.sqlite.
             'database' => (function () {
                 $db = env('DB_DATABASE', database_path('database.sqlite'));
-                if ($db === ':memory:') return $db;
-                if (preg_match('/^([A-Za-z]:[\\\\\\/]|\\\\\\\\|[\\/])/', (string) $db)) return $db;
+                if ($db === ':memory:') {
+                    return $db;
+                }
+                if (preg_match('/^([A-Za-z]:[\\\\\\/]|\\\\\\\\|[\\/])/', (string) $db)) {
+                    return $db;
+                }
+
                 return base_path((string) $db);
             })(),
             'prefix' => '',

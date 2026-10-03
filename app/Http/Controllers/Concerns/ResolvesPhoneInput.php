@@ -22,10 +22,12 @@ trait ResolvesPhoneInput
                 $country = $resolved['alpha2'] ?? '';
             }
             abort_unless(PhoneCountries::isSupported($country), 422, 'Please select a valid country.');
+
             return app(\App\Services\PhoneVerificationService::class)
                 ->normalizeForCountry((string) $request->input('national_number'), $country);
         }
         $phone = trim((string) $request->input('phone', ''));
+
         return $phone === '' ? null : $phone;
     }
 }

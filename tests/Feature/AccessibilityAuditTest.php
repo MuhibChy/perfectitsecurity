@@ -86,7 +86,7 @@ class AccessibilityAuditTest extends TestCase
         $this->assertNotCount(0, $controls, 'no id-bearing form controls found on login');
         foreach ($controls as $id) {
             $this->assertTrue(
-                str_contains($html, 'for="' . $id . '"'),
+                str_contains($html, 'for="'.$id.'"'),
                 "login control #$id has no matching label[for=]"
             );
         }
@@ -101,7 +101,7 @@ class AccessibilityAuditTest extends TestCase
         $this->assertNotCount(0, $controls, 'no id-bearing form controls found on register');
         foreach ($controls as $id) {
             $this->assertTrue(
-                str_contains($html, 'for="' . $id . '"'),
+                str_contains($html, 'for="'.$id.'"'),
                 "register control #$id has no matching label[for=]"
             );
         }

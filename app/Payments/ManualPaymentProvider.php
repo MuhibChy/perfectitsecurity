@@ -8,15 +8,26 @@ use App\Models\Payment;
 /** Manual / bank-transfer / cash rail: server-recorded, no external API. */
 class ManualPaymentProvider implements PaymentProviderInterface
 {
-    public function key(): string { return 'manual'; }
-    public function label(): string { return 'Manual / Bank transfer'; }
-    public function supportsCurrency(string $currencyCode): bool { return true; }
+    public function key(): string
+    {
+        return 'manual';
+    }
+
+    public function label(): string
+    {
+        return 'Manual / Bank transfer';
+    }
+
+    public function supportsCurrency(string $currencyCode): bool
+    {
+        return true;
+    }
 
     public function createPayment(Invoice $invoice, float $amount, array $options = []): array
     {
         return [
             'provider' => $this->key(),
-            'provider_reference' => $options['transaction_id'] ?? ('MANUAL-' . strtoupper(\Illuminate\Support\Str::random(10))),
+            'provider_reference' => $options['transaction_id'] ?? ('MANUAL-'.strtoupper(\Illuminate\Support\Str::random(10))),
             'redirect_url' => null,
             'amount' => round($amount, 2),
             'currency' => strtoupper($invoice->currency ?? 'USD'),
@@ -26,7 +37,10 @@ class ManualPaymentProvider implements PaymentProviderInterface
     public function verifyPayment(string $providerReference, array $payload = []): array
     {
         $payment = Payment::where('transaction_id', $providerReference)->first();
-        if (!$payment) return ['status' => 'PENDING', 'found' => false];
+        if (! $payment) {
+            return ['status' => 'PENDING', 'found' => false];
+        }
+
         return ['status' => \App\Services\PaymentState::canonicalTransactionStatus($payment->status), 'found' => true, 'payment_id' => $payment->id];
     }
 

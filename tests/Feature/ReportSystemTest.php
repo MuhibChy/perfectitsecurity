@@ -25,7 +25,7 @@ class ReportSystemTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified',
         ]);
@@ -34,7 +34,7 @@ class ReportSystemTest extends TestCase
     private function orderFor(User $customer): ServiceOrder
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-rep'], ['name' => 'RPT']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] RPT Service', 'slug' => 't-rep-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 200, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] RPT Service', 'slug' => 't-rep-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 200, 'is_active' => true]);
         $order = ServiceOrder::create([
             'customer_id' => $customer->id, 'service_id' => $service->id, 'created_by' => $customer->id,
             'source' => 'test', 'requirements' => 'Report QA scope.',
@@ -43,6 +43,7 @@ class ReportSystemTest extends TestCase
             'total' => 200, 'amount_paid' => 0, 'amount_due' => 200, 'price_locked' => true, 'customer_accepted_at' => now(),
         ]);
         app(ServiceOrderWorkflowService::class)->generateConnectedRecords($order->fresh(), $customer);
+
         return $order->fresh();
     }
 

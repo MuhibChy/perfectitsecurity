@@ -36,7 +36,7 @@ class AgentApprovalService
         $paramsHash = hash('sha256', $canonical);
         $payload = implode('|', [$approvalId, $approver->id, $tool, $paramsHash, $expires]);
         $sig = hash_hmac('sha256', $payload, (string) config('app.key'));
-        $token = base64_encode($payload . '|' . $sig);
+        $token = base64_encode($payload.'|'.$sig);
 
         Cache::put($this->cacheKey($approvalId), true, $expires - time());
         $this->audit($approver, 'agent.approval_issued', "tool={$tool} approval={$approvalId}");
@@ -47,35 +47,53 @@ class AgentApprovalService
     /** Verify + consume (single-use). Returns true only on full match. */
     public function verify(User $approver, string $token, string $tool, array $params, bool $requireAdmin = true): bool
     {
-        if (!$approver || !$approver->is_active) return $this->deny($approver, $tool, 'inactive_approver');
-        if ($requireAdmin && !$approver->isAdmin()) return $this->deny($approver, $tool, 'admin_required');
+        if (! $approver || ! $approver->is_active) {
+            return $this->deny($approver, $tool, 'inactive_approver');
+        }
+        if ($requireAdmin && ! $approver->isAdmin()) {
+            return $this->deny($approver, $tool, 'admin_required');
+        }
 
         $raw = base64_decode($token, true);
-        if ($raw === false) return $this->deny($approver, $tool, 'malformed_token');
+        if ($raw === false) {
+            return $this->deny($approver, $tool, 'malformed_token');
+        }
         $parts = explode('|', $raw);
-        if (count($parts) !== 6) return $this->deny($approver, $tool, 'malformed_token');
+        if (count($parts) !== 6) {
+            return $this->deny($approver, $tool, 'malformed_token');
+        }
         [$approvalId, $approverId, $tokenTool, $paramsHash, $expires, $sig] = $parts;
 
         $expected = hash_hmac('sha256', implode('|', [$approvalId, $approverId, $tokenTool, $paramsHash, $expires]), (string) config('app.key'));
-        if (!hash_equals($expected, $sig)) return $this->deny($approver, $tool, 'bad_signature');
-        if ((int) $approverId !== (int) $approver->id) return $this->deny($approver, $tool, 'approver_mismatch');
-        if ($tokenTool !== $this->cleanTool($tool)) return $this->deny($approver, $tool, 'tool_mismatch');
-        if (!hash_equals($paramsHash, hash('sha256', $this->canonicalize($params)))) {
+        if (! hash_equals($expected, $sig)) {
+            return $this->deny($approver, $tool, 'bad_signature');
+        }
+        if ((int) $approverId !== (int) $approver->id) {
+            return $this->deny($approver, $tool, 'approver_mismatch');
+        }
+        if ($tokenTool !== $this->cleanTool($tool)) {
+            return $this->deny($approver, $tool, 'tool_mismatch');
+        }
+        if (! hash_equals($paramsHash, hash('sha256', $this->canonicalize($params)))) {
             return $this->deny($approver, $tool, 'params_changed');
         }
-        if (time() > (int) $expires) return $this->deny($approver, $tool, 'expired');
-        if (!Cache::pull($this->cacheKey($approvalId), false)) {
+        if (time() > (int) $expires) {
+            return $this->deny($approver, $tool, 'expired');
+        }
+        if (! Cache::pull($this->cacheKey($approvalId), false)) {
             return $this->deny($approver, $tool, 'reused_or_unknown');
         }
 
         $this->audit($approver, 'agent.approval_consumed', "tool={$tool} approval={$approvalId}");
+
         return true;
     }
 
     private function cleanTool(string $tool): string
     {
         $tool = trim($tool);
-        abort_if(!preg_match('/^[a-z_]{3,64}$/', $tool), 422, 'Invalid tool name.');
+        abort_if(! preg_match('/^[a-z_]{3,64}$/', $tool), 422, 'Invalid tool name.');
+
         return $tool;
     }
 
@@ -84,11 +102,12 @@ class AgentApprovalService
     {
         $flat = [];
         foreach ($params as $k => $v) {
-            abort_if(!is_string($k) || !preg_match('/^[a-z_]{1,64}$/', $k), 422, 'Invalid param key.');
-            abort_if(!is_scalar($v) && $v !== null, 422, 'Only scalar approval params allowed.');
+            abort_if(! is_string($k) || ! preg_match('/^[a-z_]{1,64}$/', $k), 422, 'Invalid param key.');
+            abort_if(! is_scalar($v) && $v !== null, 422, 'Only scalar approval params allowed.');
             $flat[$k] = $v === null ? null : (string) $v;
         }
         ksort($flat);
+
         return json_encode($flat, JSON_UNESCAPED_SLASHES);
     }
 
@@ -100,6 +119,7 @@ class AgentApprovalService
     private function deny(?User $approver, string $tool, string $reason): bool
     {
         $this->audit($approver, 'agent.approval_denied', "tool={$tool} reason={$reason}");
+
         return false;
     }
 
@@ -107,9 +127,9 @@ class AgentApprovalService
     {
         try {
             AuditLog::log($action, 'ai', null,
-                "actor=" . ($approver ? "{$approver->id}:{$approver->role}" : 'guest') . " {$detail}");
+                'actor='.($approver ? "{$approver->id}:{$approver->role}" : 'guest')." {$detail}");
         } catch (\Throwable $e) {
-            Log::warning('AgentApproval audit failed: ' . $e->getMessage());
+            Log::warning('AgentApproval audit failed: '.$e->getMessage());
         }
     }
 }

@@ -9,6 +9,13 @@ namespace App\Payments;
  */
 class NagadProvider extends AbstractMobileWalletProvider
 {
-    public function key(): string { return 'nagad'; }
-    public function label(): string { return 'Nagad'; }
+    public function key(): string
+    {
+        return 'nagad';
+    }
+
+    public function label(): string
+    {
+        return 'Nagad';
+    }
 }

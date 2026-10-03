@@ -11,6 +11,7 @@ class CommissionRuleController extends Controller
     public function index()
     {
         $rules = CommissionRule::all();
+
         return view('admin.commissions.rules', compact('rules'));
     }
 
@@ -25,6 +26,7 @@ class CommissionRuleController extends Controller
         ]);
 
         CommissionRule::create($validated);
+
         return redirect()->route('admin.commission-rules.index')->with('success', 'Commission rule created!');
     }
 
@@ -38,6 +40,7 @@ class CommissionRuleController extends Controller
         ]);
 
         $rule->update($validated);
+
         return redirect()->back()->with('success', 'Rule updated!');
     }
 }

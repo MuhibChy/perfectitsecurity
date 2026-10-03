@@ -32,6 +32,7 @@ class ServiceCountryPrice extends Model
         if ($this->discount_price && $this->discount_valid_until && $this->discount_valid_until->isFuture()) {
             return (float) $this->discount_price;
         }
+
         return (float) $this->price;
     }
 }

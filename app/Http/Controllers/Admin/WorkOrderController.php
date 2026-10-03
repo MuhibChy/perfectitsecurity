@@ -281,6 +281,7 @@ class WorkOrderController extends Controller
             'action' => 'progress_updated', 'comment' => "Payment schedule '{$data['title']}' planned.",
             'visible' => false,
         ]);
+
         return back()->with('success', 'Stage payment scheduled.');
     }
 
@@ -289,6 +290,7 @@ class WorkOrderController extends Controller
         $order = ServiceOrder::findOrFail($id);
         $data = $request->validate(['reason' => 'required|string|max:1000', 'revision_id' => 'nullable|integer']);
         $this->workflowService->rejectPrice($order, auth()->user(), $data['revision_id'] ?? null, $data['reason']);
+
         return back()->with('success', 'Price proposal rejected.');
     }
 
@@ -297,11 +299,13 @@ class WorkOrderController extends Controller
         $order = ServiceOrder::findOrFail($id);
         $data = $request->validate(['reason' => 'required|string|max:1000']);
         $this->workflowService->cancelOrder($order, auth()->user(), $data['reason']);
+
         return back()->with('success', "Service Order {$order->order_number} cancelled; history preserved.");
     }
 
     public function close(Request $request, $id)
-    {        $order = ServiceOrder::findOrFail($id);
+    {
+        $order = ServiceOrder::findOrFail($id);
         $data = $request->validate(['closure_notes' => 'nullable|string|max:2000']);
         $this->workflowService->closeOrder($order, auth()->user(), $data['closure_notes'] ?? null);
         \App\Services\ServiceTrackingService::record([

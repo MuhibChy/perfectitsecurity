@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\BankAccount;
 use App\Models\ExchangeRate;
+use App\Models\ManualBankPayment;
 use App\Models\PaymentProvider;
 use App\Models\PaymentReconciliationRecord;
-use App\Models\PaymentTransaction;
-use App\Models\ManualBankPayment;
 use App\Models\PaymentRefund;
+use App\Models\PaymentTransaction;
 use App\Models\PaymentWebhookEvent;
 use Illuminate\Support\Facades\Schema;
 
@@ -69,6 +69,7 @@ class PaymentReadinessService
         foreach (self::CATALOG as $key => $meta) {
             $out[$key] = $this->forProvider($key, $rows->get($key));
         }
+
         return $out;
     }
 
@@ -87,7 +88,7 @@ class PaymentReadinessService
         $checks['required_env_present'] = $this->requiredEnvPresent($key, $env);
         $checks['webhook_configured'] = $meta['webhook'] ? (bool) ($row && ($row->webhook_url || true)) : true;
         $checks['webhook_secret_configured'] = $meta['webhook'] ? $this->webhookSecretPresent($key, $row, $env) : true;
-        $checks['currency_supported'] = (bool) ($row && !empty($row->currencies ?? $meta['currencies']));
+        $checks['currency_supported'] = (bool) ($row && ! empty($row->currencies ?? $meta['currencies']));
         $checks['amount_limits_configured'] = (bool) ($row && ($row->min_amount !== null || $row->max_amount !== null));
         $checks['fee_configuration'] = true; // fees optional by design; recorded when present
         $checks['fee_configured'] = (bool) ($row && ($row->fee_type || $row->platform_fee_value));
@@ -125,12 +126,18 @@ class PaymentReadinessService
 
     public function state(string $key, ?PaymentProvider $row, array $checks): string
     {
-        if ($row && $row->status === 'maintenance') return 'MAINTENANCE';
+        if ($row && $row->status === 'maintenance') {
+            return 'MAINTENANCE';
+        }
         if ($row && $row->isLive()) {
             return empty($this->blockers($key, $row, $checks)) ? 'LIVE' : 'ERROR';
         }
-        if (!$row) return 'NOT_CONFIGURED';
-        if (!$checks['provider_enabled']) return 'CONFIGURED';
+        if (! $row) {
+            return 'NOT_CONFIGURED';
+        }
+        if (! $checks['provider_enabled']) {
+            return 'CONFIGURED';
+        }
         if ($row->environment === 'live') {
             return empty($this->liveBlockers($key, $row, $checks)) ? 'LIVE_READY' : 'ERROR';
         }
@@ -138,6 +145,7 @@ class PaymentReadinessService
         if ($checks['credentials_configured'] || $checks['required_env_present']) {
             return $this->hasTestEvidence($key) ? 'TEST_PASSED' : 'TEST_READY';
         }
+
         return 'CONFIGURED';
     }
 
@@ -145,16 +153,36 @@ class PaymentReadinessService
     public function liveBlockers(string $key, ?PaymentProvider $row, array $checks): array
     {
         $b = [];
-        if (!$row) { $b[] = 'Provider has no database configuration row.'; return $b; }
-        if (!$checks['provider_enabled']) $b[] = 'Provider is not enabled.';
-        if (!$checks['credentials_configured'] && !$checks['required_env_present']) $b[] = 'Missing credentials (neither encrypted row credentials nor required environment variables present).';
-        if ((self::CATALOG[$key]['webhook'] ?? true) && !$checks['webhook_secret_configured']) $b[] = 'Missing webhook secret.';
-        if (!$checks['currency_supported']) $b[] = 'No currency configured.';
-        if (!$checks['amount_limits_configured']) $b[] = 'Amount limits (min/max) not configured.';
-        if (!$checks['bank_account_configured']) $b[] = 'No active company bank account configured.';
+        if (! $row) {
+            $b[] = 'Provider has no database configuration row.';
+
+            return $b;
+        }
+        if (! $checks['provider_enabled']) {
+            $b[] = 'Provider is not enabled.';
+        }
+        if (! $checks['credentials_configured'] && ! $checks['required_env_present']) {
+            $b[] = 'Missing credentials (neither encrypted row credentials nor required environment variables present).';
+        }
+        if ((self::CATALOG[$key]['webhook'] ?? true) && ! $checks['webhook_secret_configured']) {
+            $b[] = 'Missing webhook secret.';
+        }
+        if (! $checks['currency_supported']) {
+            $b[] = 'No currency configured.';
+        }
+        if (! $checks['amount_limits_configured']) {
+            $b[] = 'Amount limits (min/max) not configured.';
+        }
+        if (! $checks['bank_account_configured']) {
+            $b[] = 'No active company bank account configured.';
+        }
         $rowCurrencies = ($row->currencies ?? null) ?: (self::CATALOG[$key]['currencies'] ?? []);
-        if (!$this->fxOk($rowCurrencies)) $b[] = 'FX configuration missing for a supported currency.';
-        if (!$checks['security_checks']) $b[] = 'Security checks failed (see production config check).';
+        if (! $this->fxOk($rowCurrencies)) {
+            $b[] = 'FX configuration missing for a supported currency.';
+        }
+        if (! $checks['security_checks']) {
+            $b[] = 'Security checks failed (see production config check).';
+        }
         // NOTE: live-in-non-production is a warning (surfaced separately), not
         // a hard blocker — staging/test environments must be able to rehearse
         // activation. Production operators see the mismatch warning clearly.
@@ -163,10 +191,15 @@ class PaymentReadinessService
 
     public function blockers(string $key, ?PaymentProvider $row, array $checks): array
     {
-        if ($row && $row->environment === 'live') return $this->liveBlockers($key, $row, $checks);
+        if ($row && $row->environment === 'live') {
+            return $this->liveBlockers($key, $row, $checks);
+        }
         // Non-live rows: surface hard errors only.
         $b = [];
-        if ($row && !$checks['database_configuration']) $b[] = 'Payment tables missing (migration not run).';
+        if ($row && ! $checks['database_configuration']) {
+            $b[] = 'Payment tables missing (migration not run).';
+        }
+
         return $b;
     }
 
@@ -176,9 +209,16 @@ class PaymentReadinessService
         if ($row && $row->environment === 'test' && app()->environment('production')) {
             $w[] = 'Provider is in TEST mode while APP_ENV=production — test credentials cannot process live payments.';
         }
-        if (($checks['fee_configured'] ?? false) === false) $w[] = 'Fee configuration not set (provider/platform fees will record as zero).';
-        if (($checks['amount_limits_configured'] ?? false) === false) $w[] = 'Amount limits not configured.';
-        if (!empty($checks['env_mismatch'])) $w[] = $checks['env_mismatch'];
+        if (($checks['fee_configured'] ?? false) === false) {
+            $w[] = 'Fee configuration not set (provider/platform fees will record as zero).';
+        }
+        if (($checks['amount_limits_configured'] ?? false) === false) {
+            $w[] = 'Amount limits not configured.';
+        }
+        if (! empty($checks['env_mismatch'])) {
+            $w[] = $checks['env_mismatch'];
+        }
+
         return array_values(array_filter($w));
     }
 
@@ -187,6 +227,7 @@ class PaymentReadinessService
     {
         $detail = $this->forProvider($key, $row);
         $blockers = $this->liveBlockers($key, $detail['row_exists'] ? PaymentProvider::where('key', $key)->first() : null, $detail['checks']);
+
         return ['ok' => empty($blockers), 'blockers' => $blockers, 'detail' => $detail];
     }
 
@@ -197,20 +238,21 @@ class PaymentReadinessService
         $isProd = app()->environment('production');
         $rows = [
             ['key' => 'APP_ENV', 'present' => $envPresent('APP_ENV') || true, 'value_shown' => app()->environment(), 'secure' => true],
-            ['key' => 'APP_DEBUG', 'present' => true, 'value_shown' => config('app.debug') ? 'true' : 'false', 'secure' => !($isProd && config('app.debug'))],
-            ['key' => 'APP_URL', 'present' => $envPresent('APP_URL'), 'value_shown' => $this->maskUrl((string) config('app.url')), 'secure' => str_starts_with((string) config('app.url'), 'https://') || !$isProd],
-            ['key' => 'HTTPS', 'present' => true, 'value_shown' => request()->isSecure() ? 'active' : 'not-detected-here', 'secure' => request()->isSecure() || !$isProd],
+            ['key' => 'APP_DEBUG', 'present' => true, 'value_shown' => config('app.debug') ? 'true' : 'false', 'secure' => ! ($isProd && config('app.debug'))],
+            ['key' => 'APP_URL', 'present' => $envPresent('APP_URL'), 'value_shown' => $this->maskUrl((string) config('app.url')), 'secure' => str_starts_with((string) config('app.url'), 'https://') || ! $isProd],
+            ['key' => 'HTTPS', 'present' => true, 'value_shown' => request()->isSecure() ? 'active' : 'not-detected-here', 'secure' => request()->isSecure() || ! $isProd],
             ['key' => 'DB_CONNECTION', 'present' => true, 'value_shown' => config('database.default'), 'secure' => true],
             ['key' => 'QUEUE_CONNECTION', 'present' => true, 'value_shown' => (string) config('queue.default'), 'secure' => true],
             ['key' => 'MAIL_MAILER', 'present' => $envPresent('MAIL_MAILER') || true, 'value_shown' => config('mail.default') ?? 'log', 'secure' => true],
             ['key' => 'STRIPE_KEY', 'present' => $envPresent('STRIPE_KEY'), 'value_shown' => $this->presence($envPresent('STRIPE_KEY')), 'secure' => true],
             ['key' => 'STRIPE_WEBHOOK_SECRET', 'present' => $envPresent('STRIPE_WEBHOOK_SECRET'), 'value_shown' => $this->presence($envPresent('STRIPE_WEBHOOK_SECRET')), 'secure' => true],
-            ['key' => 'FX rates seeded', 'present' => ExchangeRate::count() > 0, 'value_shown' => ExchangeRate::count() . ' rows', 'secure' => true],
+            ['key' => 'FX rates seeded', 'present' => ExchangeRate::count() > 0, 'value_shown' => ExchangeRate::count().' rows', 'secure' => true],
         ];
         foreach (['bkash' => 'BKASH_APP_KEY', 'nagad' => 'NAGAD_MERCHANT_ID', 'rocket' => 'ROCKET_MERCHANT_ID', 'paypal' => 'PAYPAL_CLIENT_ID', 'international_gateway' => 'INTL_GATEWAY_MERCHANT_ID'] as $label => $envKey) {
-            $rows[] = ['key' => $envKey . " ({$label} live)", 'present' => $envPresent($envKey), 'value_shown' => $this->presence($envPresent($envKey)), 'secure' => true];
+            $rows[] = ['key' => $envKey." ({$label} live)", 'present' => $envPresent($envKey), 'value_shown' => $this->presence($envPresent($envKey)), 'secure' => true];
         }
-        $insecure = array_values(array_filter($rows, fn ($r) => !$r['secure']));
+        $insecure = array_values(array_filter($rows, fn ($r) => ! $r['secure']));
+
         return ['rows' => $rows, 'insecure' => $insecure, 'pass' => empty($insecure), 'app_env' => app()->environment(), 'debug' => (bool) config('app.debug')];
     }
 
@@ -219,7 +261,8 @@ class PaymentReadinessService
     {
         $currencies = config('payments.supported_currencies', ['BDT', 'GBP', 'USD', 'EUR']);
         $latest = ExchangeRate::orderByDesc('fetched_at')->first();
-        $stale = !$latest || !$latest->fetched_at || $latest->fetched_at->lt(now()->subHours(24));
+        $stale = ! $latest || ! $latest->fetched_at || $latest->fetched_at->lt(now()->subHours(24));
+
         return [
             'source' => 'exchange_rates table (CurrencyService::refreshRates; optional Frankfurter remote)',
             'last_update' => $latest?->fetched_at?->toDateTimeString(),
@@ -234,6 +277,7 @@ class PaymentReadinessService
     public function monitoring(): array
     {
         $today = now()->toDateString();
+
         return [
             'paid_today' => PaymentTransaction::where('status', 'paid')->whereDate('paid_at', $today)->count(),
             'failed_today' => PaymentTransaction::whereIn('status', ['failed', 'cancelled'])->whereDate('created_at', $today)->count(),
@@ -255,8 +299,8 @@ class PaymentReadinessService
         $liveCount = count(array_filter($matrix, fn ($m) => $m['state'] === 'LIVE'));
         $groups = [
             'Infrastructure' => [
-                ['label' => 'HTTPS', 'done' => request()->isSecure() || !app()->environment('production'), 'hint' => 'Serve public/ over TLS in production.'],
-                ['label' => 'Production database', 'done' => config('database.default') !== 'sqlite' || !app()->environment('production'), 'hint' => 'MySQL/MariaDB expected in production.'],
+                ['label' => 'HTTPS', 'done' => request()->isSecure() || ! app()->environment('production'), 'hint' => 'Serve public/ over TLS in production.'],
+                ['label' => 'Production database', 'done' => config('database.default') !== 'sqlite' || ! app()->environment('production'), 'hint' => 'MySQL/MariaDB expected in production.'],
                 ['label' => 'Database backup', 'done' => (bool) config('backup.BACKUP_ENABLED', env('BACKUP_ENABLED', false)), 'hint' => 'See BACKUP_AND_RECOVERY.md.'],
                 ['label' => 'Storage backup (receipts)', 'done' => (bool) config('backup.BACKUP_ENABLED', env('BACKUP_ENABLED', false)), 'hint' => 'Receipt uploads live on the configured disk.'],
                 ['label' => 'Queue worker', 'done' => config('queue.default') !== 'sync' || true, 'hint' => 'sync is acceptable until volume requires redis/database.'],
@@ -265,8 +309,8 @@ class PaymentReadinessService
                 ['label' => 'Monitoring', 'done' => true, 'hint' => 'Admin → Payments → Health.'],
             ],
             'Security' => [
-                ['label' => 'APP_DEBUG=false', 'done' => !((bool) config('app.debug') && app()->environment('production')), 'hint' => 'Flagged in config check.'],
-                ['label' => 'Secure cookies', 'done' => (bool) env('SESSION_SECURE_COOKIE', false) || !app()->environment('production'), 'hint' => 'SESSION_SECURE_COOKIE=true in production.'],
+                ['label' => 'APP_DEBUG=false', 'done' => ! ((bool) config('app.debug') && app()->environment('production')), 'hint' => 'Flagged in config check.'],
+                ['label' => 'Secure cookies', 'done' => (bool) env('SESSION_SECURE_COOKIE', false) || ! app()->environment('production'), 'hint' => 'SESSION_SECURE_COOKIE=true in production.'],
                 ['label' => 'CSRF', 'done' => true, 'hint' => 'Web middleware + VerifyCsrfToken; webhooks are signed server-to-server.'],
                 ['label' => 'RBAC', 'done' => true, 'hint' => 'Finance-gated payment admin; owner-scoped customer views.'],
                 ['label' => 'Webhook verification', 'done' => true, 'hint' => 'Signature check in PaymentWebhookService; replay-safe via event_id.'],
@@ -275,7 +319,7 @@ class PaymentReadinessService
                 ['label' => 'Secret protection', 'done' => true, 'hint' => 'Encrypted at rest; presence-only reporting.'],
             ],
             'Providers' => array_map(fn ($m) => [
-                'label' => $m['name'] . ' — ' . $m['state'],
+                'label' => $m['name'].' — '.$m['state'],
                 'done' => in_array($m['state'], ['LIVE', 'LIVE_READY', 'TEST_PASSED', 'TEST_READY'], true),
                 'hint' => empty($m['blockers']) ? ($m['state'] === 'LIVE' ? 'Live.' : 'Configured; complete E2E before claiming LIVE.') : implode(' ', array_slice($m['blockers'], 0, 2)),
             ], array_values($matrix)),
@@ -290,14 +334,23 @@ class PaymentReadinessService
             'Operations' => [
                 ['label' => 'Webhook URLs documented', 'done' => true, 'hint' => 'Per-provider page shows exact endpoint + copy button.'],
                 ['label' => 'Bank accounts', 'done' => BankAccount::where('is_active', true)->exists(), 'hint' => 'Required for bank_transfer LIVE.'],
-                ['label' => 'FX (' . $fx['status'] . ')', 'done' => $fx['status'] === 'OK', 'hint' => 'Run CurrencyService::refreshRates(); fail-closed otherwise.'],
+                ['label' => 'FX ('.$fx['status'].')', 'done' => $fx['status'] === 'OK', 'hint' => 'Run CurrencyService::refreshRates(); fail-closed otherwise.'],
                 ['label' => 'Notifications', 'done' => true, 'hint' => 'Customer + finance events via PaymentStatusNotification.'],
                 ['label' => 'Admin permissions', 'done' => true, 'hint' => 'isFinanceManager gate on all payment admin.'],
                 ['label' => 'At least one LIVE provider (only after real E2E)', 'done' => $liveCount > 0, 'hint' => 'Do not mark LIVE without a controlled real transaction.'],
             ],
         ];
-        $total = 0; $done = 0;
-        foreach ($groups as $items) foreach ($items as $i) { $total++; if ($i['done']) $done++; }
+        $total = 0;
+        $done = 0;
+        foreach ($groups as $items) {
+            foreach ($items as $i) {
+                $total++;
+                if ($i['done']) {
+                    $done++;
+                }
+            }
+        }
+
         return ['groups' => $groups, 'done' => $done, 'total' => $total,
             'overall' => $liveCount > 0 ? 'LIVE (verify E2E evidence)' : ($done === $total ? 'STAGING READY' : 'NOT READY')];
     }
@@ -308,7 +361,8 @@ class PaymentReadinessService
         $states = array_column($matrix, 'state');
         $hasLive = in_array('LIVE', $states, true);
         $hasError = in_array('ERROR', $states, true);
-        $allConfigured = !in_array('NOT_CONFIGURED', $states, true);
+        $allConfigured = ! in_array('NOT_CONFIGURED', $states, true);
+
         return [
             'architecture' => 'READY', 'security' => $this->configCheck()['pass'] ? 'READY' : 'REVIEW REQUIRED',
             'database' => $this->tablesOk() ? 'READY' : 'NOT READY',
@@ -324,34 +378,49 @@ class PaymentReadinessService
     {
         try {
             $raw = $row->getAttributes()['credentials'] ?? null;
-            if (!$raw) return false;
+            if (! $raw) {
+                return false;
+            }
             $creds = $row->credentials; // decrypted via accessor
+
             return is_array($creds) && count(array_filter($creds, fn ($v) => is_string($v) ? trim($v) !== '' : $v !== null)) > 0;
-        } catch (\Throwable $e) { return false; }
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     protected function requiredEnvPresent(string $key, string $env): bool
     {
         $need = self::REQUIRED_ENV[$key][$env] ?? self::REQUIRED_ENV[$key]['test'] ?? [];
-        if (empty($need)) return true; // wallet/manual/bank_transfer need no API env
+        if (empty($need)) {
+            return true;
+        } // wallet/manual/bank_transfer need no API env
         foreach ($need as $var) {
             $v = env($var);
-            if (!is_string($v) || trim($v) === '') return false;
+            if (! is_string($v) || trim($v) === '') {
+                return false;
+            }
         }
+
         return true;
     }
 
     protected function webhookSecretPresent(string $key, ?PaymentProvider $row, string $env): bool
     {
-        if (!($row && ($row->getAttributes()['webhook_secret'] ?? null))) {
+        if (! ($row && ($row->getAttributes()['webhook_secret'] ?? null))) {
             $var = self::REQUIRED_WEBHOOK_ENV[$key][$env] ?? self::REQUIRED_WEBHOOK_ENV[$key]['test'] ?? null;
             if ($var) {
                 $v = env($var);
-                if (!is_string($v) || trim($v) === '') return false;
+                if (! is_string($v) || trim($v) === '') {
+                    return false;
+                }
+
                 return true;
             }
+
             return false;
         }
+
         return true;
     }
 
@@ -359,21 +428,37 @@ class PaymentReadinessService
     {
         foreach ($currencies as $c) {
             $c = strtoupper($c);
-            if ($c === 'USD') continue;
+            if ($c === 'USD') {
+                continue;
+            }
             $has = ExchangeRate::where(function ($q) use ($c) {
-                $q->where(function ($qq) use ($c) { $qq->where('base_currency', 'USD')->where('target_currency', $c); })
-                  ->orWhere(function ($qq) use ($c) { $qq->where('base_currency', $c)->where('target_currency', 'USD'); });
+                $q->where(function ($qq) use ($c) {
+                $qq->where('base_currency', 'USD')->where('target_currency', $c);
+                })
+                  ->orWhere(function ($qq) use ($c) {
+                  $qq->where('base_currency', $c)->where('target_currency', 'USD');
+                  });
             })->exists();
-            if (!$has) return false;
+            if (! $has) {
+                return false;
+            }
         }
+
         return true;
     }
 
     protected function tablesOk(): bool
     {
         foreach (['payment_providers', 'payment_transactions', 'payment_webhook_events', 'payment_refunds', 'manual_bank_payments', 'payment_reconciliation_records', 'bank_accounts'] as $t) {
-            try { if (!Schema::hasTable($t)) return false; } catch (\Throwable $e) { return false; }
+            try {
+                if (! Schema::hasTable($t)) {
+                    return false;
+                }
+            } catch (\Throwable $e) {
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -381,15 +466,19 @@ class PaymentReadinessService
     {
         $isProd = app()->environment('production');
         $debugBad = $isProd && (bool) config('app.debug');
-        return ['pass' => !$debugBad, 'debug' => (bool) config('app.debug'), 'app_env' => app()->environment()];
+
+        return ['pass' => ! $debugBad, 'debug' => (bool) config('app.debug'), 'app_env' => app()->environment()];
     }
 
     protected function envMismatch(?PaymentProvider $row): ?string
     {
-        if (!$row) return null;
-        if ($row->environment === 'live' && !app()->environment('production')) {
+        if (! $row) {
+            return null;
+        }
+        if ($row->environment === 'live' && ! app()->environment('production')) {
             return 'Provider environment is LIVE while APP_ENV is not production — confirm before processing real payments.';
         }
+
         return null;
     }
 
@@ -397,6 +486,7 @@ class PaymentReadinessService
     {
         $ev = PaymentWebhookEvent::where('provider_key', $key)->latest('id')->first();
         $ts = $ev?->processed_at ?? $ev?->created_at ?? $row?->updated_at;
+
         return $ts ? (string) $ts : null;
     }
 
@@ -404,6 +494,7 @@ class PaymentReadinessService
     {
         try {
             $base = PaymentWebhookEvent::where('provider_key', $key);
+
             return [
                 'last_received' => (string) ((clone $base)->latest('id')->first()?->created_at ?? '—'),
                 'last_verified' => (string) ((clone $base)->where('signature_valid', true)->latest('id')->first()?->created_at ?? '—'),
@@ -420,14 +511,20 @@ class PaymentReadinessService
         try {
             return PaymentTransaction::where('provider_key', $key)->where('status', 'paid')->exists()
                 || PaymentWebhookEvent::where('provider_key', $key)->where('status', 'processed')->exists();
-        } catch (\Throwable $e) { return false; }
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
-    protected function presence(bool $b): string { return $b ? 'set' : 'missing'; }
+    protected function presence(bool $b): string
+    {
+        return $b ? 'set' : 'missing';
+    }
 
     protected function maskUrl(string $url): string
     {
         $h = parse_url($url, PHP_URL_HOST);
-        return ($h ? $h : $url) . (str_starts_with($url, 'https://') ? ' (https)' : ' (NOT https)');
+
+        return ($h ? $h : $url).(str_starts_with($url, 'https://') ? ' (https)' : ' (NOT https)');
     }
 }

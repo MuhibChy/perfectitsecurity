@@ -21,6 +21,7 @@ class FieldServiceController extends Controller
             ->when($request->search, fn ($q) => $q->where('session_number', 'like', "%{$request->search}%"))
             ->latest()->paginate(20);
         $customers = User::where('role', 'customer')->where('is_active', true)->limit(200)->get();
+
         return view('admin.field.remote-index', compact('sessions', 'customers'));
     }
 
@@ -45,6 +46,7 @@ class FieldServiceController extends Controller
         $session->load('customer', 'technician', 'ticket', 'consenter');
         $technicians = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin', 'technician', 'employee'])
             ->where('is_active', true)->get();
+
         return view('admin.field.remote-show', compact('session', 'technicians'));
     }
 
@@ -59,7 +61,7 @@ class FieldServiceController extends Controller
             'outcome' => 'nullable|string',
         ]);
         // Authorisation gate: a session cannot go active without recorded customer consent.
-        if (($data['status'] ?? null) === 'active' && !$session->consent_given) {
+        if (($data['status'] ?? null) === 'active' && ! $session->consent_given) {
             return redirect()->back()->withErrors(['status' => 'Customer consent is required before starting a remote session.']);
         }
         if (($data['status'] ?? null) === 'active' && empty($data['technician_id'] ?? $session->technician_id)) {
@@ -67,10 +69,10 @@ class FieldServiceController extends Controller
         }
         $old = $session->only(array_keys($data));
         $session->update($data);
-        if (($data['status'] ?? null) === 'active' && !$session->started_at) {
+        if (($data['status'] ?? null) === 'active' && ! $session->started_at) {
             $session->update(['started_at' => now()]);
         }
-        if (in_array($data['status'] ?? null, ['completed', 'expired', 'cancelled'], true) && !$session->ended_at) {
+        if (in_array($data['status'] ?? null, ['completed', 'expired', 'cancelled'], true) && ! $session->ended_at) {
             $session->update(['ended_at' => now()]);
         }
         AuditService::log('remote.update', 'itsm', $session->fresh(), "Remote session {$session->session_number} updated", $old, $data);
@@ -87,6 +89,7 @@ class FieldServiceController extends Controller
             ->when($request->search, fn ($q) => $q->where('visit_number', 'like', "%{$request->search}%"))
             ->latest()->paginate(20);
         $customers = User::where('role', 'customer')->where('is_active', true)->limit(200)->get();
+
         return view('admin.field.visit-index', compact('visits', 'customers'));
     }
 
@@ -99,7 +102,7 @@ class FieldServiceController extends Controller
             'scheduled_at' => 'nullable|date',
             'technician_id' => 'nullable|exists:users,id',
         ]);
-        if (!empty($data['ticket_id'])) {
+        if (! empty($data['ticket_id'])) {
             $ticket = Ticket::find($data['ticket_id']);
             if ($ticket && (int) $ticket->customer_id !== (int) $data['customer_id']) {
                 return redirect()->back()->withErrors(['ticket_id' => 'Ticket does not belong to this customer.'])->withInput();
@@ -116,6 +119,7 @@ class FieldServiceController extends Controller
         $visit->load('customer', 'technician', 'ticket');
         $technicians = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin', 'technician', 'employee'])
             ->where('is_active', true)->get();
+
         return view('admin.field.visit-show', compact('visit', 'technicians'));
     }
 
@@ -132,10 +136,10 @@ class FieldServiceController extends Controller
         ]);
         $old = $visit->only(array_keys($data));
         $visit->update($data);
-        if (($data['status'] ?? null) === 'on_site' && !$visit->check_in_at) {
+        if (($data['status'] ?? null) === 'on_site' && ! $visit->check_in_at) {
             $visit->update(['check_in_at' => now()]);
         }
-        if (($data['status'] ?? null) === 'completed' && !$visit->check_out_at) {
+        if (($data['status'] ?? null) === 'completed' && ! $visit->check_out_at) {
             $visit->update(['check_out_at' => now()]);
         }
         AuditService::log('visit.update', 'itsm', $visit->fresh(), "Site visit {$visit->visit_number} updated", $old, $data);

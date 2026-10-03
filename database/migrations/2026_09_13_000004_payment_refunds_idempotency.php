@@ -16,7 +16,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            if (!Schema::hasColumn('payments', 'refunded_amount')) {
+            if (! Schema::hasColumn('payments', 'refunded_amount')) {
                 $table->decimal('refunded_amount', 12, 2)->default(0)->after('amount');
             }
         });
@@ -33,7 +33,7 @@ return new class extends Migration
                 [$db, 'payments', 'payments_stripe_checkout_session_id_unique']
             );
         }
-        if (!$exists) {
+        if (! $exists) {
             Schema::table('payments', function (Blueprint $table) {
                 $table->unique('stripe_checkout_session_id', 'payments_stripe_checkout_session_id_unique');
             });

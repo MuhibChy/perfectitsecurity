@@ -34,6 +34,7 @@ class LearningController extends Controller
         foreach ($myAssignments as $a) {
             $a->progress = TrainingService::courseProgress($a->course, $user->id);
         }
+
         return view('admin.academy.index', compact('required', 'featured', 'myAssignments', 'certificates', 'paths'));
     }
 
@@ -46,6 +47,7 @@ class LearningController extends Controller
         }
         $certificates = TrainingCertificate::with('course')->where('user_id', $user->id)->latest()->get();
         $notes = TrainingTrainerNote::with('author')->where('user_id', $user->id)->latest()->take(10)->get();
+
         return view('admin.academy.my', compact('assignments', 'certificates', 'notes'));
     }
 
@@ -61,6 +63,7 @@ class LearningController extends Controller
         }
         $progress = TrainingService::courseProgress($course, $userId);
         $assignment = TrainingAssignment::where('course_id', $course->id)->where('user_id', $userId)->first();
+
         return view('admin.academy.course', compact('course', 'completedLessons', 'quizBest', 'progress', 'assignment'));
     }
 
@@ -76,6 +79,7 @@ class LearningController extends Controller
         $prev = $pos > 0 ? TrainingLesson::find($ids[$pos - 1]) : null;
         $next = ($pos !== false && $pos < count($ids) - 1) ? TrainingLesson::find($ids[$pos + 1]) : null;
         $quizzes = TrainingQuiz::published()->where('lesson_id', $lesson->id)->with('questions')->get();
+
         return view('admin.academy.lesson', compact('lesson', 'completed', 'prev', 'next', 'quizzes', 'pos', 'ids'));
     }
 
@@ -89,6 +93,7 @@ class LearningController extends Controller
         );
         $course = $lesson->module->course;
         TrainingService::refreshAssignment($course, $userId);
+
         return back()->with('success', 'Lesson marked as studied.');
     }
 
@@ -97,9 +102,10 @@ class LearningController extends Controller
         abort_unless($quiz->is_published, 404);
         $quiz->load('questions', 'course');
         $userId = auth()->id();
-        if ($quiz->max_attempts > 0 && $quiz->attemptsUsedBy($userId) >= $quiz->max_attempts && !$quiz->bestAttemptFor($userId)?->passed) {
+        if ($quiz->max_attempts > 0 && $quiz->attemptsUsedBy($userId) >= $quiz->max_attempts && ! $quiz->bestAttemptFor($userId)?->passed) {
             return redirect()->route('admin.academy.course', $quiz->course)->with('error', 'You have used all attempts for this quiz. Ask your trainer for a reset.');
         }
+
         return view('admin.academy.quiz', compact('quiz'));
     }
 
@@ -111,10 +117,12 @@ class LearningController extends Controller
             return redirect()->route('admin.academy.course', $quiz->course)->with('error', 'No attempts remaining.');
         }
         $quiz->load('questions', 'course');
-        $score = 0; $max = 0; $answers = [];
+        $score = 0;
+        $max = 0;
+        $answers = [];
         foreach ($quiz->questions as $q) {
             $max += $q->points;
-            $given = $request->input('q_' . $q->id);
+            $given = $request->input('q_'.$q->id);
             $answers[$q->id] = $given;
             $score += $q->grade($given);
         }
@@ -126,6 +134,7 @@ class LearningController extends Controller
         ]);
         TrainingService::refreshAssignment($quiz->course, $userId);
         TrainingService::notify($userId, 'quiz_result', $attempt->passed ? 'Assessment passed' : 'Assessment needs improvement', "Quiz '{$quiz->title}': {$percent}% (pass mark {$quiz->pass_score}%).");
+
         return redirect()->route('admin.academy.quiz.result', $attempt)->with('success', $attempt->passed ? "Passed with {$percent}%." : "Scored {$percent}%. Review the material and retry.");
     }
 
@@ -133,6 +142,7 @@ class LearningController extends Controller
     {
         abort_unless($attempt->user_id === auth()->id(), 403);
         $attempt->load('quiz.questions', 'quiz.course');
+
         return view('admin.academy.quiz-result', compact('attempt'));
     }
 
@@ -141,6 +151,7 @@ class LearningController extends Controller
         abort_unless($practical->is_published, 404);
         $practical->load('course');
         $submission = $practical->submissions()->where('user_id', auth()->id())->latest()->first();
+
         return view('admin.academy.practical', compact('practical', 'submission'));
     }
 
@@ -150,7 +161,7 @@ class LearningController extends Controller
         $practical->load('course');
         $rules = [];
         foreach (($practical->checklist ?? []) as $i => $item) {
-            $rules['responses.' . $i] = 'required|string|min:10|max:5000';
+            $rules['responses.'.$i] = 'required|string|min:10|max:5000';
         }
         $data = $request->validate($rules ?: ['responses' => 'required|array']);
         TrainingAssessmentSubmission::create([
@@ -159,13 +170,17 @@ class LearningController extends Controller
         ]);
         $course = $practical->course;
         $assignment = TrainingAssignment::where('course_id', $course->id)->where('user_id', auth()->id())->first();
-        if ($assignment && $assignment->status !== 'completed') $assignment->update(['status' => 'assessment_pending']);
+        if ($assignment && $assignment->status !== 'completed') {
+            $assignment->update(['status' => 'assessment_pending']);
+        }
+
         return redirect()->route('admin.academy.course', $course)->with('success', 'Practical exercise submitted for trainer review.');
     }
 
     public function certificates()
     {
         $certificates = TrainingCertificate::with('course')->where('user_id', auth()->id())->latest()->get();
+
         return view('admin.academy.certificates', compact('certificates'));
     }
 
@@ -173,6 +188,7 @@ class LearningController extends Controller
     {
         abort_unless((int) $certificate->user_id === (int) auth()->id() || auth()->user()->isTrainer(), 403);
         $certificate->load('course', 'user');
+
         return view('admin.academy.certificate', compact('certificate'));
     }
 }

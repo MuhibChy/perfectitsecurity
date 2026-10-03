@@ -20,11 +20,13 @@ class UserTime
         if (is_string($tz) && $tz !== '') {
             try {
                 new \DateTimeZone($tz);
+
                 return $tz;
             } catch (\Throwable $e) {
                 // Fall through to UTC.
             }
         }
+
         return config('app.display_timezone', self::FALLBACK);
     }
 

@@ -102,7 +102,7 @@ class CurrencyService
                     }
                 }
             } catch (\Throwable $e) {
-                Log::info('FX remote refresh skipped: ' . $e->getMessage());
+                Log::info('FX remote refresh skipped: '.$e->getMessage());
             }
         }
 

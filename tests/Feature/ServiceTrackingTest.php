@@ -7,7 +7,6 @@ use App\Models\ProjectMilestone;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\ServiceEvent;
-use App\Models\ServiceMaintenance;
 use App\Models\ServiceOrder;
 use App\Models\Task;
 use App\Models\User;
@@ -28,6 +27,7 @@ class ServiceTrackingTest extends TestCase
         $eng = User::factory()->create(['role' => 'employee', 'is_active' => true]);
         $order = ServiceOrder::create(['order_number' => 'ORD-ST-1', 'customer_id' => $customer->id, 'service_id' => $service->id, 'requirements' => 'Assess our site', 'status' => 'confirmed', 'total' => 1500, 'amount_paid' => 1500, 'amount_due' => 0]);
         $project = Project::create(['project_number' => 'PRJ-ST-1', 'name' => 'Assessment', 'slug' => 'assess-1', 'customer_id' => $customer->id, 'project_manager_id' => $pm->id, 'service_id' => $service->id, 'status' => 'in_progress', 'deadline' => today()->addDays(10)->toDateString()]);
+
         return compact('service', 'customer', 'pm', 'eng', 'order', 'project');
     }
 

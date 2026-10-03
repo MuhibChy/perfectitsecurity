@@ -29,17 +29,36 @@ class PaymentRefund extends Model
     {
         static::creating(function ($r) {
             if (empty($r->refund_number)) {
-                $r->refund_number = 'RFND-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+                $r->refund_number = 'RFND-'.date('Ymd').'-'.strtoupper(Str::random(6));
             }
             if (empty($r->idempotency_key)) {
-                $r->idempotency_key = 'rfnd_' . Str::uuid();
+                $r->idempotency_key = 'rfnd_'.Str::uuid();
             }
         });
     }
 
-    public function paymentTransaction() { return $this->belongsTo(PaymentTransaction::class); }
-    public function payment() { return $this->belongsTo(Payment::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function requester() { return $this->belongsTo(User::class, 'requested_by'); }
-    public function approver() { return $this->belongsTo(User::class, 'approved_by'); }
+    public function paymentTransaction()
+    {
+        return $this->belongsTo(PaymentTransaction::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }

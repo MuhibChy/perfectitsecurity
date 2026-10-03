@@ -28,7 +28,7 @@ class ServiceRequest extends Model
     {
         static::creating(function ($sr) {
             if (empty($sr->request_number)) {
-                $sr->request_number = 'SR-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+                $sr->request_number = 'SR-'.date('Ymd').'-'.strtoupper(Str::random(6));
             }
         });
     }

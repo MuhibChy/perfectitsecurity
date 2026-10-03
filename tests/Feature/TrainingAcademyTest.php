@@ -7,7 +7,6 @@ use App\Models\TrainingAssignment;
 use App\Models\TrainingCertificate;
 use App\Models\TrainingCourse;
 use App\Models\TrainingLesson;
-use App\Models\TrainingModule;
 use App\Models\TrainingPracticalAssessment;
 use App\Models\TrainingQuestion;
 use App\Models\TrainingQuiz;
@@ -22,6 +21,7 @@ class TrainingAcademyTest extends TestCase
     protected function seedAcademy(): TrainingCourse
     {
         $this->seed(\Database\Seeders\TrainingAcademySeeder::class);
+
         return TrainingCourse::where('slug', 'platform-introduction')->firstOrFail();
     }
 
@@ -82,7 +82,7 @@ class TrainingAcademyTest extends TestCase
         foreach ($course->quizzes()->published()->with('questions')->get() as $quiz) {
             $payload = [];
             foreach ($quiz->questions as $q) {
-                $payload['q_' . $q->id] = $q->type === 'multiple' ? $q->correct : ($q->type === 'ordering' ? implode(',', $q->correct) : $q->correct[0]);
+                $payload['q_'.$q->id] = $q->type === 'multiple' ? $q->correct : ($q->type === 'ordering' ? implode(',', $q->correct) : $q->correct[0]);
             }
             $this->actingAs($employee)->post(route('admin.academy.quiz.submit', $quiz), $payload)->assertSessionHas('success');
         }
@@ -104,7 +104,7 @@ class TrainingAcademyTest extends TestCase
         // All-wrong answers fail.
         $wrong = [];
         foreach ($quiz->questions as $q) {
-            $wrong['q_' . $q->id] = $q->type === 'multiple' ? ['__wrong__'] : '__wrong__';
+            $wrong['q_'.$q->id] = $q->type === 'multiple' ? ['__wrong__'] : '__wrong__';
         }
         $this->actingAs($employee)->post(route('admin.academy.quiz.submit', $quiz), $wrong);
         $attempt = $quiz->attempts()->where('user_id', $employee->id)->latest()->first();

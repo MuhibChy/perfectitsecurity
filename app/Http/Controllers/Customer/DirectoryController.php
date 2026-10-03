@@ -13,11 +13,14 @@ use App\Services\DirectoryService;
  */
 class DirectoryController extends Controller
 {
-    public function __construct(private DirectoryService $directory) {}
+    public function __construct(private DirectoryService $directory)
+    {
+    }
 
     public function index()
     {
         $staff = $this->directory->staffCards(auth()->user());
+
         return view('customer.directory.index', compact('staff'));
     }
 
@@ -29,6 +32,7 @@ class DirectoryController extends Controller
         $card = $this->directory->publicCard($user);
         $contact = $this->directory->canSeeDirectContact($viewer, $user)
             ? $this->directory->directContact($user) : null;
+
         return view('customer.directory.show', ['staff' => $user, 'card' => $card, 'contact' => $contact]);
     }
 }

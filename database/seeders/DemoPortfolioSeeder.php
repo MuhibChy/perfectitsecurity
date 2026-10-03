@@ -25,6 +25,7 @@ class DemoPortfolioSeeder extends Seeder
     {
         if (PortfolioItem::where('title', 'Enterprise IT Support Portal')->where('is_demo', true)->exists()) {
             $this->command?->warn('Sample portfolio batch already present — skipping.');
+
             return;
         }
 
@@ -38,7 +39,7 @@ class DemoPortfolioSeeder extends Seeder
 
     private function slug(string $title): string
     {
-        return Str::slug($title) . '-' . Str::random(4);
+        return Str::slug($title).'-'.Str::random(4);
     }
 
     // ------------------------------------------------------------- portfolio

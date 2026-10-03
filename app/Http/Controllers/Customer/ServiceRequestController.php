@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Country;
 use App\Models\Service;
 use App\Models\ServiceRequest;
-use App\Models\Country;
 use Illuminate\Http\Request;
 
 class ServiceRequestController extends Controller

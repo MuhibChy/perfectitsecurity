@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Backup;
 use App\Services\AuditService;
 use App\Services\Backup\BackupOrchestratorService;
-use App\Services\Backup\BackupRetentionService;
 use App\Services\Backup\LocalBackupDiskAdapter;
 use App\Services\Backup\RestoreService;
 use Illuminate\Http\Request;
@@ -53,14 +52,14 @@ class BackupController extends Controller
             return redirect()->route('admin.backups.show', $backup->id)
                 ->with('success', "Backup {$backup->backup_id} verified successfully.");
         } catch (\Throwable $e) {
-            return back()->withErrors(['backup' => 'Backup failed: ' . $e->getMessage()]);
+            return back()->withErrors(['backup' => 'Backup failed: '.$e->getMessage()]);
         }
     }
 
     public function verify($id)
     {
         $backup = Backup::active()->findOrFail($id);
-        $workDir = storage_path('app/backups/tmp/verify-' . uniqid('', true));
+        $workDir = storage_path('app/backups/tmp/verify-'.uniqid('', true));
         @mkdir($workDir, 0755, true);
         try {
             $detail = (new \App\Services\Backup\BackupVerificationService())
@@ -75,9 +74,9 @@ class BackupController extends Controller
         } catch (\Throwable $e) {
             $backup->update(['verification_status' => 'failed', 'verified_at' => now()]);
 
-            return back()->withErrors(['backup' => 'Verification failed: ' . $e->getMessage()]);
+            return back()->withErrors(['backup' => 'Verification failed: '.$e->getMessage()]);
         } finally {
-            foreach (glob($workDir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+            foreach (glob($workDir.DIRECTORY_SEPARATOR.'*') ?: [] as $f) {
                 @unlink($f);
             }
             @rmdir($workDir);
@@ -92,7 +91,7 @@ class BackupController extends Controller
 
             return back()->with('success', 'Isolated restore test passed.');
         } catch (\Throwable $e) {
-            return back()->withErrors(['backup' => 'Restore test failed: ' . $e->getMessage()]);
+            return back()->withErrors(['backup' => 'Restore test failed: '.$e->getMessage()]);
         }
     }
 
@@ -109,7 +108,7 @@ class BackupController extends Controller
 
             return back()->with('success', "Restore complete (safety backup: {$result['detail']['safety_backup_id']}).");
         } catch (\Throwable $e) {
-            return back()->withErrors(['backup' => 'Restore failed: ' . $e->getMessage()]);
+            return back()->withErrors(['backup' => 'Restore failed: '.$e->getMessage()]);
         }
     }
 
@@ -120,9 +119,9 @@ class BackupController extends Controller
         $file = $backup->files()->orderByDesc('size_bytes')->firstOrFail();
         $tmp = tempnam(sys_get_temp_dir(), 'bkp-dl-');
         (new LocalBackupDiskAdapter())->get($file->path, $tmp);
-        app(AuditService::class)->log('backup.downloaded', 'backups', $backup, "Backup {$backup->backup_id} ({$file->kind}) downloaded by " . auth()->user()->email . '.');
+        app(AuditService::class)->log('backup.downloaded', 'backups', $backup, "Backup {$backup->backup_id} ({$file->kind}) downloaded by ".auth()->user()->email.'.');
 
-        return response()->download($tmp, $backup->backup_id . '-' . $file->kind . ($file->encrypted ? '.enc' : ''))->deleteFileAfterSend(true);
+        return response()->download($tmp, $backup->backup_id.'-'.$file->kind.($file->encrypted ? '.enc' : ''))->deleteFileAfterSend(true);
     }
 
     public function destroy($id)
@@ -137,7 +136,7 @@ class BackupController extends Controller
             }
         }
         $backup->update(['deleted_at' => now(), 'status' => 'deleted']);
-        app(AuditService::class)->log('backup.deleted', 'backups', $backup, "Backup {$backup->backup_id} deleted by " . auth()->user()->email . '.');
+        app(AuditService::class)->log('backup.deleted', 'backups', $backup, "Backup {$backup->backup_id} deleted by ".auth()->user()->email.'.');
 
         return redirect()->route('admin.backups.index')->with('success', 'Backup deleted (audit record retained).');
     }
@@ -147,7 +146,7 @@ class BackupController extends Controller
         $status = $orchestrator->storageStatus();
         app(AuditService::class)->log('backup.connection_tested', 'backups', null, 'Backup storage connection test executed.');
 
-        return back()->with('success', 'Local: ' . ($status['local']['ok'] ? 'OK' : $status['local']['detail'])
-            . ' | S3: ' . (! $status['s3']['configured'] ? 'not configured' : ($status['s3']['ok'] ? 'OK' : $status['s3']['detail'])));
+        return back()->with('success', 'Local: '.($status['local']['ok'] ? 'OK' : $status['local']['detail'])
+            .' | S3: '.(! $status['s3']['configured'] ? 'not configured' : ($status['s3']['ok'] ? 'OK' : $status['s3']['detail'])));
     }
 }

@@ -13,8 +13,11 @@ use Illuminate\Support\Facades\Log;
 class OpenRouterProvider implements AiProviderInterface
 {
     private string $apiKey;
+
     private string $model;
+
     private string $baseUrl;
+
     private int $timeout;
 
     // Per-1K-token pricing (approximate, USD) for cost accounting.
@@ -22,6 +25,7 @@ class OpenRouterProvider implements AiProviderInterface
         'meta-llama/llama-3.2-3b-instruct' => ['input' => 0.00005, 'output' => 0.00033],
         'meta-llama/llama-3.1-8b-instruct' => ['input' => 0.00005, 'output' => 0.00008],
     ];
+
     private const FALLBACK_PRICING = ['input' => 0.0005, 'output' => 0.0015];
 
     public function __construct()
@@ -49,10 +53,10 @@ class OpenRouterProvider implements AiProviderInterface
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
                 'HTTP-Referer' => config('app.url'),
-                'X-Title' => config('app.name') . ' AI Assistant',
+                'X-Title' => config('app.name').' AI Assistant',
             ])->connectTimeout(10)->timeout($this->timeout)->post("{$this->baseUrl}/chat/completions", [
                 'model' => $model,
                 'messages' => $messages,
@@ -103,12 +107,13 @@ class OpenRouterProvider implements AiProviderInterface
 
     public function isAvailable(): bool
     {
-        return !empty($this->apiKey);
+        return ! empty($this->apiKey);
     }
 
     public function healthCheck(): array
     {
-        $configured = !empty($this->apiKey);
+        $configured = ! empty($this->apiKey);
+
         return [
             'provider' => 'openrouter',
             'reachable' => $configured,
@@ -124,6 +129,7 @@ class OpenRouterProvider implements AiProviderInterface
     private function calculateCost(string $model, int $inputTokens, int $outputTokens): float
     {
         $pricing = self::PRICING[$model] ?? self::FALLBACK_PRICING;
+
         return (($inputTokens * $pricing['input']) + ($outputTokens * $pricing['output'])) / 1000;
     }
 }

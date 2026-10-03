@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 
 class ApprovePendingUsers extends Command
 {
@@ -38,7 +37,7 @@ class ApprovePendingUsers extends Command
 
         // Show all users with their status
         $users = User::all(['id', 'name', 'email', 'role', 'is_active', 'approved_at']);
-        
+
         $this->table(
             ['ID', 'Name', 'Email', 'Role', 'Active', 'Approved At'],
             $users->map(function ($user) {
@@ -59,22 +58,24 @@ class ApprovePendingUsers extends Command
         if ($pendingUsers->isEmpty()) {
             $this->info('No inactive users found.');
             $this->info('All users are already active. Setting password "password" for all users...');
-            
+
             // Set password to 'password' for all users
             foreach ($users as $user) {
                 $user->password = Hash::make('password');
                 $user->save();
                 $this->info("✓ Password set for user: {$user->name}");
             }
-            
+
             $this->info("Password 'password' set for all {$users->count()} users.");
+
             return Command::SUCCESS;
         }
 
         $this->info("Found {$pendingUsers->count()} inactive users to approve.");
 
-        if (!$this->confirm("Do you want to approve all {$pendingUsers->count()} inactive users with password 'password'?")) {
+        if (! $this->confirm("Do you want to approve all {$pendingUsers->count()} inactive users with password 'password'?")) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 
@@ -96,6 +97,7 @@ class ApprovePendingUsers extends Command
         }
 
         $this->info("Successfully approved {$pendingUsers->count()} users.");
+
         return Command::SUCCESS;
     }
 }

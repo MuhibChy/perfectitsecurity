@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LinkSubmission;
 use App\Models\UsefulLink;
-use Illuminate\Http\Request;
 
 class LinkSubmissionController extends Controller
 {
     public function index()
     {
         $submissions = LinkSubmission::latest()->paginate(20);
+
         return view('admin.link-submissions.index', compact('submissions'));
     }
 
@@ -41,6 +41,7 @@ class LinkSubmissionController extends Controller
     public function reject(LinkSubmission $linkSubmission)
     {
         $linkSubmission->update(['status' => 'rejected']);
+
         return redirect()->route('admin.link-submissions.index')->with('success', 'Submission rejected.');
     }
 }

@@ -30,7 +30,7 @@ class Subscription extends Model
     {
         static::creating(function ($s) {
             if (empty($s->subscription_number)) {
-                $s->subscription_number = 'SUB-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $s->subscription_number = 'SUB-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }

@@ -18,11 +18,11 @@ class BackupVerificationService
     {
         $detail = [];
         foreach ($backup->files as $file) {
-            $staged = $workDir . DIRECTORY_SEPARATOR . 'verify-' . $file->id . '-' . basename($file->path);
+            $staged = $workDir.DIRECTORY_SEPARATOR.'verify-'.$file->id.'-'.basename($file->path);
             $payload = $staged;
             $adapter->get($file->path, $staged);
             if ($file->encrypted) {
-                $payload = $staged . '.dec';
+                $payload = $staged.'.dec';
                 BackupEncryptionService::decrypt($staged, $payload);
             }
             $actual = @hash_file('sha256', $payload);
@@ -97,7 +97,7 @@ class BackupVerificationService
                 $isSqliteFile = @file_get_contents($scratch, false, null, 0, 16) !== false
                     && str_starts_with((string) @file_get_contents($scratch, false, null, 0, 16), 'SQLite format 3');
                 if ($isSqliteFile) {
-                    $pdo = new \PDO('sqlite:' . $scratch);
+                    $pdo = new \PDO('sqlite:'.$scratch);
                     $existing = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(\PDO::FETCH_COLUMN);
                     foreach ($tables as $t) {
                         $live = 0;
@@ -121,7 +121,7 @@ class BackupVerificationService
                     } catch (\Throwable) {
                         $live = null;
                     }
-                    $result[$t] = ['live' => $live, 'backup' => substr_count($sql, "INSERT INTO \"{$t}\"") . ' inserts'];
+                    $result[$t] = ['live' => $live, 'backup' => substr_count($sql, "INSERT INTO \"{$t}\"").' inserts'];
                 }
             } finally {
                 @unlink($scratch);

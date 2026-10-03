@@ -26,12 +26,13 @@ class ServiceTrackingController extends Controller
         $answeredIds = ServiceEvent::whereIn('action', ['update_published', 'query_answered'])
             ->selectRaw('MAX(id) as id')->groupBy('entity_type', 'entity_id')->pluck('id');
         $answeredKeys = ServiceEvent::whereIn('id', $answeredIds)->get()
-            ->map(fn ($e) => $e->entity_type . ':' . $e->entity_id)->all();
-        $followUps = $followUps->reject(fn ($e) => in_array($e->entity_type . ':' . $e->entity_id, $answeredKeys)
+            ->map(fn ($e) => $e->entity_type.':'.$e->entity_id)->all();
+        $followUps = $followUps->reject(fn ($e) => in_array($e->entity_type.':'.$e->entity_id, $answeredKeys)
             && ServiceEvent::where('entity_type', $e->entity_type)->where('entity_id', $e->entity_id)->whereIn('action', ['update_published', 'query_answered'])->where('created_at', '>', $e->created_at)->exists());
         $maintenanceDue = ServiceMaintenance::with(['customer', 'project', 'assignee'])
             ->whereIn('status', ['scheduled', 'active'])->whereDate('next_due_at', '<=', today()->addDays(14))
             ->orderBy('next_due_at')->take(20)->get();
+
         return view('admin.tracking.operations', compact('stats', 'active', 'followUps', 'maintenanceDue'));
     }
 
@@ -44,6 +45,7 @@ class ServiceTrackingController extends Controller
         $etaHistory = ServiceTrackingService::etaHistory(Project::class, $project->id);
         $maintenances = ServiceMaintenance::where('project_id', $project->id)->latest()->get();
         $changes = ServiceChangeRequest::with('requester')->where('project_id', $project->id)->latest()->get();
+
         return view('admin.tracking.service', compact('project', 'progress', 'stage', 'timeline', 'etaHistory', 'maintenances', 'changes'));
     }
 
@@ -60,6 +62,7 @@ class ServiceTrackingController extends Controller
             'metadata' => ['next_update' => $data['next_update'] ?? null], 'visible' => true,
         ]);
         ServiceTrackingService::notify($project->customer_id, 'service_update', 'Service update published', "New update on '{$project->name}'.");
+
         return back()->with('success', 'Customer-visible update published and the customer notified.');
     }
 
@@ -74,6 +77,7 @@ class ServiceTrackingController extends Controller
             'project_id' => $project->id, 'customer_id' => $project->customer_id,
             'action' => 'progress_updated', 'comment' => 'Internal note recorded.', 'visible' => false,
         ]);
+
         return back()->with('success', 'Internal note recorded (never visible to the customer).');
     }
 
@@ -90,6 +94,7 @@ class ServiceTrackingController extends Controller
         if ($event->customer_id) {
             ServiceTrackingService::notify($event->customer_id, 'service_update', 'Response to your query', mb_substr($data['answer'], 0, 200));
         }
+
         return back()->with('success', 'Response recorded and linked to the service.');
     }
 
@@ -109,6 +114,7 @@ class ServiceTrackingController extends Controller
             'project_id' => $project->id, 'customer_id' => $project->customer_id,
             'action' => 'maintenance_scheduled', 'comment' => $maintenance->title, 'visible' => true,
         ]);
+
         return back()->with('success', 'Maintenance scheduled with customer visibility.');
     }
 
@@ -120,6 +126,7 @@ class ServiceTrackingController extends Controller
             'project_id' => $maintenance->project_id, 'customer_id' => $maintenance->customer_id,
             'action' => 'maintenance_completed', 'comment' => $maintenance->title, 'visible' => true,
         ]);
+
         return back()->with('success', 'Maintenance marked completed.');
     }
 
@@ -145,7 +152,8 @@ class ServiceTrackingController extends Controller
             'action' => 'change_decided', 'old' => 'requested', 'new' => $data['status'],
             'reason' => $data['decision_note'], 'visible' => true,
         ]);
-        ServiceTrackingService::notify($change->requested_by, 'change_decision', 'Change request ' . $data['status'], mb_substr($data['decision_note'], 0, 200));
+        ServiceTrackingService::notify($change->requested_by, 'change_decision', 'Change request '.$data['status'], mb_substr($data['decision_note'], 0, 200));
+
         return back()->with('success', 'Change request decided and the customer notified.');
     }
 }

@@ -27,14 +27,28 @@ class ServiceAgreement extends Model
     {
         static::creating(function ($agreement) {
             if (empty($agreement->agreement_number)) {
-                $agreement->agreement_number = 'AGR-' . strtoupper(Str::random(8));
+                $agreement->agreement_number = 'AGR-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeActive($query) { return $query->where('status', 'active'); }
-    public function scopeForCustomer($query, $customerId) { return $query->where('customer_id', $customerId); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeForCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
 }

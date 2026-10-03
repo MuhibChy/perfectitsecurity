@@ -16,17 +16,27 @@ use Tests\TestCase;
 class FakeRoutingProvider implements AiProviderInterface
 {
     public static array $lastMessages = [];
+
     public static bool $called = false;
 
     public function chat(array $messages, array $options = []): array
     {
         self::$called = true;
         self::$lastMessages = $messages;
+
         return ['content' => 'Provider-generated answer.', 'tokens_used' => 10, 'model' => 'fake', 'cost' => 0.0];
     }
 
-    public function getName(): string { return 'fake-routing'; }
-    public function isAvailable(): bool { return true; }
+    public function getName(): string
+    {
+        return 'fake-routing';
+    }
+
+    public function isAvailable(): bool
+    {
+        return true;
+    }
+
     public function healthCheck(): array
     {
         return ['provider' => 'fake-routing', 'reachable' => true, 'model' => 'fake',
@@ -51,6 +61,7 @@ class AiSkillsRoutingTest extends TestCase
         $ref->setValue($svc, new FakeRoutingProvider());
         FakeRoutingProvider::$lastMessages = [];
         FakeRoutingProvider::$called = false;
+
         return $svc;
     }
 
@@ -58,8 +69,9 @@ class AiSkillsRoutingTest extends TestCase
     {
         $cat = KbCategory::firstOrCreate(['slug' => 'routing-cat'], ['name' => 'Routing']);
         $author = User::factory()->create(['role' => 'admin']);
+
         return KbArticle::create([
-            'category_id' => $cat->id, 'author_id' => $author->id, 'title' => $title, 'slug' => \Illuminate\Support\Str::slug($title) . '-' . uniqid(),
+            'category_id' => $cat->id, 'author_id' => $author->id, 'title' => $title, 'slug' => \Illuminate\Support\Str::slug($title).'-'.uniqid(),
             'content' => $content, 'visibility' => 'public', 'is_published' => true, 'ai_readable' => true,
         ]);
     }
@@ -149,7 +161,7 @@ class AiSkillsRoutingTest extends TestCase
         $cat = \App\Models\KbCategory::firstOrCreate(['slug' => 'routing-cat'], ['name' => 'Routing']);
         $admin = User::factory()->create(['role' => 'admin']);
         \App\Models\KbArticle::create(['category_id' => $cat->id, 'author_id' => $admin->id,
-            'title' => 'Internal Escalation Matrix', 'slug' => 'internal-escalation-matrix-' . uniqid(),
+            'title' => 'Internal Escalation Matrix', 'slug' => 'internal-escalation-matrix-'.uniqid(),
             'content' => 'Internal escalation matrix for staff rota handling.', 'visibility' => 'employee',
             'is_published' => true, 'ai_readable' => true]);
         $this->assertEmpty($svc->searchRelevantArticles('Internal Escalation Matrix rota', null, 3));

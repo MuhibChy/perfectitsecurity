@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use App\Models\TicketAttachment;
 use App\Models\TicketCategory;
 use App\Models\TicketMessage;
-use App\Models\TicketAttachment;
 use App\Services\SlaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +16,9 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         $query = Ticket::where('customer_id', auth()->id())->with('category', 'assignee');
-        if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
         if ($request->filled('search')) {
             $s = addcslashes(mb_substr(trim((string) $request->search), 0, 100), '%_\\');
             $query->where(fn ($w) => $w->where('ticket_number', 'like', "%{$s}%")->orWhere('subject', 'like', "%{$s}%"));
@@ -29,6 +31,7 @@ class TicketController extends Controller
     public function create()
     {
         $categories = TicketCategory::where('is_active', true)->get();
+
         return view('customer.tickets.create', compact('categories'));
     }
 
@@ -77,6 +80,7 @@ class TicketController extends Controller
     public function show($id)
     {
         $ticket = Ticket::where('customer_id', auth()->id())->with('messages.user', 'attachments', 'category', 'assignee')->findOrFail($id);
+
         return view('customer.tickets.show', compact('ticket'));
     }
 

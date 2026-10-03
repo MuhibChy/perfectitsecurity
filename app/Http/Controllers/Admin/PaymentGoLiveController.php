@@ -29,6 +29,7 @@ class PaymentGoLiveController extends Controller
         $provider = strtolower($provider);
         abort_unless(array_key_exists($provider, PaymentReadinessService::CATALOG), 404);
         $detail = $readiness->forProvider($provider);
+
         return view('admin.payments.readiness.show', [
             'detail' => $detail,
             'confirmation' => PaymentReadinessService::CONFIRMATION_PHRASE,
@@ -49,17 +50,18 @@ class PaymentGoLiveController extends Controller
         }
         $row = PaymentProvider::where('key', $provider)->first();
         $gate = $readiness->canActivateLive($provider, $row);
-        if (!$gate['ok']) {
-            return back()->withErrors(['provider' => 'LIVE activation blocked: ' . implode(' ', $gate['blockers'])]);
+        if (! $gate['ok']) {
+            return back()->withErrors(['provider' => 'LIVE activation blocked: '.implode(' ', $gate['blockers'])]);
         }
         $old = $row->only(['status', 'environment']);
         $row->update(['environment' => 'live', 'status' => 'live', 'updated_by' => auth()->id()]);
         AuditLog::log('provider.live_activated', 'payment_providers', $row,
-            "Provider {$provider} activated LIVE by " . (auth()->user()->email ?? auth()->id()) . '.',
+            "Provider {$provider} activated LIVE by ".(auth()->user()->email ?? auth()->id()).'.',
             ['status' => $old['status'], 'environment' => $old['environment']],
             ['status' => 'live', 'environment' => 'live', 'app_env' => app()->environment(), 'checks_passed' => true]);
+
         return redirect()->route('admin.payments.readiness.show', $provider)
-            ->with('status', strtoupper($row->name ?? $provider) . ' is now LIVE. Real payments will be processed.');
+            ->with('status', strtoupper($row->name ?? $provider).' is now LIVE. Real payments will be processed.');
     }
 
     public function health(PaymentReadinessService $readiness)

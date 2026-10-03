@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ticket;
-use App\Models\Project;
-use App\Models\Invoice;
-use App\Models\User;
 use App\Models\Commission;
-use App\Models\Expense;
+use App\Models\Project;
 use App\Models\Task;
+use App\Models\Ticket;
+use App\Models\User;
 use App\Services\FinancialService;
 use App\Services\SlaService;
 
@@ -66,6 +64,7 @@ class DashboardController extends Controller
         $expr = $driver === 'mysql'
             ? "DATE_FORMAT(created_at, '%Y-%m') as ym"
             : "strftime('%Y-%m', created_at) as ym";
+
         return \App\Models\FinancialTransaction::{$scope}()
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
@@ -83,6 +82,7 @@ class DashboardController extends Controller
                 $month = now()->subMonths($i);
                 $data[] = ['label' => $month->format('M Y'), 'value' => (float) ($sums[$month->format('Y-m')] ?? 0)];
             }
+
             return $data;
         });
     }
@@ -96,6 +96,7 @@ class DashboardController extends Controller
                 $month = now()->subMonths($i);
                 $data[] = ['label' => $month->format('M Y'), 'value' => (float) ($sums[$month->format('Y-m')] ?? 0)];
             }
+
             return $data;
         });
     }

@@ -14,8 +14,12 @@ class ItsmChangeController extends Controller
     public function index(Request $request)
     {
         $query = ItsmChange::with('customer', 'assignee');
-        if ($request->status) $query->where('status', $request->status);
-        if ($request->risk) $query->where('risk', $request->risk);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->risk) {
+            $query->where('risk', $request->risk);
+        }
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('change_number', 'like', "%{$request->search}%")
@@ -23,6 +27,7 @@ class ItsmChangeController extends Controller
             });
         }
         $changes = $query->latest()->paginate(20);
+
         return view('admin.changes.index', compact('changes'));
     }
 
@@ -30,6 +35,7 @@ class ItsmChangeController extends Controller
     {
         $agents = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin'])
             ->where('is_active', true)->get();
+
         return view('admin.changes.create', compact('agents'));
     }
 
@@ -61,6 +67,7 @@ class ItsmChangeController extends Controller
         $change->load('customer', 'requester', 'assignee', 'approvals.approver', 'workflowApprovals');
         $agents = User::whereIn('role', ['support_agent', 'support_manager', 'admin', 'super_admin'])
             ->where('is_active', true)->get();
+
         return view('admin.changes.show', compact('change', 'agents'));
     }
 

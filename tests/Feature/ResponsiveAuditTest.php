@@ -93,7 +93,7 @@ class ResponsiveAuditTest extends TestCase
                 }
             }
         }
-        $this->assertEmpty($mono, 'Retired monochrome CTAs remain: ' . implode(', ', $mono));
+        $this->assertEmpty($mono, 'Retired monochrome CTAs remain: '.implode(', ', $mono));
     }
 
     /** @test */

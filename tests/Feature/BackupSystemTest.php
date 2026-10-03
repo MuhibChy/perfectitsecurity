@@ -56,12 +56,12 @@ class BackupSystemTest extends TestCase
     {
         $tmp = tempnam(sys_get_temp_dir(), 'bkp-enc-');
         file_put_contents($tmp, 'sensitive-payload');
-        $enc = $tmp . '.enc';
+        $enc = $tmp.'.enc';
         BackupEncryptionService::encrypt($tmp, $enc);
-        copy($enc, $tmp . '.orig-enc');
+        copy($enc, $tmp.'.orig-enc');
         $this->assertNotEquals(file_get_contents($tmp), file_get_contents($enc));
 
-        $dec = $tmp . '.dec';
+        $dec = $tmp.'.dec';
         BackupEncryptionService::decrypt($enc, $dec);
         $this->assertEquals('sensitive-payload', file_get_contents($dec));
 
@@ -73,10 +73,10 @@ class BackupSystemTest extends TestCase
         $raw[$pos] = $raw[$pos] === 'A' ? 'B' : 'A';
         file_put_contents($enc, $raw);
         try {
-            BackupEncryptionService::decrypt($enc, $dec . '.tampered');
+            BackupEncryptionService::decrypt($enc, $dec.'.tampered');
             // CBC without MAC may still return: then payload must be corrupted
             // (the backup checksum layer rejects it on verify).
-            $this->assertNotEquals('sensitive-payload', file_get_contents($dec . '.tampered'));
+            $this->assertNotEquals('sensitive-payload', file_get_contents($dec.'.tampered'));
         } catch (\Throwable) {
             $this->assertTrue(true); // padding failure = tamper detected at decrypt
         }
@@ -84,8 +84,8 @@ class BackupSystemTest extends TestCase
         // fails padding outright; otherwise returns garbled bytes).
         config(['backup.encryption.key' => base64_encode(random_bytes(32))]);
         try {
-            BackupEncryptionService::decrypt($tmp . '.orig-enc', $dec . '.wrongkey');
-            $this->assertNotEquals('sensitive-payload', @file_get_contents($dec . '.wrongkey'));
+            BackupEncryptionService::decrypt($tmp.'.orig-enc', $dec.'.wrongkey');
+            $this->assertNotEquals('sensitive-payload', @file_get_contents($dec.'.wrongkey'));
         } catch (\Throwable) {
             $this->assertTrue(true);
         }
@@ -164,7 +164,7 @@ class BackupSystemTest extends TestCase
     public function test_no_backup_paths_exposed_as_public_urls(): void
     {
         $backup = app(BackupOrchestratorService::class)->run('db', 'manual', $this->admin());
-        $response = $this->actingAs($this->admin())->get('/admin/backups/' . $backup->id);
+        $response = $this->actingAs($this->admin())->get('/admin/backups/'.$backup->id);
         $response->assertOk();
         foreach ($backup->files as $file) {
             $this->assertStringNotContainsString('/storage/', $file->path);

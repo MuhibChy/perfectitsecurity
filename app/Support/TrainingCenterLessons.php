@@ -383,8 +383,11 @@ class TrainingCenterLessons
     public static function find(string $slug): ?array
     {
         foreach (self::all() as $lesson) {
-            if ($lesson['slug'] === $slug) return $lesson;
+            if ($lesson['slug'] === $slug) {
+                return $lesson;
+            }
         }
+
         return null;
     }
 

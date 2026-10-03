@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
 
 class RegisterController extends Controller
 {
     use \App\Http\Controllers\Concerns\ResolvesPhoneInput;
+
     public function showRegistrationForm()
     {
         return view('auth.register', [
@@ -34,7 +35,7 @@ class RegisterController extends Controller
             'company_name' => ['nullable', 'string', 'max:255'],
             // Role manipulation is neutralized server-side: unknown or
             // disallowed values fall back to the customer policy outcome.
-            'role' => ['nullable', 'string', 'max:50', 'in:' . implode(',', array_merge(['customer'], $allowedRoles))],
+            'role' => ['nullable', 'string', 'max:50', 'in:'.implode(',', array_merge(['customer'], $allowedRoles))],
         ]);
 
         $outcome = \App\Support\RoleRegistry::registrationOutcome(
@@ -70,7 +71,8 @@ class RegisterController extends Controller
 
         if ($user->hasPendingRoleRequest()) {
             \App\Models\AuditLog::log('role.requested', 'roles', $user, "Role requested at registration: {$user->requested_role} (pending approval).", null, ['requested_role' => $user->requested_role]);
-            return redirect()->route('verification.notice')->with('success', 'Account created. Your request for the ' . \App\Support\RoleRegistry::displayName($user->requested_role) . ' role is pending administrator approval.');
+
+            return redirect()->route('verification.notice')->with('success', 'Account created. Your request for the '.\App\Support\RoleRegistry::displayName($user->requested_role).' role is pending administrator approval.');
         }
 
         return redirect()->route('verification.notice');

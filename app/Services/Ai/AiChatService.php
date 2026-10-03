@@ -3,12 +3,10 @@
 namespace App\Services\Ai;
 
 use App\Models\AiConversation;
-use App\Models\AiMessage;
 use App\Models\AiSkill as AiSkillModel;
 use App\Models\AiUsageRecord;
-use App\Models\AiKnowledgeGap;
-use App\Models\User;
 use App\Models\TicketCategory;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class AiChatService
@@ -21,6 +19,7 @@ class AiChatService
     public const INTERNAL_RELEVANCE_THRESHOLD = 2;
 
     private AiProviderInterface $provider;
+
     private AiKnowledgeService $knowledgeService;
 
     public function __construct()
@@ -36,7 +35,9 @@ class AiChatService
     {
         if ($user) {
             $existing = AiConversation::where('user_id', $user->id)->active()->first();
-            if ($existing) return $existing;
+            if ($existing) {
+                return $existing;
+            }
         }
 
         return AiConversation::create([
@@ -62,8 +63,9 @@ class AiChatService
 
         // Check for prompt-injection or unauthorized system extraction attempts
         if ($this->isPromptInjectionAttempt($userMessage)) {
-            $refusal = "I cannot fulfill this request. As the official " . config('app.name') . " AI Assistant, I operate strictly within authorized cybersecurity and IT customer service boundaries. I am here to assist with services, quotations, support tickets, and company information.";
+            $refusal = 'I cannot fulfill this request. As the official '.config('app.name').' AI Assistant, I operate strictly within authorized cybersecurity and IT customer service boundaries. I am here to assist with services, quotations, support tickets, and company information.';
             $conversation->messages()->create(['role' => 'assistant', 'content' => $refusal]);
+
             return [
                 'success' => true,
                 'message' => $refusal,
@@ -81,6 +83,7 @@ class AiChatService
                 'content' => $greeting,
                 'metadata' => ['answer_source' => 'deterministic'],
             ]);
+
             return [
                 'success' => true,
                 'message' => $greeting,
@@ -124,6 +127,7 @@ class AiChatService
                 'content' => $statusAnswer,
                 'metadata' => ['answer_source' => 'deterministic'],
             ]);
+
             return [
                 'success' => true,
                 'message' => $statusAnswer,
@@ -158,7 +162,7 @@ class AiChatService
 
         // Build the AI prompt with context (retrieval runs against the
         // CURRENT user message, not a stale history tail).
-        $messages = $this->buildMessages($conversation, $userMessage, $internalSufficient ? $relevantArticles : [], $skill, !$internalSufficient);
+        $messages = $this->buildMessages($conversation, $userMessage, $internalSufficient ? $relevantArticles : [], $skill, ! $internalSufficient);
 
         // Generate AI response
         $startTime = microtime(true);
@@ -167,7 +171,7 @@ class AiChatService
                 'temperature' => $skill?->temperature ?? 0.7,
                 'max_tokens' => $skill?->max_tokens ?? 512,
             ]);
-            $responseTime = (int)((microtime(true) - $startTime) * 1000);
+            $responseTime = (int) ((microtime(true) - $startTime) * 1000);
 
             $content = $result['content'];
 
@@ -180,9 +184,9 @@ class AiChatService
             // user). Never expose internal IDs, links, or restricted docs.
             // General-knowledge answers are explicitly labeled as such —
             // never presented as official company policy.
-            if ($answerSource === 'internal' && !empty($sources)) {
+            if ($answerSource === 'internal' && ! empty($sources)) {
                 $titles = array_unique(array_column($sources, 'title'));
-                $content .= "\n\n**Sources:** " . implode('; ', $titles);
+                $content .= "\n\n**Sources:** ".implode('; ', $titles);
                 $content .= "\n✓ Company Knowledge Base";
             } elseif ($answerSource === 'general') {
                 $content .= "\n\n_AI-generated general guidance — not official company policy. For binding answers, contact our support team._";
@@ -258,7 +262,7 @@ class AiChatService
     private function buildSystemPrompt(AiConversation $conversation, string $userMessage, array $relevantArticles = [], ?AiSkillModel $skill = null, bool $generalFallback = false): string
     {
         $user = $conversation->user;
-        $prompt = "You are the official AI customer support assistant for " . config('app.name') . ", an IT support, cybersecurity, and technology services company.\n\n";
+        $prompt = 'You are the official AI customer support assistant for '.config('app.name').", an IT support, cybersecurity, and technology services company.\n\n";
         $prompt .= "## Your Role\n";
         $prompt .= "- Help visitors and customers understand our services and use our platform\n";
         $prompt .= "- Answer using ONLY approved company information available to you (knowledge base excerpts, service catalogue, company info in this prompt)\n";
@@ -299,7 +303,7 @@ class AiChatService
         // the model): authoritative behavior definition for this message.
         if ($skill) {
             $prompt .= "## Active Skill: {$skill->name}\n";
-            $prompt .= mb_substr($skill->system_instructions, 0, 2000) . "\n\n";
+            $prompt .= mb_substr($skill->system_instructions, 0, 2000)."\n\n";
         }
 
         // General-knowledge fallback framing: internal Skills + Knowledge
@@ -318,28 +322,28 @@ class AiChatService
             $customInstructions = trim((string) \App\Models\AiSetting::get('ai_system_prompt', ''));
             if ($customInstructions !== '') {
                 $prompt .= "## Additional Company Instructions (administrator-configured, authoritative)\n";
-                $prompt .= mb_substr($customInstructions, 0, 2000) . "\n\n";
+                $prompt .= mb_substr($customInstructions, 0, 2000)."\n\n";
             }
         } catch (\Throwable $e) {
             // Settings table unavailable — continue with the default prompt.
         }
 
         // Company info
-        $prompt .= $this->knowledgeService->getCompanyInfo() . "\n";
-        $prompt .= $this->knowledgeService->getServicesInfo() . "\n";
+        $prompt .= $this->knowledgeService->getCompanyInfo()."\n";
+        $prompt .= $this->knowledgeService->getServicesInfo()."\n";
 
         // Knowledge base context (already filtered to this user's authorized visibility)
-        if (!empty($relevantArticles)) {
+        if (! empty($relevantArticles)) {
             $prompt .= "## Relevant Knowledge Base Articles\n";
-            $prompt .= $this->knowledgeService->buildContextFromArticles($relevantArticles) . "\n";
+            $prompt .= $this->knowledgeService->buildContextFromArticles($relevantArticles)."\n";
         }
 
         // Customer context (if logged in)
         if ($user && $user->isCustomer()) {
             $customerContext = $this->knowledgeService->getCustomerContext($user);
-            if (!empty($customerContext)) {
+            if (! empty($customerContext)) {
                 $prompt .= "## Customer Information (Authorized Access)\n";
-                $prompt .= json_encode($customerContext, JSON_PRETTY_PRINT) . "\n\n";
+                $prompt .= json_encode($customerContext, JSON_PRETTY_PRINT)."\n\n";
                 $prompt .= "You may reference this customer's tickets, projects, and invoices in your responses.\n";
             }
         }
@@ -347,24 +351,24 @@ class AiChatService
         // Role context (logged-in users): capabilities gate every answer.
         if ($user && $user->role) {
             $prompt .= "## User Role & Permissions (authoritative)\n";
-            $prompt .= \App\Support\RoleRegistry::aiBrief($user->role) . "\n";
+            $prompt .= \App\Support\RoleRegistry::aiBrief($user->role)."\n";
         }
 
         // Staff work-history context (own records only).
         if ($user && $user->isStaff()) {
             $staffContext = $this->knowledgeService->getStaffContext($user);
-            if (!empty($staffContext)) {
+            if (! empty($staffContext)) {
                 $prompt .= "## Staff Work History (their own recorded work)\n";
-                $prompt .= json_encode($staffContext, JSON_PRETTY_PRINT) . "\n\n";
+                $prompt .= json_encode($staffContext, JSON_PRETTY_PRINT)."\n\n";
             }
         }
 
         $prompt .= "\n## Guidelines\n";
         $prompt .= "- If the customer asks to create a ticket, guide them through the process\n";
-        $prompt .= "- Recorded vs not recorded: answer history questions ONLY from the context above. "
-            . "If no payment, work update, or history record appears there, say clearly that no record was found — never invent payments, work, or communications\n";
-        $prompt .= "- Service-status questions (order status, stage, running time, ETA, latest update): answer ONLY from the services/work context above, "
-            . "stating figures exactly as recorded; if ETA shows 'Being assessed' or no update exists, say so plainly instead of estimating\n";
+        $prompt .= '- Recorded vs not recorded: answer history questions ONLY from the context above. '
+            ."If no payment, work update, or history record appears there, say clearly that no record was found — never invent payments, work, or communications\n";
+        $prompt .= '- Service-status questions (order status, stage, running time, ETA, latest update): answer ONLY from the services/work context above, '
+            ."stating figures exactly as recorded; if ETA shows 'Being assessed' or no update exists, say so plainly instead of estimating\n";
         $prompt .= "- If the customer wants to speak to a human, offer to escalate\n";
         $prompt .= "- Keep responses concise and actionable\n";
         $prompt .= "- Use formatting (bullet points, numbered lists) for clarity\n";
@@ -380,10 +384,14 @@ class AiChatService
     public function answerGreeting(AiConversation $conversation, string $userMessage): ?string
     {
         $clean = strtolower(trim(preg_replace('/[!.,?]+$/', '', trim($userMessage))));
-        if (mb_strlen($clean) > 24) return null;
+        if (mb_strlen($clean) > 24) {
+            return null;
+        }
         $greetings = ['hi', 'hii', 'hiii', 'hello', 'hey', 'yo', 'good morning', 'good afternoon', 'good evening',
             'thanks', 'thank you', 'thankyou', 'thx', 'bye', 'goodbye', 'good bye', 'see you', 'ok', 'okay'];
-        if (!in_array($clean, $greetings, true)) return null;
+        if (! in_array($clean, $greetings, true)) {
+            return null;
+        }
 
         $name = $conversation->user?->name;
         $hello = $name ? "Hi {$name}!" : 'Hi there!';
@@ -393,7 +401,8 @@ class AiChatService
         if (in_array($clean, ['bye', 'goodbye', 'good bye', 'see you'], true)) {
             return "Goodbye! I'll be here whenever you need help with our services or support.";
         }
-        return "{$hello} I'm the " . config('app.name') . " AI Support Assistant. I can explain our services, help you request a quotation, check your tickets and orders, or create a support request.\n\nHow can I help you today?";
+
+        return "{$hello} I'm the ".config('app.name')." AI Support Assistant. I can explain our services, help you request a quotation, check your tickets and orders, or create a support request.\n\nHow can I help you today?";
     }
 
     /**
@@ -418,11 +427,11 @@ class AiChatService
         $isProjectQ = str_contains($lower, 'project') || ($ref && str_starts_with($ref, 'PRJ-'));
         $isInvoiceQ = str_contains($lower, 'invoice') || str_contains($lower, 'payment') || str_contains($lower, 'bill') || ($ref && str_starts_with($ref, 'INV-'));
         $isContractQ = str_contains($lower, 'contract') || ($ref && str_starts_with($ref, 'CT-'));
-        $isQuoteQ = (str_contains($lower, 'quote') || str_contains($lower, 'quotation') || str_contains($lower, 'proposal')) && !$isTicketQ;
-        $isServiceQ = (str_contains($lower, 'service') || str_contains($lower, 'subscriptions')) && !$isQuoteQ && !$isTicketQ;
+        $isQuoteQ = (str_contains($lower, 'quote') || str_contains($lower, 'quotation') || str_contains($lower, 'proposal')) && ! $isTicketQ;
+        $isServiceQ = (str_contains($lower, 'service') || str_contains($lower, 'subscriptions')) && ! $isQuoteQ && ! $isTicketQ;
         $isAdminSummaryQ = $user && $user->isAdmin() && (str_contains($lower, 'operational') || str_contains($lower, 'workload') || str_contains($lower, 'unresolved') || str_contains($lower, 'summary'));
 
-        if (!($isTicketQ || $isOrderQ || $isProjectQ || $isInvoiceQ || $isContractQ || $isQuoteQ || $isServiceQ || $isAdminSummaryQ)) {
+        if (! ($isTicketQ || $isOrderQ || $isProjectQ || $isInvoiceQ || $isContractQ || $isQuoteQ || $isServiceQ || $isAdminSummaryQ)) {
             return null;
         }
 
@@ -434,87 +443,112 @@ class AiChatService
             || str_contains($lower, 'status of')
             || $isAdminSummaryQ
             || preg_match('/\b(check|view|show|see|track|list|where is|where are)\b/', $lower);
-        if (!$selfSignal) {
+        if (! $selfSignal) {
             return null;
         }
 
         if ($isAdminSummaryQ) {
             $op = $agent->getOperationalSummary($user);
-            return "Operational Overview for Administrator:\n" .
-                "- **Open Support Tickets:** {$op['open_tickets']} ({$op['unassigned_tickets']} unassigned)\n" .
-                "- **New Service Requests:** {$op['new_service_requests']}\n" .
-                "- **Active Service Orders:** {$op['active_orders']}\n" .
-                "- **Pending Escalations:** {$op['pending_escalations']}\n" .
-                "- **AI Conversations Today:** {$op['active_conversations_today']}\n\n" .
-                "Administrative controls: /admin";
+
+            return "Operational Overview for Administrator:\n".
+                "- **Open Support Tickets:** {$op['open_tickets']} ({$op['unassigned_tickets']} unassigned)\n".
+                "- **New Service Requests:** {$op['new_service_requests']}\n".
+                "- **Active Service Orders:** {$op['active_orders']}\n".
+                "- **Pending Escalations:** {$op['pending_escalations']}\n".
+                "- **AI Conversations Today:** {$op['active_conversations_today']}\n\n".
+                'Administrative controls: /admin';
         }
 
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             if ($user && $user->isStaff() && (str_contains($lower, 'assigned') || str_contains($lower, 'my tickets') || str_contains($lower, 'my tasks'))) {
                 return $this->answerStaffSummary($user);
             }
-            return "To check personal records I need you signed in — please log in to your customer portal first, then ask again. I can already answer general service questions.";
+
+            return 'To check personal records I need you signed in — please log in to your customer portal first, then ask again. I can already answer general service questions.';
         }
 
         if ($isServiceQ) {
             $services = $agent->getCustomerServices($user);
-            if (empty($services)) return "You do not have any active services yet. You can browse our catalogue at /services or request a quotation at /get-quote.";
+            if (empty($services)) {
+                return 'You do not have any active services yet. You can browse our catalogue at /services or request a quotation at /get-quote.';
+            }
             $lines = array_map(fn ($s) => "- **{$s['service']}** ({$s['order_number']}) — {$s['status']}", $services);
-            return "Your active services:\n" . implode("\n", $lines) . "\n\nDetails: /portal/orders";
+
+            return "Your active services:\n".implode("\n", $lines)."\n\nDetails: /portal/orders";
         }
 
         if ($isTicketQ) {
             if ($ref && str_starts_with($ref, 'TK-')) {
                 $t = $agent->getTicketStatus($user, $ref);
+
                 return $t
                     ? "Ticket **{$t['number']}** ({$t['subject']}): status **{$t['status']}**, priority {$t['priority']}, SLA: {$t['sla']}."
                     : "I couldn't find ticket {$ref} in your account. Check the number or open /portal/tickets to browse.";
             }
             $tickets = $agent->getCustomerTickets($user);
-            if (empty($tickets)) return "You have no tickets on file. Open /portal/tickets to create one, or ask me to prepare a draft.";
+            if (empty($tickets)) {
+                return 'You have no tickets on file. Open /portal/tickets to create one, or ask me to prepare a draft.';
+            }
             $lines = array_map(fn ($t) => "- **{$t['number']}** {$t['subject']} — {$t['status']} (SLA: {$t['sla']})", $tickets);
-            return "Your recent tickets:\n" . implode("\n", $lines) . "\n\nDetails: /portal/tickets";
+
+            return "Your recent tickets:\n".implode("\n", $lines)."\n\nDetails: /portal/tickets";
         }
 
         if ($isOrderQ) {
             if ($ref && str_starts_with($ref, 'ORD-')) {
                 $o = $agent->getOrderStatus($user, $ref);
+
                 return $o
                     ? "Order **{$o['number']}** ({$o['service']}): status **{$o['status']}**, total {$o['total']}, paid {$o['paid']}, due {$o['due']}."
                     : "I couldn't find order {$ref} in your account. Browse /portal/orders to check.";
             }
             $orders = $agent->getCustomerOrders($user);
-            if (empty($orders)) return "You have no orders yet. Request a service at /get-quote to get started.";
+            if (empty($orders)) {
+                return 'You have no orders yet. Request a service at /get-quote to get started.';
+            }
             $lines = array_map(fn ($o) => "- **{$o['number']}** {$o['service']} — {$o['status']}, due {$o['due']}", $orders);
-            return "Your recent orders:\n" . implode("\n", $lines) . "\n\nDetails: /portal/orders";
+
+            return "Your recent orders:\n".implode("\n", $lines)."\n\nDetails: /portal/orders";
         }
 
         if ($isProjectQ) {
             $projects = $agent->getCustomerProjects($user);
-            if (empty($projects)) return "No projects on your account yet.";
+            if (empty($projects)) {
+                return 'No projects on your account yet.';
+            }
             $lines = array_map(fn ($p) => "- **{$p['number']}** {$p['name']} — {$p['status']}, {$p['progress']}%", $projects);
-            return "Your projects:\n" . implode("\n", $lines) . "\n\nDetails: /portal/projects";
+
+            return "Your projects:\n".implode("\n", $lines)."\n\nDetails: /portal/projects";
         }
 
         if ($isInvoiceQ) {
             $invoices = $agent->getCustomerInvoiceStatus($user);
-            if (empty($invoices)) return "No invoices on your account.";
+            if (empty($invoices)) {
+                return 'No invoices on your account.';
+            }
             $lines = array_map(fn ($i) => "- **{$i['number']}** total {$i['total']}, paid {$i['paid']}, due {$i['due']} ({$i['status']})", $invoices);
-            return "Your invoices:\n" . implode("\n", $lines) . "\n\nPay or download: /portal/invoices";
+
+            return "Your invoices:\n".implode("\n", $lines)."\n\nPay or download: /portal/invoices";
         }
 
         if ($isContractQ) {
             $contracts = $agent->getCustomerContracts($user);
-            if (empty($contracts)) return "No contracts on your account.";
+            if (empty($contracts)) {
+                return 'No contracts on your account.';
+            }
             $lines = array_map(fn ($c) => "- **{$c['number']}** {$c['title']} — {$c['status']} ({$c['start']} → {$c['end']})", $contracts);
-            return "Your contracts:\n" . implode("\n", $lines);
+
+            return "Your contracts:\n".implode("\n", $lines);
         }
 
         // Quotes / proposals.
         $quotes = \App\Models\Quotation::where('customer_id', $user->id)->latest()->limit(5)->get();
-        if ($quotes->isEmpty()) return "No quotations on your account yet. Request one at /get-quote.";
+        if ($quotes->isEmpty()) {
+            return 'No quotations on your account yet. Request one at /get-quote.';
+        }
         $lines = $quotes->map(fn ($q) => "- **{$q->quotation_number}** total {$q->total} ({$q->status})")->all();
-        return "Your quotations:\n" . implode("\n", $lines) . "\n\nReview: /portal/quotations";
+
+        return "Your quotations:\n".implode("\n", $lines)."\n\nReview: /portal/quotations";
     }
 
     /** Staff self-service: assigned work summary (role-gated inside tools). */
@@ -524,8 +558,9 @@ class AiChatService
         $tickets = $agent->getAssignedTickets($user, 5);
         $tasks = $agent->getAssignedTasks($user, 5);
         $out = "Your assigned work:\n";
-        $out .= empty($tickets) ? "- No open tickets assigned.\n" : implode("\n", array_map(fn ($t) => "- Ticket **{$t['number']}** {$t['subject']} ({$t['status']})", $tickets)) . "\n";
-        $out .= empty($tasks) ? "- No open tasks assigned." : implode("\n", array_map(fn ($t) => "- Task **{$t['number']}** {$t['title']} ({$t['status']})", $tasks));
+        $out .= empty($tickets) ? "- No open tickets assigned.\n" : implode("\n", array_map(fn ($t) => "- Ticket **{$t['number']}** {$t['subject']} ({$t['status']})", $tickets))."\n";
+        $out .= empty($tasks) ? '- No open tasks assigned.' : implode("\n", array_map(fn ($t) => "- Task **{$t['number']}** {$t['title']} ({$t['status']})", $tasks));
+
         return $out;
     }
 
@@ -537,18 +572,21 @@ class AiChatService
         $uncertainPhrases = [
             "i'm not sure",
             "i don't have information",
-            "i cannot find",
-            "not available in my knowledge",
+            'i cannot find',
+            'not available in my knowledge',
             "i don't know",
-            "unable to determine",
-            "no information available",
-            "outside my knowledge",
+            'unable to determine',
+            'no information available',
+            'outside my knowledge',
         ];
 
         $lower = strtolower($content);
         foreach ($uncertainPhrases as $phrase) {
-            if (str_contains($lower, $phrase)) return true;
+            if (str_contains($lower, $phrase)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -565,8 +603,11 @@ class AiChatService
         ];
         $lower = strtolower($message);
         foreach ($escalationPhrases as $phrase) {
-            if (str_contains($lower, $phrase)) return true;
+            if (str_contains($lower, $phrase)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -583,7 +624,7 @@ class AiChatService
         $response .= "1. Create a support ticket for your issue\n";
         $response .= "2. Provide any additional information you need\n";
         $response .= "3. Share relevant knowledge base articles\n\n";
-        $response .= "Would you also like me to create a support ticket so the agent has context?";
+        $response .= 'Would you also like me to create a support ticket so the agent has context?';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -603,8 +644,11 @@ class AiChatService
         $phrases = ['create a ticket', 'open a ticket', 'create ticket', 'submit ticket', 'file a ticket', 'raise a ticket'];
         $lower = strtolower($message);
         foreach ($phrases as $phrase) {
-            if (str_contains($lower, $phrase)) return true;
+            if (str_contains($lower, $phrase)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -615,9 +659,10 @@ class AiChatService
     {
         $user = $conversation->user;
 
-        if (!$user || !$user->isCustomer()) {
-            $response = "To create a support ticket, please log in to your customer portal first, or I can direct you to the registration page.";
+        if (! $user || ! $user->isCustomer()) {
+            $response = 'To create a support ticket, please log in to your customer portal first, or I can direct you to the registration page.';
             $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
             return ['success' => true, 'message' => $response, 'conversation_id' => $conversation->id];
         }
 
@@ -626,12 +671,12 @@ class AiChatService
         $historyText = $conversation->messages->pluck('content')->join(' ');
 
         $response = "I'd be happy to help you create a support ticket! Based on our conversation, here's what I understand:\n\n";
-        $response .= "**Issue Summary:** " . mb_substr($message, 0, 200) . "\n\n";
+        $response .= '**Issue Summary:** '.mb_substr($message, 0, 200)."\n\n";
         $response .= "I'll create a ticket with:\n";
         $response .= "- **Category:** General Support\n";
         $response .= "- **Priority:** Medium\n\n";
         $response .= "Please confirm by clicking the 'Create Ticket' button in the chat, or let me know if you'd like to adjust the category or priority.\n\n";
-        $response .= "Available categories: " . $categories->pluck('name')->join(', ');
+        $response .= 'Available categories: '.$categories->pluck('name')->join(', ');
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -655,7 +700,7 @@ class AiChatService
     public function createTicketFromDraft(AiConversation $conversation, array $draftData): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             return ['success' => false, 'message' => 'Please log in to create a ticket.'];
         }
         abort_unless($conversation->user_id === $user->id, 403, 'This draft belongs to a different account.');
@@ -673,9 +718,9 @@ class AiChatService
         $response = "Your support ticket has been created successfully!\n\n";
         $response .= "**Ticket Number:** {$ticket->ticket_number}\n";
         $response .= "**Subject:** {$ticket->subject}\n";
-        $response .= "**Priority:** " . ucfirst($ticket->priority) . "\n";
+        $response .= '**Priority:** '.ucfirst($ticket->priority)."\n";
         $response .= "**Status:** New\n\n";
-        $response .= "Our support team will review your ticket and respond as soon as possible. You can track the status in your customer portal.";
+        $response .= 'Our support team will review your ticket and respond as soon as possible. You can track the status in your customer portal.';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -760,6 +805,7 @@ class AiChatService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -780,6 +826,7 @@ class AiChatService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -788,7 +835,7 @@ class AiChatService
      */
     public function handleSecurityIncident(AiConversation $conversation, string $message): array
     {
-        app(AiAgentService::class)->requestHumanSupport($conversation, $conversation->user, 'URGENT INCIDENT: ' . mb_substr($message, 0, 150));
+        app(AiAgentService::class)->requestHumanSupport($conversation, $conversation->user, 'URGENT INCIDENT: '.mb_substr($message, 0, 150));
 
         $response = "🚨 **CRITICAL SECURITY INCIDENT PROTOCOL ACTIVATED**\n\n";
         $response .= "Our Cyber Incident Response Team (CIRT) has been alerted on highest priority.\n\n";
@@ -797,7 +844,7 @@ class AiChatService
         $response .= "2. **Do NOT power off or reboot systems** if possible (to preserve volatile RAM evidence for forensic analysis).\n";
         $response .= "3. **Never share passwords, credentials, or encryption keys in this chat.**\n";
         $response .= "4. An emergency responder will contact you shortly.\n\n";
-        $response .= "Would you like me to create an urgent critical incident support ticket right now?";
+        $response .= 'Would you like me to create an urgent critical incident support ticket right now?';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -808,7 +855,7 @@ class AiChatService
             'security_incident' => true,
             'ticket_draft' => true,
             'draft_data' => [
-                'subject' => 'CRITICAL SECURITY INCIDENT: ' . mb_substr($message, 0, 100),
+                'subject' => 'CRITICAL SECURITY INCIDENT: '.mb_substr($message, 0, 100),
                 'description' => $message,
                 'category' => 'Cybersecurity',
                 'priority' => 'critical',
@@ -827,8 +874,11 @@ class AiChatService
             'get a quote', 'estimate for', 'pricing for', 'how much for',
         ];
         foreach ($quotePhrases as $p) {
-            if (str_contains($lower, $p)) return true;
+            if (str_contains($lower, $p)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -838,9 +888,10 @@ class AiChatService
     public function handleQuoteRequest(AiConversation $conversation, string $message): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             $response = "I'd be glad to help you prepare a quotation! To submit formal quote requests and view estimates, please sign in or register your customer account first. In the meantime, I can answer questions about our pricing and service models.";
             $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
             return [
                 'success' => true,
                 'message' => $response,
@@ -861,11 +912,11 @@ class AiChatService
         }
 
         $response = "I've structured a formal quotation request based on your requirements:\n\n";
-        $response .= "- **Requested Solution:** " . ($matchedService?->name ?? 'Managed IT & Security Support') . "\n";
+        $response .= '- **Requested Solution:** '.($matchedService?->name ?? 'Managed IT & Security Support')."\n";
         $response .= "- **Customer:** {$user->name} ({$user->email})\n";
-        $response .= "- **Scope / Requirements:** " . mb_substr($message, 0, 300) . "\n\n";
+        $response .= '- **Scope / Requirements:** '.mb_substr($message, 0, 300)."\n\n";
         $response .= "Here is the quotation request I am about to submit for our engineering and sales team.\n";
-        $response .= "Would you like me to submit this request?";
+        $response .= 'Would you like me to submit this request?';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -901,8 +952,11 @@ class AiChatService
             'cybersecurity support',
         ];
         foreach ($servicePhrases as $p) {
-            if (str_contains($lower, $p)) return true;
+            if (str_contains($lower, $p)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -912,9 +966,10 @@ class AiChatService
     public function handleServiceRequest(AiConversation $conversation, string $message): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             $response = "I'd be glad to help set up that service request for you! Please log in to your customer account so we can link it to your profile, or browse our service catalog at /services.";
             $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
+
             return [
                 'success' => true,
                 'message' => $response,
@@ -936,9 +991,9 @@ class AiChatService
         $serviceTitle = $matchedService ? $matchedService->name : 'Professional IT & Cybersecurity Service';
 
         $response = "I have prepared a service request draft for **{$serviceTitle}**:\n\n";
-        $response .= "**Requirements Summary:**\n" . mb_substr($message, 0, 300) . "\n\n";
+        $response .= "**Requirements Summary:**\n".mb_substr($message, 0, 300)."\n\n";
         $response .= "Our technical management team will review this request and assign the appropriate specialists.\n\n";
-        $response .= "Would you like me to submit this service request?";
+        $response .= 'Would you like me to submit this service request?';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -961,7 +1016,7 @@ class AiChatService
     public function createServiceRequestFromDraft(AiConversation $conversation, array $draftData): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             return ['success' => false, 'message' => 'Please log in to your customer account to submit a service request.'];
         }
 
@@ -971,11 +1026,11 @@ class AiChatService
             'requirements' => $draftData['requirements'] ?? 'Service request submitted via AI Assistant.',
         ]);
 
-        $response = "Your service request has been successfully submitted!\n\n" .
-            "- **Reference ID:** #{$sr->id}\n" .
-            "- **Service:** " . ($draftData['service_name'] ?? 'Professional Service') . "\n" .
-            "- **Status:** New (Under Review)\n\n" .
-            "Our operations team will review your requirements and follow up promptly. You can track this in your portal.";
+        $response = "Your service request has been successfully submitted!\n\n".
+            "- **Reference ID:** #{$sr->id}\n".
+            '- **Service:** '.($draftData['service_name'] ?? 'Professional Service')."\n".
+            "- **Status:** New (Under Review)\n\n".
+            'Our operations team will review your requirements and follow up promptly. You can track this in your portal.';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -993,7 +1048,7 @@ class AiChatService
     public function createQuoteRequestFromDraft(AiConversation $conversation, array $draftData): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             return ['success' => false, 'message' => 'Please log in to your customer account to request a quotation.'];
         }
 
@@ -1004,11 +1059,11 @@ class AiChatService
             'budget_range' => $draftData['budget_range'] ?? null,
         ]);
 
-        $response = "Your quotation request has been successfully submitted!\n\n" .
-            "- **Quote Request ID:** #{$qr->id}\n" .
-            "- **Solution:** " . ($draftData['service_name'] ?? 'Managed IT & Security Support') . "\n" .
-            "- **Status:** Pending Proposal\n\n" .
-            "Our sales engineers will prepare a transparent quotation for your review at /portal/quotations.";
+        $response = "Your quotation request has been successfully submitted!\n\n".
+            "- **Quote Request ID:** #{$qr->id}\n".
+            '- **Solution:** '.($draftData['service_name'] ?? 'Managed IT & Security Support')."\n".
+            "- **Status:** Pending Proposal\n\n".
+            'Our sales engineers will prepare a transparent quotation for your review at /portal/quotations.';
 
         $conversation->messages()->create(['role' => 'assistant', 'content' => $response]);
 
@@ -1026,7 +1081,7 @@ class AiChatService
     public function addTicketMessageFromChat(AiConversation $conversation, string $ticketNumber, string $message): array
     {
         $user = $conversation->user;
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             return ['success' => false, 'message' => 'Please log in to add a reply to your ticket.'];
         }
 

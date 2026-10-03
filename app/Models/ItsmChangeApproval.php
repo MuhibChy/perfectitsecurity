@@ -15,6 +15,13 @@ class ItsmChangeApproval extends Model
 
     protected $casts = ['decided_at' => 'datetime'];
 
-    public function change() { return $this->belongsTo(ItsmChange::class, 'itsm_change_id'); }
-    public function approver() { return $this->belongsTo(User::class, 'approver_id'); }
+    public function change()
+    {
+        return $this->belongsTo(ItsmChange::class, 'itsm_change_id');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approver_id');
+    }
 }

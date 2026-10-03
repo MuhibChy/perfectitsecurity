@@ -19,7 +19,8 @@ class PaymentCheckoutService
 
     public function __construct(
         protected PaymentProviderService $providers
-    ) {}
+    ) {
+    }
 
     /**
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException (422/403)
@@ -36,7 +37,7 @@ class PaymentCheckoutService
             abort_unless($row->isUsable(), 422, 'This payment provider is not available.');
         }
         $adapter = $this->providers->resolve($providerKey, $row);
-        abort_unless($adapter->supportsCurrency($invoiceCurrency) || !empty($options['pay_currency']), 422, 'Provider does not support ' . $invoiceCurrency . '.');
+        abort_unless($adapter->supportsCurrency($invoiceCurrency) || ! empty($options['pay_currency']), 422, 'Provider does not support '.$invoiceCurrency.'.');
 
         // Server-side amount: requested clamped to outstanding balance.
         $outstanding = round((float) $invoice->total - (float) $invoice->amount_paid, 2);
@@ -54,10 +55,12 @@ class PaymentCheckoutService
             $converted = round($amount * $rate, 2);
         }
 
-        if ($row) abort_unless($row->supportsAmount($converted ?? $amount), 422, 'Amount outside provider limits.');
+        if ($row) {
+            abort_unless($row->supportsAmount($converted ?? $amount), 422, 'Amount outside provider limits.');
+        }
         $fees = $row ? $row->quoteFees($amount) : ['gross' => $amount, 'provider_fee' => 0.0, 'platform_fee' => 0.0, 'net' => $amount];
 
-        $idempotencyKey = (string) ($options['idempotency_key'] ?? ('chk_' . Str::uuid()));
+        $idempotencyKey = (string) ($options['idempotency_key'] ?? ('chk_'.Str::uuid()));
 
         return DB::transaction(function () use ($invoice, $customerId, $providerKey, $row, $adapter, $amount, $invoiceCurrency, $payCurrency, $rate, $converted, $fees, $options, $idempotencyKey) {
             $existing = PaymentTransaction::where('idempotency_key', $idempotencyKey)->lockForUpdate()->first();

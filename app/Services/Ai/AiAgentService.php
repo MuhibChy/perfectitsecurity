@@ -5,18 +5,18 @@ namespace App\Services\Ai;
 use App\Models\AiConversation;
 use App\Models\AiEscalation;
 use App\Models\AuditLog;
+use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Lead;
 use App\Models\Project;
-use App\Models\Contract;
 use App\Models\Quotation;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\ServiceRequest;
+use App\Models\Task;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketMessage;
-use App\Models\Task;
 use App\Models\User;
 use App\Services\SlaService;
 use Illuminate\Support\Facades\Validator;
@@ -61,12 +61,14 @@ class AiAgentService
     {
         $customer = $this->getAuthenticatedCustomer($user);
         abort_unless($customer, 401, 'Please log in to your customer account first.');
+
         return $customer;
     }
 
     public function getCustomerProfile(User $customer): array
     {
         $this->assertOwnCustomer($customer, $customer);
+
         return [
             'name' => $customer->name,
             'email' => $customer->email,
@@ -161,7 +163,10 @@ class AiAgentService
     public function getTicketStatus(User $customer, string $ticketNumber): ?array
     {
         $t = Ticket::where('customer_id', $customer->id)->where('ticket_number', $ticketNumber)->first();
-        if (!$t) return null;
+        if (! $t) {
+            return null;
+        }
+
         return ['number' => $t->ticket_number, 'subject' => $t->subject, 'status' => $t->status,
             'priority' => $t->priority, 'sla' => app(SlaService::class)->getSlaStatus($t)];
     }
@@ -169,7 +174,10 @@ class AiAgentService
     public function getOrderStatus(User $customer, string $orderNumber): ?array
     {
         $o = ServiceOrder::where('customer_id', $customer->id)->where('order_number', $orderNumber)->first();
-        if (!$o) return null;
+        if (! $o) {
+            return null;
+        }
+
         return ['number' => $o->order_number, 'service' => $o->service?->name, 'status' => $o->status,
             'total' => $o->total, 'paid' => $o->amount_paid, 'due' => $o->amount_due];
     }
@@ -177,7 +185,10 @@ class AiAgentService
     public function getProjectStatus(User $customer, string $projectNumber): ?array
     {
         $p = Project::where('customer_id', $customer->id)->where('project_number', $projectNumber)->first();
-        if (!$p) return null;
+        if (! $p) {
+            return null;
+        }
+
         return ['number' => $p->project_number, 'name' => $p->name, 'status' => $p->status, 'progress' => $p->progress];
     }
 
@@ -185,6 +196,7 @@ class AiAgentService
     public function searchServices(string $query, int $limit = 6): array
     {
         $safe = addcslashes(mb_substr($query, 0, 120), '\\%_');
+
         return Service::where('is_active', true)
             ->where(function ($q) use ($safe) {
                 $q->where('name', 'like', "%{$safe}%")->orWhere('short_description', 'like', "%{$safe}%");
@@ -218,6 +230,7 @@ class AiAgentService
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
+
         return $validator->validated();
     }
 
@@ -231,7 +244,7 @@ class AiAgentService
             'priority' => 'nullable|in:low,medium,high,urgent,critical',
         ]);
         $category = null;
-        if (!empty($v['category'])) {
+        if (! empty($v['category'])) {
             $category = TicketCategory::where('name', 'like', "%{$v['category']}%")->first();
         }
         $ticket = Ticket::create([
@@ -317,6 +330,7 @@ class AiAgentService
             'message' => $v['message'], 'is_internal_note' => false,
         ]);
         AuditLog::log('ai.ticket_reply', 'tickets', $ticket, "AI-agent customer reply on {$ticket->ticket_number}.");
+
         return $msg;
     }
 
@@ -362,6 +376,7 @@ class AiAgentService
     public function getAssignedTickets(User $employee, int $limit = 10): array
     {
         $this->requireStaff($employee);
+
         return Ticket::where(function ($q) use ($employee) {
             $q->where('assigned_to', $employee->id)->orWhereNull('assigned_to');
         })->open()->latest()->limit($limit)->get()
@@ -373,6 +388,7 @@ class AiAgentService
     public function getAssignedTasks(User $employee, int $limit = 10): array
     {
         $this->requireStaff($employee);
+
         return Task::where('assigned_to', $employee->id)
             ->whereNotIn('status', ['completed', 'cancelled'])->latest()->limit($limit)->get()
             ->map(fn ($t) => ['number' => $t->task_number, 'title' => $t->title,
@@ -393,6 +409,7 @@ class AiAgentService
             'pending_invoices' => Invoice::where('customer_id', $customer->id)->whereIn('status', ['sent', 'viewed', 'overdue', 'partially_paid'])->count(),
         ];
         AuditLog::log('ai.customer_summary', 'customers', $customer, "Staff {$employee->id} requested AI summary.");
+
         return $summary;
     }
 
@@ -409,6 +426,7 @@ class AiAgentService
             'active_conversations_today' => AiConversation::whereDate('created_at', today())->count(),
         ];
         AuditLog::log('ai.operational_summary', 'system', null, "Admin {$admin->id} viewed operational summary.");
+
         return $summary;
     }
 
@@ -426,12 +444,14 @@ class AiAgentService
                 'subject' => $r->subject,
                 'created_at' => $r->created_at?->format('Y-m-d H:i'),
             ])->all();
+
         return $requests;
     }
 
     public function getServiceEnquiryTrends(User $admin): array
     {
         $this->requireAdmin($admin);
+
         return ServiceCategory::withCount('services')
             ->orderByDesc('services_count')
             ->limit(5)
@@ -454,7 +474,7 @@ class AiAgentService
                 'data' => array_merge(['title' => $title, 'message' => $message], $extra),
             ]);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('AI Agent notification creation failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('AI Agent notification creation failed: '.$e->getMessage());
         }
     }
 

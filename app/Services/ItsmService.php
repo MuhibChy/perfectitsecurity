@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\ItsmChange;
-use App\Models\KbArticle;
 use App\Models\Problem;
 use App\Models\ServiceApproval;
 use App\Models\SlaBreachLog;
@@ -47,11 +46,11 @@ class ItsmService
             'closed' => [],
         ];
         $from = $problem->status;
-        if (!in_array($to, $allowed[$from] ?? [], true)) {
+        if (! in_array($to, $allowed[$from] ?? [], true)) {
             abort(422, "Problem cannot move from {$from} to {$to}.");
         }
 
-        return DB::transaction(function () use ($problem, $from, $to, $actorId, $extra) {
+        return DB::transaction(function () use ($problem, $from, $to, $extra) {
             $problem->update(array_merge($extra, [
                 'status' => $to,
                 'resolved_at' => $to === 'resolved' ? ($problem->resolved_at ?? now()) : $problem->resolved_at,
@@ -59,6 +58,7 @@ class ItsmService
             ]));
             AuditService::log('problem.transition', 'itsm', $problem->fresh(),
                 "Problem {$problem->problem_number}: {$from} → {$to}", ['status' => $from], ['status' => $to]);
+
             return $problem->fresh();
         });
     }
@@ -80,13 +80,13 @@ class ItsmService
             'cancelled' => [],
         ];
         $from = $change->status;
-        if (!in_array($to, $allowed[$from] ?? [], true)) {
+        if (! in_array($to, $allowed[$from] ?? [], true)) {
             abort(422, "Change cannot move from {$from} to {$to}.");
         }
         if (in_array($to, ['scheduled', 'implementing', 'completed'], true) && $change->risk === 'high') {
             $approved = $change->approvals()->where('decision', 'approved')->exists()
                 || $change->workflowApprovals()->where('status', 'approved')->exists();
-            if (!$approved) {
+            if (! $approved) {
                 abort(422, 'High-risk changes require an approval before scheduling.');
             }
         }
@@ -98,6 +98,7 @@ class ItsmService
             ]));
             AuditService::log('change.transition', 'itsm', $change->fresh(),
                 "Change {$change->change_number}: {$from} → {$to}", ['status' => $from], ['status' => $to]);
+
             return $change->fresh();
         });
     }
@@ -110,7 +111,7 @@ class ItsmService
         if ($approval->status !== 'pending') {
             abort(422, 'This approval has already been decided.');
         }
-        if (!in_array($decision, ['approved', 'rejected', 'cancelled'], true)) {
+        if (! in_array($decision, ['approved', 'rejected', 'cancelled'], true)) {
             abort(422, 'Invalid approval decision.');
         }
 
@@ -123,6 +124,7 @@ class ItsmService
             ]);
             AuditService::log('approval.decision', 'itsm', $approval->fresh(),
                 "Approval {$approval->approval_number} {$decision}");
+
             return $approval->fresh();
         });
     }
@@ -138,13 +140,13 @@ class ItsmService
             ->where('id', '!=', $ticket->id)
             ->where('status', '!=', 'closed')
             ->when($ticket->category_id, fn ($q) => $q->where('category_id', $ticket->category_id))
-            ->when($user && method_exists($user, 'isEmployee') && !$user->isEmployee() && !$user->isAdmin(),
+            ->when($user && method_exists($user, 'isEmployee') && ! $user->isEmployee() && ! $user->isAdmin(),
                 fn ($q) => $q->where('customer_id', $user->id))
             ->latest()->limit($limit)->get(['id', 'ticket_number', 'subject', 'status', 'priority']);
 
         try {
             $articles = app(AiKnowledgeService::class)
-                ->searchRelevantArticles($ticket->subject . ' ' . ($ticket->description ?? ''), $user, $limit);
+                ->searchRelevantArticles($ticket->subject.' '.($ticket->description ?? ''), $user, $limit);
         } catch (\Throwable $e) {
             $articles = [];
         }

@@ -23,9 +23,23 @@ class EmployeeAssignment extends Model
         'completed_at' => 'datetime',
     ];
 
-    public function employee() { return $this->belongsTo(User::class, 'employee_id'); }
-    public function assigner() { return $this->belongsTo(User::class, 'assigned_by'); }
-    public function assignable() { return $this->morphTo(); }
+    public function employee()
+    {
+        return $this->belongsTo(User::class, 'employee_id');
+    }
 
-    public function scopeActive($query) { return $query->where('status', 'active'); }
+    public function assigner()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    public function assignable()
+    {
+        return $this->morphTo();
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }

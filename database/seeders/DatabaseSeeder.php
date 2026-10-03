@@ -2,45 +2,41 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Company;
-use App\Models\ServiceCategory;
-use App\Models\Service;
-use App\Models\TicketCategory;
-use App\Models\TicketSubcategory;
-use App\Models\SlaPolicy;
-use App\Models\Ticket;
-use App\Models\TicketMessage;
-use App\Models\Project;
-use App\Models\Task;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Payment;
-use App\Models\FinancialTransaction;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
+use App\Models\AuditLog;
+use App\Models\BlogCategory;
+use App\Models\BlogComment;
+use App\Models\BlogPost;
 use App\Models\Commission;
-use App\Models\CommissionRule;
 use App\Models\CommissionPayout;
 use App\Models\CommissionPayoutItem;
-use App\Models\BlogCategory;
-use App\Models\BlogPost;
-use App\Models\KbCategory;
+use App\Models\CommissionRule;
+use App\Models\Company;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Models\FinancialTransaction;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\KbArticle;
+use App\Models\KbCategory;
+use App\Models\Notification;
+use App\Models\Payment;
+use App\Models\Project;
+use App\Models\ProjectComment;
+use App\Models\ProjectMilestone;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
+use App\Models\Service;
 use App\Models\Setting;
-use App\Models\UsefulLink;
-use App\Models\Notification;
-use App\Models\AuditLog;
-use App\Models\ProjectMilestone;
-use App\Models\ProjectComment;
-use App\Models\TaskComment;
-use App\Models\BlogComment;
-use App\Models\BlogTag;
-use App\Models\KbTag;
+use App\Models\SlaPolicy;
 use App\Models\SupportTeam;
-
+use App\Models\Task;
+use App\Models\TaskComment;
+use App\Models\Ticket;
+use App\Models\TicketCategory;
+use App\Models\TicketMessage;
+use App\Models\TicketSubcategory;
+use App\Models\UsefulLink;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -1534,20 +1530,20 @@ class DatabaseSeeder extends Seeder
         Setting::set('date_format', 'M d, Y', 'general');
 
         // Service Catalogue (multi-country pricing)
-$this->call(ServiceCatalogueSeeder::class);
-$this->call(ExpandedServiceCatalogueSeeder::class);
-$this->call(ExtraServicesSeeder::class);
-$this->call(AssetLifecycleCategorySeeder::class);
-$this->call(PromoCampaignSeeder::class);
-$this->call(DemoPortfolioSeeder::class);
-$this->call(DemoContentExpansionSeeder::class);
-$this->call(AiKnowledgeSeeder::class);
-$this->call(TrainingAcademySeeder::class);
-$this->call(RoleRegistrySeeder::class);
-// Synthetic role test accounts: never in production (credentials are
-// issued via a protected channel, never stored in source).
-if (!app()->environment('production')) {
-    $this->call(RoleTestUsersSeeder::class);
-}
+        $this->call(ServiceCatalogueSeeder::class);
+        $this->call(ExpandedServiceCatalogueSeeder::class);
+        $this->call(ExtraServicesSeeder::class);
+        $this->call(AssetLifecycleCategorySeeder::class);
+        $this->call(PromoCampaignSeeder::class);
+        $this->call(DemoPortfolioSeeder::class);
+        $this->call(DemoContentExpansionSeeder::class);
+        $this->call(AiKnowledgeSeeder::class);
+        $this->call(TrainingAcademySeeder::class);
+        $this->call(RoleRegistrySeeder::class);
+        // Synthetic role test accounts: never in production (credentials are
+        // issued via a protected channel, never stored in source).
+        if (! app()->environment('production')) {
+            $this->call(RoleTestUsersSeeder::class);
+        }
     }
 }

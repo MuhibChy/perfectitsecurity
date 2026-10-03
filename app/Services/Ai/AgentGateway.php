@@ -18,8 +18,11 @@ use Illuminate\Support\Facades\Log;
 class AgentGateway
 {
     public const RISK_LOW = 'low';
+
     public const RISK_MEDIUM = 'medium';
+
     public const RISK_HIGH = 'high';
+
     public const RISK_DENIED = 'denied';
 
     private AiAgentService $tools;
@@ -87,37 +90,43 @@ class AgentGateway
 
     public function riskForTool(string $tool): string
     {
-        if (in_array($tool, self::LOW_TOOLS, true)) return self::RISK_LOW;
-        if (in_array($tool, self::MEDIUM_TOOLS, true)) return self::RISK_MEDIUM;
+        if (in_array($tool, self::LOW_TOOLS, true)) {
+            return self::RISK_LOW;
+        }
+        if (in_array($tool, self::MEDIUM_TOOLS, true)) {
+            return self::RISK_MEDIUM;
+        }
+
         return self::RISK_DENIED; // HIGH + unknown + unimplemented are denied in this phase
     }
 
     /**
      * Authorize a tool call. Never trusts AI-supplied user_id/approved flags.
+     *
      * @return array {allowed, risk, approval_required, reason}
      */
     public function authorizeTool(?User $user, string $tool, array $target = []): array
     {
         // Tool-injection defense in depth: shape-check before any lookup.
-        if (!preg_match('/^[a-z_]{3,64}$/', $tool)) {
+        if (! preg_match('/^[a-z_]{3,64}$/', $tool)) {
             return ['allowed' => false, 'risk' => self::RISK_DENIED, 'approval_required' => false, 'reason' => 'malformed_tool'];
         }
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return ['allowed' => false, 'risk' => self::RISK_DENIED, 'approval_required' => false, 'reason' => 'agent_disabled'];
         }
-        if (!$user || !$user->is_active) {
+        if (! $user || ! $user->is_active) {
             return ['allowed' => false, 'risk' => $this->riskForTool($tool), 'approval_required' => false, 'reason' => 'unauthenticated'];
         }
         $allowedRoles = array_filter(array_map('trim', (array) config('agent.allowed_roles', [])));
-        if ($allowedRoles && !in_array($user->role, $allowedRoles, true)) {
+        if ($allowedRoles && ! in_array($user->role, $allowedRoles, true)) {
             return ['allowed' => false, 'risk' => $this->riskForTool($tool), 'approval_required' => false, 'reason' => 'role_not_allowed'];
         }
         $allowedTools = array_filter(array_map('trim', (array) config('agent.allowed_tools', [])));
-        if (!in_array($tool, $allowedTools, true) || !in_array($tool, self::IMPLEMENTED_TOOLS, true)) {
+        if (! in_array($tool, $allowedTools, true) || ! in_array($tool, self::IMPLEMENTED_TOOLS, true)) {
             return ['allowed' => false, 'risk' => self::RISK_DENIED, 'approval_required' => false, 'reason' => 'tool_not_allowlisted'];
         }
         // Ownership: customer tools are actor-scoped; AiAgentService re-checks authoritatively.
-        if (($target['customer_id'] ?? null) && (int) $target['customer_id'] !== (int) $user->id && !$user->isStaff()) {
+        if (($target['customer_id'] ?? null) && (int) $target['customer_id'] !== (int) $user->id && ! $user->isStaff()) {
             return ['allowed' => false, 'risk' => $this->riskForTool($tool), 'approval_required' => false, 'reason' => 'cross_account_denied'];
         }
 
@@ -139,9 +148,9 @@ class AgentGateway
     public function executeApprovedTool(?User $user, string $tool, array $params = []): array
     {
         $auth = $this->authorizeTool($user, $tool, $params['target'] ?? []);
-        if (!$auth['allowed']) {
+        if (! $auth['allowed']) {
             $this->audit($user, $tool, $auth['risk'], 'denied', $auth['reason']);
-            abort(403, 'Tool not authorized: ' . $auth['reason']);
+            abort(403, 'Tool not authorized: '.$auth['reason']);
         }
         if ($auth['approval_required'] && empty($params['human_approval_id'])) {
             $this->audit($user, $tool, $auth['risk'], 'approval_required', 'human approval missing');
@@ -151,6 +160,7 @@ class AgentGateway
         try {
             $result = $this->delegate($user, $tool, $params);
             $this->audit($user, $tool, $auth['risk'], 'success', null);
+
             return ['success' => true, 'risk' => $auth['risk'], 'data' => $result];
         } catch (\Throwable $e) {
             Log::warning('AgentGateway tool failed', ['tool' => $tool]);
@@ -173,7 +183,7 @@ class AgentGateway
      */
     public function chat(?User $user, array $messages, array $options = []): array
     {
-        if (!(bool) config('agent.chat_enabled', true)) {
+        if (! (bool) config('agent.chat_enabled', true)) {
             return $this->unavailable('chat_disabled');
         }
         // Prompt-size guard: reject before any provider contact. Never
@@ -184,6 +194,7 @@ class AgentGateway
         }
         if ($promptChars > max(1, (int) config('services.ai.max_prompt_chars', 8000))) {
             Log::warning('AI chat prompt rejected', ['prompt_chars' => $promptChars]);
+
             return $this->unavailable('prompt_too_large');
         }
         // External runtime path stays disabled until verified — always use provider.
@@ -200,6 +211,7 @@ class AgentGateway
                 throw AiProviderException::invalidResponse();
             }
             $this->logChatAttempt($primary->getName(), $this->elapsedMs($started), 'success', null, false, count($messages));
+
             return ['success' => true, 'via' => $primary->getName(), 'fallback' => false] + $out;
         } catch (\Throwable $e) {
             $category = $e instanceof AiProviderException ? $e->getCategory() : AiProviderException::UNKNOWN;
@@ -208,7 +220,7 @@ class AgentGateway
 
         // Cloud fallback requires EXPLICIT approval: flag true AND a named
         // approved provider. Default off — a stored API key is not consent.
-        if (!(bool) config('services.ai.fallback_enabled', false)) {
+        if (! (bool) config('services.ai.fallback_enabled', false)) {
             return $this->unavailable($category);
         }
         $fallbackName = (string) config('services.ai.fallback_provider', '');
@@ -219,10 +231,12 @@ class AgentGateway
             $fallback = AiProviderFactory::makeNamed($fallbackName);
         } catch (\Throwable $e) {
             Log::warning('AI chat fallback misconfigured', ['provider' => $fallbackName]);
+
             return $this->unavailable($category);
         }
-        if (!$fallback->isAvailable()) {
+        if (! $fallback->isAvailable()) {
             $this->logChatAttempt($fallback->getName(), 0, 'skipped', 'fallback_unavailable', true, count($messages));
+
             return $this->unavailable('fallback_unavailable');
         }
         $started = microtime(true);
@@ -232,10 +246,12 @@ class AgentGateway
                 throw AiProviderException::invalidResponse();
             }
             $this->logChatAttempt($fallback->getName(), $this->elapsedMs($started), 'success', null, true, count($messages));
+
             return ['success' => true, 'via' => $fallback->getName(), 'fallback' => true] + $out;
         } catch (\Throwable $e) {
             $fallbackCategory = $e instanceof AiProviderException ? $e->getCategory() : AiProviderException::UNKNOWN;
             $this->logChatAttempt($fallback->getName(), $this->elapsedMs($started), 'error', $fallbackCategory, true, count($messages));
+
             return $this->unavailable($fallbackCategory);
         }
     }
@@ -246,10 +262,13 @@ class AgentGateway
         $provider = null;
         try {
             $provider = AiProviderFactory::make()->healthCheck();
-            if (isset($provider['models'])) unset($provider['models']); // keep admin payload small
+            if (isset($provider['models'])) {
+                unset($provider['models']);
+            } // keep admin payload small
         } catch (\Throwable $e) {
             $provider = ['provider' => 'unknown', 'reachable' => false, 'error' => 'unavailable'];
         }
+
         return [
             'agent_enabled' => $this->isEnabled(),
             'runtime' => config('agent.runtime', 'none'),
@@ -301,6 +320,7 @@ class AgentGateway
         switch ($tool) {
             case 'get_authenticated_user':
                 $c = $this->tools->getAuthenticatedCustomer($user);
+
                 return $c ? ['id' => $c->id, 'name' => $c->name, 'email' => $c->email] : null;
             case 'get_customer_profile':
                 return $this->tools->getCustomerProfile($user);
@@ -324,29 +344,33 @@ class AgentGateway
                 return $this->tools->getAssignedTasks($user, $this->limit($params, 10));
             case 'summarize_customer_issues':
                 return $this->tools->summarizeCustomerIssues($user, (int) ($params['customer_id'] ?? 0));
-            case 'create_support_ticket': {
+            case 'create_support_ticket':
                 $data = (array) ($params['data'] ?? []);
                 $t = $this->tools->createSupportTicket($user, $data);
+
                 return ['id' => $t->id, 'ticket_number' => $t->ticket_number, 'subject' => $t->subject, 'status' => $t->status, 'priority' => $t->priority];
-            }
-            case 'add_ticket_message': {
+
+            case 'add_ticket_message':
                 $text = $params['message'] ?? '';
                 abort_unless(is_string($text) && trim($text) !== '' && mb_strlen($text) <= 5000, 422, 'Invalid message.');
                 $m = $this->tools->addTicketMessage($user, $this->recordNumber($params['ticket_number'] ?? ''), $text);
+
                 return ['id' => $m->id, 'ticket_id' => $m->ticket_id];
-            }
-            case 'create_service_request': {
+
+            case 'create_service_request':
                 $data = (array) ($params['data'] ?? []);
                 $s = $this->tools->createServiceRequest($user, $data);
+
                 return ['id' => $s->id, 'subject' => $s->subject, 'status' => $s->status];
-            }
-            case 'escalate_to_employee': {
+
+            case 'escalate_to_employee':
                 $conv = $params['conversation'] ?? null;
                 abort_unless($conv instanceof \App\Models\AiConversation, 422, 'Invalid conversation.');
                 abort_unless((int) $conv->user_id === (int) $user->id || $user->isStaff(), 403, 'Conversation not owned.');
                 $e = $this->tools->escalateToEmployee($conv, $user, $this->reason($params));
+
                 return ['id' => $e->id, 'status' => $e->status];
-            }
+
             default:
                 throw new \RuntimeException('Tool not implemented in this phase.');
         }
@@ -363,6 +387,7 @@ class AgentGateway
     {
         $q = $params['query'] ?? '';
         abort_unless(is_string($q), 422, 'Invalid query.');
+
         return mb_substr(trim($q), 0, 200);
     }
 
@@ -370,7 +395,8 @@ class AgentGateway
     private function recordNumber($value): string
     {
         $v = is_string($value) ? trim($value) : '';
-        abort_if($v === '' || mb_strlen($v) > 64 || !preg_match('/^[A-Za-z0-9\-_]+$/', $v), 422, 'Invalid record number.');
+        abort_if($v === '' || mb_strlen($v) > 64 || ! preg_match('/^[A-Za-z0-9\-_]+$/', $v), 422, 'Invalid record number.');
+
         return $v;
     }
 
@@ -378,6 +404,7 @@ class AgentGateway
     {
         $r = $params['reason'] ?? 'escalation';
         abort_unless(is_string($r) && trim($r) !== '' && mb_strlen($r) <= 500, 422, 'Invalid reason.');
+
         return $r;
     }
 
@@ -389,9 +416,9 @@ class AgentGateway
             $actor = $user ? "{$user->id}:{$user->role}" : 'guest';
             $rt = (string) config('agent.runtime', 'none');
             AuditLog::log('agent.gateway_call', 'ai', null,
-                "actor={$actor} tool={$tool} risk={$risk} result={$result} runtime={$rt}" . ($reason ? " reason={$reason}" : ''));
+                "actor={$actor} tool={$tool} risk={$risk} result={$result} runtime={$rt}".($reason ? " reason={$reason}" : ''));
         } catch (\Throwable $e) {
-            Log::warning('AgentGateway audit failed: ' . $e->getMessage());
+            Log::warning('AgentGateway audit failed: '.$e->getMessage());
         }
     }
 }

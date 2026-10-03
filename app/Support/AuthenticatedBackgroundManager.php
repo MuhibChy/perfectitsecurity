@@ -17,15 +17,15 @@ namespace App\Support;
 class AuthenticatedBackgroundManager
 {
     public const ENVIRONMENTS = [
-        'operations'  => 'Global IT Operations Center',
-        'command'     => 'Enterprise Command Center',
-        'network'     => 'Modern Network Operations Room',
-        'soc'         => 'Cybersecurity Security Operations Center',
+        'operations' => 'Global IT Operations Center',
+        'command' => 'Enterprise Command Center',
+        'network' => 'Modern Network Operations Room',
+        'soc' => 'Cybersecurity Security Operations Center',
         'engineering' => 'Digital Engineering Laboratory',
-        'fintech'     => 'Enterprise Financial Technology Center',
-        'intelligence'=> 'AI Knowledge Intelligence Center',
-        'support'     => 'Global Support Operations Center',
-        'suite'       => 'Private Digital Infrastructure Suite',
+        'fintech' => 'Enterprise Financial Technology Center',
+        'intelligence' => 'AI Knowledge Intelligence Center',
+        'support' => 'Global Support Operations Center',
+        'suite' => 'Private Digital Infrastructure Suite',
     ];
 
     /**
@@ -33,15 +33,15 @@ class AuthenticatedBackgroundManager
      * Kept stable so existing styles/tests keep working.
      */
     public const LEGACY_MAP = [
-        'operations'  => 'secure',
-        'command'     => 'command',
-        'network'     => 'datacenter',
-        'soc'         => 'soc',
+        'operations' => 'secure',
+        'command' => 'command',
+        'network' => 'datacenter',
+        'soc' => 'soc',
         'engineering' => 'datacenter',
-        'fintech'     => 'fintech',
-        'intelligence'=> 'business',
-        'support'     => 'soc',
-        'suite'       => 'secure',
+        'fintech' => 'fintech',
+        'intelligence' => 'business',
+        'support' => 'soc',
+        'suite' => 'secure',
     ];
 
     /**
@@ -125,7 +125,7 @@ class AuthenticatedBackgroundManager
         return self::ENVIRONMENTS[$environment] ?? self::ENVIRONMENTS['operations'];
     }
 
-    /** @param string[] $prefixes */
+    /** @param  string[]  $prefixes */
     protected static function matches(string $route, array $prefixes): bool
     {
         foreach ($prefixes as $prefix) {

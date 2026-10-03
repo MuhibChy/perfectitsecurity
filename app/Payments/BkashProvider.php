@@ -9,6 +9,13 @@ namespace App\Payments;
  */
 class BkashProvider extends AbstractMobileWalletProvider
 {
-    public function key(): string { return 'bkash'; }
-    public function label(): string { return 'bKash'; }
+    public function key(): string
+    {
+        return 'bkash';
+    }
+
+    public function label(): string
+    {
+        return 'bKash';
+    }
 }

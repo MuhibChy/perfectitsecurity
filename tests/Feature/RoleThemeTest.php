@@ -64,7 +64,7 @@ class RoleThemeTest extends TestCase
             $response = $this->actingAs($user)->get(route($route));
             $response->assertStatus(200);
             $response->assertSee('role-bg-canvas', false);
-            $response->assertSee('data-rolebg="' . $theme . '"', false);
+            $response->assertSee('data-rolebg="'.$theme.'"', false);
         }
     }
 

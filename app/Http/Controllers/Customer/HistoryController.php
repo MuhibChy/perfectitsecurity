@@ -16,6 +16,7 @@ class HistoryController extends Controller
         $user = auth()->user();
         $overview = TraceabilityService::customerOverview($user);
         $timeline = TraceabilityService::customerTimeline($user, 'portal', 100);
+
         return view('customer.history.index', compact('overview', 'timeline'));
     }
 }

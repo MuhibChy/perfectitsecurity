@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Commission;
 use App\Models\FinancialTransaction;
 use App\Models\Invoice;
-use App\Models\Payment;
-use App\Models\Expense;
-use App\Models\Commission;
 use App\Models\Salary;
 use Carbon\Carbon;
 
@@ -35,6 +33,7 @@ class FinancialService
         } else {
             $query->where('created_at', '>=', $this->getPeriodStart($period));
         }
+
         return (float) $query->sum('amount');
     }
 
@@ -44,6 +43,7 @@ class FinancialService
         if ($from && $to) {
             $query->whereBetween('created_at', [$from, $to]);
         }
+
         return (float) $query->sum('commission_amount');
     }
 
@@ -53,13 +53,18 @@ class FinancialService
         if ($from && $to) {
             $query->whereBetween('created_at', [$from, $to]);
         }
+
         return (float) $query->sum('net_salary');
     }
 
     public function getProfitAndLoss(Carbon $from = null, Carbon $to = null): array
     {
-        if (!$from) $from = Carbon::now()->startOfMonth();
-        if (!$to) $to = Carbon::now()->endOfMonth();
+        if (! $from) {
+            $from = Carbon::now()->startOfMonth();
+        }
+        if (! $to) {
+            $to = Carbon::now()->endOfMonth();
+        }
 
         $revenue = $this->getRevenue('custom', $from, $to);
         $expenses = $this->getExpenses('custom', $from, $to);
@@ -98,8 +103,12 @@ class FinancialService
      */
     public function getRevenueByCurrency(Carbon $from = null, Carbon $to = null): array
     {
-        if (!$from) $from = Carbon::now()->startOfMonth();
-        if (!$to) $to = Carbon::now()->endOfMonth();
+        if (! $from) {
+            $from = Carbon::now()->startOfMonth();
+        }
+        if (! $to) {
+            $to = Carbon::now()->endOfMonth();
+        }
         $income = FinancialTransaction::income()->where('status', 'completed')
             ->whereBetween('created_at', [$from, $to])
             ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')
@@ -112,6 +121,7 @@ class FinancialService
         foreach (array_unique(array_merge(array_keys($income), array_keys($refunds))) as $code) {
             $out[strtoupper($code)] = round((float) ($income[$code] ?? 0) - (float) ($refunds[$code] ?? 0), 2);
         }
+
         return $out;
     }
 
@@ -120,8 +130,13 @@ class FinancialService
      */
     public function getExpensesByCurrency(Carbon $from = null, Carbon $to = null): array
     {
-        if (!$from) $from = Carbon::now()->startOfMonth();
-        if (!$to) $to = Carbon::now()->endOfMonth();
+        if (! $from) {
+            $from = Carbon::now()->startOfMonth();
+        }
+        if (! $to) {
+            $to = Carbon::now()->endOfMonth();
+        }
+
         return FinancialTransaction::expenses()->where('status', 'completed')
             ->whereBetween('created_at', [$from, $to])
             ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')

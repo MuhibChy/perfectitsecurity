@@ -8,7 +8,6 @@ use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\ServiceOrder;
 use App\Models\Task;
-use App\Models\Ticket;
 use App\Models\User;
 use App\Services\ServiceOrderWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,8 +43,9 @@ class OrderPaymentE2ETest extends TestCase
     private function service(): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 'e2e-cat'], ['name' => 'E2E Cat']);
+
         return Service::create([
-            'category_id' => $cat->id, 'name' => 'E2E Pen Test', 'slug' => 'e2e-pen-test-' . Str::random(6),
+            'category_id' => $cat->id, 'name' => 'E2E Pen Test', 'slug' => 'e2e-pen-test-'.Str::random(6),
             'short_description' => 'Synthetic E2E service', 'starting_price' => 750.00,
             'is_active' => true,
         ]);
@@ -301,4 +301,3 @@ class OrderPaymentE2ETest extends TestCase
         $this->actingAs($finance)->get(route('admin.financials.index'))->assertStatus(200);
     }
 }
-

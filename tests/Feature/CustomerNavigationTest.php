@@ -48,7 +48,7 @@ class CustomerNavigationTest extends TestCase
         $content = $this->actingAs($customer)->get(route('portal.dashboard'))->getContent();
 
         foreach (['Dashboard', 'My Orders', 'My Tickets', 'Services', 'Request Service', 'Invoices', 'Projects', 'Quotations', 'Documents', 'Service History', 'My Services', 'My Wallet', 'My Account', 'Directory', 'Notifications', 'My Profile', 'User Manual'] as $label) {
-            $this->assertStringContainsString('>' . $label . '<', $content, "Missing customer item: {$label}");
+            $this->assertStringContainsString('>'.$label.'<', $content, "Missing customer item: {$label}");
         }
         // Fully verified customer: no Verify Account prompt.
         $this->assertStringNotContainsString('>Verify Account<', $content);
@@ -86,7 +86,7 @@ class CustomerNavigationTest extends TestCase
     {
         $customer = $this->customer();
         foreach (CustomerNavigation::for($customer) as $item) {
-            if (!empty($item['target'])) {
+            if (! empty($item['target'])) {
                 continue; // External/manual link: no backend gate to probe.
             }
             $response = $this->actingAs($customer)->get(route($item['route']));

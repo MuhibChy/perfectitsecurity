@@ -7,15 +7,26 @@ use App\Models\Payment;
 
 class WalletPaymentProvider implements PaymentProviderInterface
 {
-    public function key(): string { return 'wallet'; }
-    public function label(): string { return 'FWallet'; }
-    public function supportsCurrency(string $currencyCode): bool { return true; }
+    public function key(): string
+    {
+        return 'wallet';
+    }
+
+    public function label(): string
+    {
+        return 'FWallet';
+    }
+
+    public function supportsCurrency(string $currencyCode): bool
+    {
+        return true;
+    }
 
     public function createPayment(Invoice $invoice, float $amount, array $options = []): array
     {
         return [
             'provider' => 'wallet',
-            'provider_reference' => 'WALLET-' . $invoice->id . '-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            'provider_reference' => 'WALLET-'.$invoice->id.'-'.strtoupper(\Illuminate\Support\Str::random(6)),
             'redirect_url' => null,
             'amount' => round($amount, 2),
             'currency' => strtoupper($invoice->currency ?? 'USD'),
@@ -25,7 +36,10 @@ class WalletPaymentProvider implements PaymentProviderInterface
     public function verifyPayment(string $providerReference, array $payload = []): array
     {
         $payment = Payment::where('transaction_id', $providerReference)->where('gateway', 'wallet')->first();
-        if (!$payment) return ['status' => 'PENDING', 'found' => false];
+        if (! $payment) {
+            return ['status' => 'PENDING', 'found' => false];
+        }
+
         return ['status' => \App\Services\PaymentState::canonicalTransactionStatus($payment->status), 'found' => true, 'payment_id' => $payment->id];
     }
 

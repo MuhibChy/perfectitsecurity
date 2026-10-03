@@ -13,12 +13,15 @@ use Illuminate\Http\Request;
  */
 class MessageController extends Controller
 {
-    public function __construct(private MessagingService $messages) {}
+    public function __construct(private MessagingService $messages)
+    {
+    }
 
     public function index()
     {
         $inbox = $this->messages->inbox(auth()->user());
         $unread = DirectMessage::where('recipient_id', auth()->id())->whereNull('read_at')->count();
+
         return view('messages.index', compact('inbox', 'unread'));
     }
 
@@ -29,6 +32,7 @@ class MessageController extends Controller
         $candidates = $me->isCustomer()
             ? User::whereNotIn('role', ['customer', 'freelancer', 'commission_agent'])->where('is_active', true)->orderBy('name')->limit(50)->get()
             : User::where('is_active', true)->orderBy('name')->limit(50)->get();
+
         return view('messages.create', compact('candidates'));
     }
 
@@ -46,7 +50,7 @@ class MessageController extends Controller
         ]);
         $recipient = User::findOrFail($data['recipient_id']);
         // Only staff may flag internal notes.
-        $internal = auth()->user()->isStaff() && !empty($data['is_internal']);
+        $internal = auth()->user()->isStaff() && ! empty($data['is_internal']);
         $related = $this->resolveRelatedLink(auth()->user(), $data['related_type'] ?? null, $data['related_id'] ?? null);
         $message = $this->messages->send(auth()->user(), $recipient, $data['body'], $data['subject'] ?? null, [
             'is_internal' => $internal, 'parent_id' => $data['parent_id'] ?? null,
@@ -54,6 +58,7 @@ class MessageController extends Controller
         if ($related) {
             $message->update(['related_type' => $related['type'], 'related_id' => $related['id']]);
         }
+
         return redirect()->route(request()->route()->getName() === 'portal.messages.store' ? 'portal.messages.show' : 'admin.messages.show', $message->id)
             ->with('success', 'Message sent.');
     }
@@ -61,7 +66,9 @@ class MessageController extends Controller
     /** Resolve + authorize an optional business-work link for a message. */
     protected function resolveRelatedLink(User $me, ?string $type, $id): ?array
     {
-        if (!$type || !$id) return null;
+        if (! $type || ! $id) {
+            return null;
+        }
         $map = ['ticket' => \App\Models\Ticket::class, 'project' => \App\Models\Project::class, 'order' => \App\Models\ServiceOrder::class];
         abort_unless(isset($map[$type]), 422, 'Unknown link target.');
         $record = $map[$type]::findOrFail((int) $id);
@@ -69,6 +76,7 @@ class MessageController extends Controller
         if ($me->isCustomer()) {
             abort_unless((int) ($record->customer_id ?? 0) === (int) $me->id, 403, 'You may only link your own records.');
         }
+
         return ['type' => $map[$type], 'id' => $record->getKey()];
     }
 
@@ -77,9 +85,14 @@ class MessageController extends Controller
         $message = DirectMessage::with(['sender', 'recipient'])->findOrFail($id);
         $me = auth()->user();
         abort_unless((int) $message->sender_id === (int) $me->id || (int) $message->recipient_id === (int) $me->id, 403);
-        if ($me->isCustomer() && ($message->is_internal || !$message->is_customer_visible)) abort(403);
-        if ((int) $message->recipient_id === (int) $me->id) $this->messages->markRead($message, $me);
+        if ($me->isCustomer() && ($message->is_internal || ! $message->is_customer_visible)) {
+            abort(403);
+        }
+        if ((int) $message->recipient_id === (int) $me->id) {
+            $this->messages->markRead($message, $me);
+        }
         $thread = $this->messages->thread($me, (int) $message->sender_id === (int) $me->id ? $message->recipient : $message->sender);
+
         return view('messages.show', compact('message', 'thread'));
     }
 }

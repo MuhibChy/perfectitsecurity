@@ -25,6 +25,7 @@ class LightThemeTest extends TestCase
         $hex = ltrim($hex, '#');
         $rgb = array_map(fn ($i) => hexdec(substr($hex, $i, 2)) / 255, [0, 2, 4]);
         $rgb = array_map(fn ($c) => $c <= 0.03928 ? $c / 12.92 : pow(($c + 0.055) / 1.055, 2.4), $rgb);
+
         return 0.2126 * $rgb[0] + 0.7152 * $rgb[1] + 0.0722 * $rgb[2];
     }
 
@@ -32,6 +33,7 @@ class LightThemeTest extends TestCase
     {
         $l1 = $this->luminance($fg);
         $l2 = $this->luminance($bg);
+
         return (max($l1, $l2) + 0.05) / (min($l1, $l2) + 0.05);
     }
 
@@ -86,7 +88,7 @@ class LightThemeTest extends TestCase
     {
         $app = file_get_contents(base_path('resources/views/layouts/app.blade.php'));
         $this->assertStringContainsString('localStorage', $app);
-        $this->assertStringContainsString("Toggle color theme", $app);
+        $this->assertStringContainsString('Toggle color theme', $app);
         $public = file_get_contents(base_path('resources/views/layouts/public.blade.php'));
         $this->assertStringContainsString('localStorage', $public);
         $js = file_get_contents(base_path('resources/js/app.js'));

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * - Display names are realistic; identification is via the hidden
  *   is_demo boolean plus operational markers that are never
+ *
  *   customer-visible (demo.*@example.test emails, DEMO-TXN refs,
  *   type=demo notifications, documents/demo-* paths).
  * - Default mode is a dry run that lists what WOULD be deleted.
@@ -21,12 +22,14 @@ use Illuminate\Support\Facades\Storage;
 class DemoCleanupCommand extends Command
 {
     protected $signature = 'demo:cleanup {--confirm : Actually delete the sample records (default is dry-run preview)}';
+
     protected $description = 'Preview or remove is_demo-flagged sample records (never touches real data)';
 
     public function handle(): int
     {
         if (app()->environment('production')) {
             $this->error('Refusing to run demo:cleanup in the production environment.');
+
             return self::FAILURE;
         }
 
@@ -40,7 +43,7 @@ class DemoCleanupCommand extends Command
         ));
         $this->info("Total sample rows: {$total}");
 
-        if (!$this->option('confirm')) {
+        if (! $this->option('confirm')) {
             return self::SUCCESS;
         }
 
@@ -56,6 +59,7 @@ class DemoCleanupCommand extends Command
         }
 
         $this->info('Sample cleanup complete. Real records untouched.');
+
         return self::SUCCESS;
     }
 
@@ -98,15 +102,13 @@ class DemoCleanupCommand extends Command
             ['entity' => 'proposals', 'matcher' => 'is_demo', 'count' => count($proposalIds)],
             ['entity' => 'contracts', 'matcher' => 'is_demo', 'count' => $count('contracts')],
             ['entity' => 'service_orders', 'matcher' => 'is_demo', 'count' => count($orderIds)],
-            ['entity' => 'task_applications/comments/attachments', 'matcher' => 'sample task ids', 'count' =>
-                (empty($taskIds) ? 0 : DB::table('task_applications')->whereIn('task_id', $taskIds)->count())
+            ['entity' => 'task_applications/comments/attachments', 'matcher' => 'sample task ids', 'count' => (empty($taskIds) ? 0 : DB::table('task_applications')->whereIn('task_id', $taskIds)->count())
                 + (empty($taskIds) ? 0 : DB::table('task_comments')->whereIn('task_id', $taskIds)->count())
                 + (empty($taskIds) ? 0 : DB::table('task_attachments')->whereIn('task_id', $taskIds)->count())],
             ['entity' => 'tasks', 'matcher' => 'is_demo', 'count' => count($taskIds)],
             ['entity' => 'project_milestones', 'matcher' => 'sample project ids', 'count' => empty($projectIds) ? 0 : DB::table('project_milestones')->whereIn('project_id', $projectIds)->count()],
             ['entity' => 'projects', 'matcher' => 'is_demo', 'count' => count($projectIds)],
-            ['entity' => 'ticket_messages/time/attachments', 'matcher' => 'sample ticket ids', 'count' =>
-                (empty($ticketIds) ? 0 : DB::table('ticket_messages')->whereIn('ticket_id', $ticketIds)->count())
+            ['entity' => 'ticket_messages/time/attachments', 'matcher' => 'sample ticket ids', 'count' => (empty($ticketIds) ? 0 : DB::table('ticket_messages')->whereIn('ticket_id', $ticketIds)->count())
                 + (empty($ticketIds) ? 0 : DB::table('ticket_time_entries')->whereIn('ticket_id', $ticketIds)->count())
                 + (empty($ticketIds) ? 0 : DB::table('ticket_attachments')->whereIn('ticket_id', $ticketIds)->count())],
             ['entity' => 'tickets', 'matcher' => 'is_demo', 'count' => count($ticketIds)],
@@ -115,8 +117,7 @@ class DemoCleanupCommand extends Command
             ['entity' => 'service_requests', 'matcher' => 'is_demo', 'count' => $count('service_requests')],
             ['entity' => 'lead_activities', 'matcher' => 'sample lead ids', 'count' => empty($leadIds) ? 0 : DB::table('lead_activities')->whereIn('lead_id', $leadIds)->count()],
             ['entity' => 'leads', 'matcher' => 'is_demo', 'count' => count($leadIds)],
-            ['entity' => 'kb_article_versions/votes', 'matcher' => 'sample article ids', 'count' =>
-                (empty($kbIds) ? 0 : DB::table('kb_article_versions')->whereIn('article_id', $kbIds)->count())
+            ['entity' => 'kb_article_versions/votes', 'matcher' => 'sample article ids', 'count' => (empty($kbIds) ? 0 : DB::table('kb_article_versions')->whereIn('article_id', $kbIds)->count())
                 + (empty($kbIds) ? 0 : DB::table('kb_article_votes')->whereIn('article_id', $kbIds)->count())],
             ['entity' => 'kb_article_tag (pivot)', 'matcher' => 'sample article ids', 'count' => empty($kbIds) ? 0 : DB::table('kb_article_tag')->whereIn('article_id', $kbIds)->count()],
             ['entity' => 'kb_articles', 'matcher' => 'is_demo', 'count' => count($kbIds)],
@@ -132,7 +133,7 @@ class DemoCleanupCommand extends Command
             $like('payments', 'transaction_id', 'DEMO-%', "legacy transaction_id LIKE 'DEMO-%'"),
             $like('customer_documents', 'path', 'documents/demo-%', "legacy path LIKE 'documents/demo-%'"),
             $like('notifications', 'type', 'demo', "legacy type='demo'"),
-            $like('users', 'email', 'demo.%@example.test', "legacy demo.*@example.test"),
+            $like('users', 'email', 'demo.%@example.test', 'legacy demo.*@example.test'),
         ];
     }
 

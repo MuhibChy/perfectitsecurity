@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('kb_article_versions')) {
+        if (! Schema::hasTable('kb_article_versions')) {
             Schema::create('kb_article_versions', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('article_id')->constrained('kb_articles')->cascadeOnDelete();
@@ -21,7 +21,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('kb_article_votes')) {
+        if (! Schema::hasTable('kb_article_votes')) {
             Schema::create('kb_article_votes', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('article_id')->constrained('kb_articles')->cascadeOnDelete();
@@ -37,10 +37,10 @@ return new class extends Migration
 
         // Add new columns to kb_articles (only if they don't already exist)
         Schema::table('kb_articles', function (Blueprint $table) {
-            if (!Schema::hasColumn('kb_articles', 'view_count')) {
+            if (! Schema::hasColumn('kb_articles', 'view_count')) {
                 $table->unsignedInteger('view_count')->default(0);
             }
-            if (!Schema::hasColumn('kb_articles', 'current_version')) {
+            if (! Schema::hasColumn('kb_articles', 'current_version')) {
                 $table->unsignedInteger('current_version')->default(1);
             }
         });

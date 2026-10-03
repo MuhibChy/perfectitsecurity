@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\AiConversation;
-use App\Models\AuditLog;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Ticket;

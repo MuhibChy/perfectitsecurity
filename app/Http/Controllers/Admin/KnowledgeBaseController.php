@@ -13,6 +13,7 @@ class KnowledgeBaseController extends Controller
     public function index()
     {
         $articles = KbArticle::with('category', 'author')->latest()->paginate(20);
+
         return view('admin.kb.index', compact('articles'));
     }
 
@@ -20,6 +21,7 @@ class KnowledgeBaseController extends Controller
     {
         $categories = KbCategory::where('is_active', true)->get();
         $tags = \App\Models\KbTag::orderBy('name')->get();
+
         return view('admin.kb.create', compact('categories', 'tags'));
     }
 
@@ -56,11 +58,12 @@ class KnowledgeBaseController extends Controller
         $base = $validated['slug'];
         $i = 1;
         while (KbArticle::where('slug', $validated['slug'])->exists()) {
-            $validated['slug'] = $base . '-' . (++$i);
+            $validated['slug'] = $base.'-'.(++$i);
         }
 
         $article = KbArticle::create($validated);
         $article->tags()->sync($tags);
+
         return redirect()->route('admin.knowledge-base.index')->with('success', 'Article created!');
     }
 
@@ -69,6 +72,7 @@ class KnowledgeBaseController extends Controller
         $categories = KbCategory::where('is_active', true)->get();
         $tags = \App\Models\KbTag::orderBy('name')->get();
         $knowledgeBase->load('tags', 'versions');
+
         return view('admin.kb.edit', ['article' => $knowledgeBase, 'categories' => $categories, 'tags' => $tags]);
     }
 
@@ -105,13 +109,15 @@ class KnowledgeBaseController extends Controller
             $knowledgeBase->tags()->sync($tags);
         }
         $knowledgeBase->saveVersion($validated, auth()->id(), $editReason !== '' ? $editReason : 'Admin edit');
-        \App\Models\AuditLog::log('kb.updated', 'knowledge_base', $knowledgeBase, 'Article edited by ' . (auth()->user()->name ?? 'staff') . ($editReason !== '' ? '. Reason: ' . $editReason : '.'), $before, $knowledgeBase->fresh()->only(['title', 'content', 'visibility', 'is_published']));
+        \App\Models\AuditLog::log('kb.updated', 'knowledge_base', $knowledgeBase, 'Article edited by '.(auth()->user()->name ?? 'staff').($editReason !== '' ? '. Reason: '.$editReason : '.'), $before, $knowledgeBase->fresh()->only(['title', 'content', 'visibility', 'is_published']));
+
         return redirect()->route('admin.knowledge-base.index')->with('success', 'Article updated!');
     }
 
     public function destroy(KbArticle $knowledgeBase)
     {
         $knowledgeBase->delete();
+
         return redirect()->route('admin.knowledge-base.index')->with('success', 'Article deleted.');
     }
 }

@@ -19,10 +19,12 @@ use Illuminate\Validation\Rules\Password;
 class StaffProfileController extends Controller
 {
     use \App\Http\Controllers\Concerns\ResolvesPhoneInput;
+
     public function edit()
     {
         $user = auth()->user();
         $user->loadMissing('profileDetail');
+
         return view('admin.profile.edit', [
             'user' => $user,
             'completion' => app(\App\Services\ProfileCompletionService::class)->for($user),
@@ -62,7 +64,7 @@ class StaffProfileController extends Controller
         if ($resolvedPhone !== null) {
             $validated['phone'] = $resolvedPhone;
         }
-        if (!empty($validated['preferred_currency'])) {
+        if (! empty($validated['preferred_currency'])) {
             $code = strtoupper($validated['preferred_currency']);
             abort_unless(\App\Services\Money::isActive($code), 422, 'Unsupported currency.');
             $validated['preferred_currency'] = $code;
@@ -70,7 +72,9 @@ class StaffProfileController extends Controller
         $detailKeys = ['secondary_phone', 'whatsapp_number', 'preferred_contact_method', 'contact_hours', 'availability_note', 'skills', 'certifications', 'expertise'];
         $detailData = [];
         foreach ($detailKeys as $k) {
-            if (array_key_exists($k, $validated)) $detailData[$k] = $validated[$k];
+            if (array_key_exists($k, $validated)) {
+                $detailData[$k] = $validated[$k];
+            }
             unset($validated[$k]);
         }
         // Free-text skills box (one per line) maps onto the skills array.
@@ -84,10 +88,13 @@ class StaffProfileController extends Controller
             $user->profileDetail()->updateOrCreate(['user_id' => $user->id], $detailData);
         }
         if ($avatar) {
-            if ($user->avatar) Storage::disk('private')->delete($user->avatar);
+            if ($user->avatar) {
+                Storage::disk('private')->delete($user->avatar);
+            }
             $user->update(['avatar' => $avatar->store('avatars', 'private')]);
         }
         AuditLog::log('staff.profile_updated', 'users', $user, "Staff profile updated by {$user->name}.");
+
         return back()->with('success', 'Profile updated.');
     }
 
@@ -102,9 +109,12 @@ class StaffProfileController extends Controller
             'sms_notifications' => 'nullable|boolean',
         ]);
         foreach (['theme' => 'string', 'locale' => 'string', 'dashboard_layout' => 'string', 'email_notifications' => 'bool', 'sms_notifications' => 'bool'] as $k => $t) {
-            if (array_key_exists($k, $data)) UserSetting::set($user, 'preferences', $k, $data[$k], $t);
+            if (array_key_exists($k, $data)) {
+                UserSetting::set($user, 'preferences', $k, $data[$k], $t);
+            }
         }
         AuditLog::log('staff.settings_updated', 'users', $user, "Staff settings updated by {$user->name}.");
+
         return back()->with('success', 'Settings saved.');
     }
 
@@ -119,6 +129,7 @@ class StaffProfileController extends Controller
             \Illuminate\Support\Facades\Auth::logoutOtherDevices($request->password);
         } catch (\Throwable $e) {
         }
+
         return back()->with('success', 'Password updated.');
     }
 
@@ -132,6 +143,7 @@ class StaffProfileController extends Controller
         $salaryPaid = (float) $user->salaries()->where('status', 'paid')->sum('net_salary');
         $salaryPending = (float) $user->salaries()->whereIn('status', ['pending', 'approved'])->sum('net_salary');
         $commissions = app(\App\Services\CommissionService::class)->getWorkerEarnings($user->id);
+
         return view('admin.profile.work', [
             'user' => $user,
             'overview' => TraceabilityService::employeeOverview($user),

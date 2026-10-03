@@ -20,6 +20,7 @@ class AccountController extends Controller
     public function summary(AccountEarningsService $earnings, ProfileCompletionService $completion)
     {
         $user = auth()->user();
+
         return view('customer.account.summary', [
             'user' => $user,
             'finance' => $earnings->forCustomer($user),
@@ -35,6 +36,7 @@ class AccountController extends Controller
             ->visibleTo($user)->with(['sender', 'recipient', 'related'])->latest()->paginate(20);
         $callLogs = $calls->forUser($user);
         $timeline = TraceabilityService::customerTimeline($user, 'portal', 30);
+
         return view('customer.account.comms', compact('messages', 'callLogs', 'timeline'));
     }
 }

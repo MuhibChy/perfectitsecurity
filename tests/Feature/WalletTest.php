@@ -28,10 +28,13 @@ class WalletTest extends TestCase
 
     protected function invoice(User $customer, float $total = 1000): Invoice
     {
-        return Invoice::create(['invoice_number' => 'INV-W-' . strtoupper(\Illuminate\Support\Str::random(6)), 'customer_id' => $customer->id, 'subtotal' => $total, 'total' => $total, 'amount_paid' => 0, 'amount_due' => $total, 'status' => 'sent', 'currency' => 'USD', 'due_date' => now()->addDays(14)]);
+        return Invoice::create(['invoice_number' => 'INV-W-'.strtoupper(\Illuminate\Support\Str::random(6)), 'customer_id' => $customer->id, 'subtotal' => $total, 'total' => $total, 'amount_paid' => 0, 'amount_due' => $total, 'status' => 'sent', 'currency' => 'USD', 'due_date' => now()->addDays(14)]);
     }
 
-    protected function service(): WalletService { return app(WalletService::class); }
+    protected function service(): WalletService
+    {
+        return app(WalletService::class);
+    }
 
     /** @test */
     public function wallet_provisioning_is_idempotent_and_unique()
@@ -224,7 +227,7 @@ class WalletTest extends TestCase
 
         $this->actingAs($customer)->post(route('portal.wallet.topup', $wallet), ['amount' => 250])->assertRedirect();
         $pending = WalletTransaction::where('wallet_id', $wallet->id)->where('status', 'pending')->firstOrFail();
-        $token = hash_hmac('sha256', $pending->id . ':' . $pending->transaction_reference, config('app.key'));
+        $token = hash_hmac('sha256', $pending->id.':'.$pending->transaction_reference, config('app.key'));
 
         $url = route('portal.wallet.topup.return', ['provider' => 'test', 'topup_id' => $pending->id, 'token' => $token]);
         $this->actingAs($customer)->get($url)->assertRedirect()->assertSessionHas('success');
@@ -276,7 +279,8 @@ class WalletTest extends TestCase
 
     /** @test */
     public function concurrent_payments_cannot_overdraw()
-    {        $customer = $this->customer();
+    {
+        $customer = $this->customer();
         $wallet = $this->service()->for($customer);
         $this->service()->creditDeposit($wallet, 1000, 'test', 'txn-1', 'evt-1', $customer->id);
         $invoice = $this->invoice($customer, 1000);

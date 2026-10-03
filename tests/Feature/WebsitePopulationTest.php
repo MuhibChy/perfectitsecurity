@@ -22,9 +22,13 @@ class WebsitePopulationTest extends TestCase
     use RefreshDatabase;
 
     protected $admin;
+
     protected $finance;
+
     protected $customer;
+
     protected $us;
+
     protected $uk;
 
     protected function setUp(): void

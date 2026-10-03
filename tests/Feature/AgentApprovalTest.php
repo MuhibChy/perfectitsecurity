@@ -61,7 +61,7 @@ class AgentApprovalTest extends TestCase
         $c = $svc->issue($admin, 'update_ticket', ['id' => '7']);
         $this->assertFalse($svc->verify($other, $c['token'], 'update_ticket', ['id' => '7']));
         $d = $svc->issue($admin, 'update_ticket', ['id' => '7']);
-        $this->assertFalse($svc->verify($admin, substr($d['token'], 0, -4) . 'AAAA', 'update_ticket', ['id' => '7']));
+        $this->assertFalse($svc->verify($admin, substr($d['token'], 0, -4).'AAAA', 'update_ticket', ['id' => '7']));
     }
 
     /** @test */

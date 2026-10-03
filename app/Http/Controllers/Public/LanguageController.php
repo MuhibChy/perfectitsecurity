@@ -14,7 +14,7 @@ class LanguageController extends Controller
      */
     public function switch(Request $request, string $locale)
     {
-        if (!array_key_exists($locale, SetLocale::SUPPORTED_LOCALES)) {
+        if (! array_key_exists($locale, SetLocale::SUPPORTED_LOCALES)) {
             abort(400, 'Unsupported locale.');
         }
 
@@ -29,13 +29,14 @@ class LanguageController extends Controller
         // unescaped `#` inside `[?#]` would terminate the pattern early
         // and preg_match would throw ("Unknown modifier ']'"), turning
         // every /lang/* switch into a 500.
-        if (!preg_match('~^/([^\s?#]*)?([?#][^\s]*)?$~', $back)) {
+        if (! preg_match('~^/([^\s?#]*)?([?#][^\s]*)?$~', $back)) {
             $host = parse_url($back, PHP_URL_HOST);
             $appHost = parse_url(config('app.url'), PHP_URL_HOST);
-            if (!$host || !$appHost || strtolower($host) !== strtolower($appHost)) {
+            if (! $host || ! $appHost || strtolower($host) !== strtolower($appHost)) {
                 return redirect()->route('home');
             }
         }
+
         return redirect($back);
     }
 }

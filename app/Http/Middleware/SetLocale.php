@@ -36,7 +36,7 @@ class SetLocale
         $locale = Session::get('locale');
 
         // 3. Check browser Accept-Language header
-        if (!$locale) {
+        if (! $locale) {
             $browserLocale = $request->getPreferredLanguage(array_keys(self::SUPPORTED_LOCALES));
             $locale = $browserLocale ?: self::DEFAULT_LOCALE;
         }

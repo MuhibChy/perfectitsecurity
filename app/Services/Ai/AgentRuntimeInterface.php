@@ -21,6 +21,7 @@ interface AgentRuntimeInterface
 
     /**
      * Safe diagnostics. Never include secrets/keys/tokens.
+     *
      * @return array {runtime, enabled, verified, reachable, latency_ms, checked_at, error?}
      */
     public function health(): array;

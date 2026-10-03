@@ -28,15 +28,33 @@ class RemoteSession extends Model
     {
         static::creating(function ($session) {
             if (empty($session->session_number)) {
-                $session->session_number = 'RS-' . strtoupper(Str::random(8));
+                $session->session_number = 'RS-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function ticket() { return $this->belongsTo(Ticket::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function technician() { return $this->belongsTo(User::class, 'technician_id'); }
-    public function consenter() { return $this->belongsTo(User::class, 'consent_by'); }
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
 
-    public function scopeForCustomer($query, $customerId) { return $query->where('customer_id', $customerId); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function technician()
+    {
+        return $this->belongsTo(User::class, 'technician_id');
+    }
+
+    public function consenter()
+    {
+        return $this->belongsTo(User::class, 'consent_by');
+    }
+
+    public function scopeForCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
 }

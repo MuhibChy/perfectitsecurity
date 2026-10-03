@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BlogPost;
 use App\Models\BlogCategory;
+use App\Models\BlogPost;
 use App\Models\BlogTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,6 +14,7 @@ class BlogController extends Controller
     public function index()
     {
         $posts = BlogPost::with('author', 'category')->latest()->paginate(20);
+
         return view('admin.blog.index', compact('posts'));
     }
 
@@ -21,6 +22,7 @@ class BlogController extends Controller
     {
         $categories = BlogCategory::all();
         $tags = BlogTag::all();
+
         return view('admin.blog.create', compact('categories', 'tags'));
     }
 
@@ -31,7 +33,7 @@ class BlogController extends Controller
             'category_id' => 'required|exists:blog_categories,id',
             'excerpt' => 'nullable|string|max:1000',
             'content' => 'required|string',
-                'featured_image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'featured_image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'is_published' => 'boolean',
@@ -47,15 +49,21 @@ class BlogController extends Controller
             $validated['featured_image'] = $request->file('featured_image')->store('blog', 'public');
         }
 
-        if (!$request->boolean('is_published')) unset($validated['published_at']);
-        if ($request->boolean('is_published')) $validated['published_at'] = now();
+        if (! $request->boolean('is_published')) {
+            unset($validated['published_at']);
+        }
+        if ($request->boolean('is_published')) {
+            $validated['published_at'] = now();
+        }
 
         $tags = $validated['tags'] ?? [];
         unset($validated['tags']);
         $validated['content'] = \App\Services\HtmlSanitizer::clean($validated['content']);
 
         $post = BlogPost::create($validated);
-        if (!empty($tags)) $post->tags()->sync($tags);
+        if (! empty($tags)) {
+            $post->tags()->sync($tags);
+        }
 
         return redirect()->route('admin.blog.index')->with('success', 'Post created!');
     }
@@ -65,6 +73,7 @@ class BlogController extends Controller
         $categories = BlogCategory::all();
         $tags = BlogTag::all();
         $post->load('tags');
+
         return view('admin.blog.edit', compact('post', 'categories', 'tags'));
     }
 
@@ -82,8 +91,11 @@ class BlogController extends Controller
             'tags' => 'nullable|array',
         ]);
 
-        if (!$request->boolean('is_published')) $validated['published_at'] = null;
-        elseif (!$post->published_at) $validated['published_at'] = now();
+        if (! $request->boolean('is_published')) {
+            $validated['published_at'] = null;
+        } elseif (! $post->published_at) {
+            $validated['published_at'] = now();
+        }
 
         $tags = $validated['tags'] ?? [];
         unset($validated['tags']);
@@ -98,6 +110,7 @@ class BlogController extends Controller
     public function destroy(BlogPost $post)
     {
         $post->delete();
+
         return redirect()->route('admin.blog.index')->with('success', 'Post deleted.');
     }
 }

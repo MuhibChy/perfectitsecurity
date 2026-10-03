@@ -10,54 +10,54 @@ return new class extends Migration
     {
         // --- Quotation schema alignment ---
         Schema::table('quotations', function (Blueprint $table) {
-            if (!Schema::hasColumn('quotations', 'service_request_id')) {
+            if (! Schema::hasColumn('quotations', 'service_request_id')) {
                 $table->foreignId('service_request_id')->nullable()->after('company_id')->constrained('service_requests')->nullOnDelete();
             }
-            if (!Schema::hasColumn('quotations', 'currency')) {
+            if (! Schema::hasColumn('quotations', 'currency')) {
                 $table->string('currency', 3)->default('USD')->after('total');
             }
-            if (!Schema::hasColumn('quotations', 'country_id')) {
+            if (! Schema::hasColumn('quotations', 'country_id')) {
                 $table->foreignId('country_id')->nullable()->after('currency')->constrained()->nullOnDelete();
             }
-            if (!Schema::hasColumn('quotations', 'assigned_to')) {
+            if (! Schema::hasColumn('quotations', 'assigned_to')) {
                 $table->foreignId('assigned_to')->nullable()->after('country_id')->constrained('users')->nullOnDelete();
             }
         });
 
         // --- Quote / lead intake fields ---
         Schema::table('service_requests', function (Blueprint $table) {
-            if (!Schema::hasColumn('service_requests', 'subject')) {
+            if (! Schema::hasColumn('service_requests', 'subject')) {
                 $table->string('subject')->nullable()->after('company');
             }
-            if (!Schema::hasColumn('service_requests', 'service_interest')) {
+            if (! Schema::hasColumn('service_requests', 'service_interest')) {
                 $table->string('service_interest')->nullable()->after('subject');
             }
-            if (!Schema::hasColumn('service_requests', 'budget_range')) {
+            if (! Schema::hasColumn('service_requests', 'budget_range')) {
                 $table->string('budget_range')->nullable()->after('budget');
             }
-            if (!Schema::hasColumn('service_requests', 'timeline')) {
+            if (! Schema::hasColumn('service_requests', 'timeline')) {
                 $table->string('timeline')->nullable()->after('budget_range');
             }
-            if (!Schema::hasColumn('service_requests', 'lead_source')) {
+            if (! Schema::hasColumn('service_requests', 'lead_source')) {
                 $table->string('lead_source')->nullable()->default('website')->after('timeline');
             }
         });
 
         // --- Country tax / business hours ---
         Schema::table('countries', function (Blueprint $table) {
-            if (!Schema::hasColumn('countries', 'tax_rate')) {
+            if (! Schema::hasColumn('countries', 'tax_rate')) {
                 $table->decimal('tax_rate', 5, 2)->default(0)->after('currency_name');
             }
-            if (!Schema::hasColumn('countries', 'timezone')) {
+            if (! Schema::hasColumn('countries', 'timezone')) {
                 $table->string('timezone')->default('UTC')->after('tax_rate');
             }
-            if (!Schema::hasColumn('countries', 'business_hours_start')) {
+            if (! Schema::hasColumn('countries', 'business_hours_start')) {
                 $table->time('business_hours_start')->nullable()->after('timezone');
             }
-            if (!Schema::hasColumn('countries', 'business_hours_end')) {
+            if (! Schema::hasColumn('countries', 'business_hours_end')) {
                 $table->time('business_hours_end')->nullable()->after('business_hours_start');
             }
-            if (!Schema::hasColumn('countries', 'business_days')) {
+            if (! Schema::hasColumn('countries', 'business_days')) {
                 $table->json('business_days')->nullable()->after('business_hours_end');
             }
         });
@@ -213,40 +213,40 @@ return new class extends Migration
         });
 
         Schema::table('invoices', function (Blueprint $table) {
-            if (!Schema::hasColumn('invoices', 'currency')) {
+            if (! Schema::hasColumn('invoices', 'currency')) {
                 $table->string('currency', 3)->default('USD')->after('total');
             }
-            if (!Schema::hasColumn('invoices', 'subscription_id')) {
+            if (! Schema::hasColumn('invoices', 'subscription_id')) {
                 $table->foreignId('subscription_id')->nullable()->after('quotation_id')->constrained()->nullOnDelete();
             }
-            if (!Schema::hasColumn('invoices', 'stripe_checkout_session_id')) {
+            if (! Schema::hasColumn('invoices', 'stripe_checkout_session_id')) {
                 $table->string('stripe_checkout_session_id')->nullable()->after('paid_at');
             }
-            if (!Schema::hasColumn('invoices', 'stripe_payment_intent_id')) {
+            if (! Schema::hasColumn('invoices', 'stripe_payment_intent_id')) {
                 $table->string('stripe_payment_intent_id')->nullable()->after('stripe_checkout_session_id');
             }
         });
 
         Schema::table('payments', function (Blueprint $table) {
-            if (!Schema::hasColumn('payments', 'stripe_checkout_session_id')) {
+            if (! Schema::hasColumn('payments', 'stripe_checkout_session_id')) {
                 $table->string('stripe_checkout_session_id')->nullable()->after('gateway');
             }
-            if (!Schema::hasColumn('payments', 'stripe_payment_intent_id')) {
+            if (! Schema::hasColumn('payments', 'stripe_payment_intent_id')) {
                 $table->string('stripe_payment_intent_id')->nullable()->after('stripe_checkout_session_id');
             }
         });
 
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'two_factor_confirmed_at')) {
+            if (! Schema::hasColumn('users', 'two_factor_confirmed_at')) {
                 $table->timestamp('two_factor_confirmed_at')->nullable()->after('two_factor_secret');
             }
-            if (!Schema::hasColumn('users', 'preferred_currency')) {
+            if (! Schema::hasColumn('users', 'preferred_currency')) {
                 $table->string('preferred_currency', 3)->nullable()->after('country');
             }
-            if (!Schema::hasColumn('users', 'preferred_locale')) {
+            if (! Schema::hasColumn('users', 'preferred_locale')) {
                 $table->string('preferred_locale', 5)->nullable()->after('preferred_currency');
             }
-            if (!Schema::hasColumn('users', 'stripe_customer_id')) {
+            if (! Schema::hasColumn('users', 'stripe_customer_id')) {
                 $table->string('stripe_customer_id')->nullable()->after('preferred_locale');
             }
         });

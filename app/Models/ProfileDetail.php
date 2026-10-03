@@ -25,6 +25,13 @@ class ProfileDetail extends Model
         'termination_date' => 'date',
     ];
 
-    public function user() { return $this->belongsTo(User::class); }
-    public function manager() { return $this->belongsTo(User::class, 'manager_id'); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
 }

@@ -12,6 +12,7 @@ class ServiceCategoryController extends Controller
     public function index()
     {
         $categories = ServiceCategory::withCount('services')->orderBy('sort_order')->get();
+
         return view('admin.services.categories', compact('categories'));
     }
 
@@ -42,6 +43,7 @@ class ServiceCategoryController extends Controller
     public function edit($id)
     {
         $category = ServiceCategory::findOrFail($id);
+
         return view('admin.services.category-edit', compact('category'));
     }
 
@@ -50,7 +52,7 @@ class ServiceCategoryController extends Controller
         $category = ServiceCategory::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:service_categories,name,' . $id,
+            'name' => 'required|string|max:255|unique:service_categories,name,'.$id,
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
             'color' => 'nullable|string|max:20',

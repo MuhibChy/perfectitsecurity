@@ -18,7 +18,8 @@ class PaymentStatusNotification extends Notification implements ShouldQueue
     public function __construct(
         public string $event,
         public array $data = []
-    ) {}
+    ) {
+    }
 
     public function via(object $notifiable): array
     {
@@ -39,6 +40,7 @@ class PaymentStatusNotification extends Notification implements ShouldQueue
             'manual_transfer_submitted' => 'Bank transfer submitted',
             'reconciliation_mismatch' => 'Payment reconciliation mismatch',
         ];
+
         return array_merge([
             'title' => $titles[$this->event] ?? 'Payment update',
             'event' => $this->event,

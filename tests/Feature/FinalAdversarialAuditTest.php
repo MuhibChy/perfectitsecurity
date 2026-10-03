@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Models\Service;
 use App\Models\ServiceCategory;
-use App\Models\ServiceOrder;
 use App\Models\User;
 use App\Services\CurrencyService;
 use App\Services\ServiceOrderWorkflowService;
@@ -35,7 +34,7 @@ class FinalAdversarialAuditTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'password' => bcrypt('secret'),
         ]);
@@ -44,9 +43,10 @@ class FinalAdversarialAuditTest extends TestCase
     private function svc(float $price = 500): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-final'], ['name' => 'FINAL']);
+
         return Service::create([
             'category_id' => $cat->id, 'name' => '[TEST] Final Svc',
-            'slug' => 't-final-' . Str::random(6),
+            'slug' => 't-final-'.Str::random(6),
             'short_description' => 'x', 'starting_price' => $price, 'is_active' => true,
         ]);
     }

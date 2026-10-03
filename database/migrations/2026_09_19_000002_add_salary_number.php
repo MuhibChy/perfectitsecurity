@@ -19,7 +19,7 @@ return new class extends Migration
 
         // Backfill pre-existing rows deterministically (SAL-<id padded>).
         foreach (\App\Models\Salary::whereNull('salary_number')->orderBy('id')->get() as $salary) {
-            $salary->update(['salary_number' => 'SAL-' . str_pad((string) $salary->id, 6, '0', STR_PAD_LEFT)]);
+            $salary->update(['salary_number' => 'SAL-'.str_pad((string) $salary->id, 6, '0', STR_PAD_LEFT)]);
         }
     }
 

@@ -48,9 +48,9 @@ class ServiceTrackingService
     public static function notify(int $userId, string $type, string $title, string $message, bool $force = false): bool
     {
         try {
-            if (!$force) {
+            if (! $force) {
                 $pref = \App\Models\NotificationPreference::where('user_id', $userId)->where('notification_type', $type)->first();
-                if ($pref && !(bool) $pref->in_app_enabled) {
+                if ($pref && ! (bool) $pref->in_app_enabled) {
                     return false; // recipient disabled this channel: respect it
                 }
             }
@@ -62,6 +62,7 @@ class ServiceTrackingService
                 'data' => json_encode(['title' => $title, 'message' => $message]),
                 'read_at' => null,
             ]);
+
             return true;
         } catch (\Throwable $e) {
             return false;
@@ -71,8 +72,13 @@ class ServiceTrackingService
     // ── progress (documented calculation) ──────────────────────
     public static function taskProgress(Task $task): int
     {
-        if ($task->status === 'completed') return 100;
-        if (in_array($task->status, ['cancelled', 'rejected'], true)) return 0;
+        if ($task->status === 'completed') {
+            return 100;
+        }
+        if (in_array($task->status, ['cancelled', 'rejected'], true)) {
+            return 0;
+        }
+
         return max(0, min(100, (int) ($task->progress ?? 0)));
     }
 
@@ -84,17 +90,18 @@ class ServiceTrackingService
         $basis = [];
         if ($milestones->count()) {
             $parts[] = $milestones->where('is_completed', true)->count() * 100 / $milestones->count();
-            $basis[] = $milestones->count() . ' milestones';
+            $basis[] = $milestones->count().' milestones';
         }
         if ($tasks->count()) {
             $done = $tasks->where('status', 'completed')->count();
             $parts[] = $done * 100 / $tasks->count();
-            $basis[] = $tasks->count() . ' tasks';
+            $basis[] = $tasks->count().' tasks';
         }
         if (empty($parts)) {
             return ['percent' => max(0, min(100, (int) $project->progress)), 'basis' => 'manual progress field'];
         }
-        return ['percent' => (int) round(array_sum($parts) / count($parts)), 'basis' => 'calculated from ' . implode(' + ', $basis)];
+
+        return ['percent' => (int) round(array_sum($parts) / count($parts)), 'basis' => 'calculated from '.implode(' + ', $basis)];
     }
 
     // ── current stage ──────────────────────────────────────────
@@ -106,13 +113,18 @@ class ServiceTrackingService
         $resumed = ServiceEvent::where('project_id', $project->id)
             ->whereIn('action', ['resumed', 'started', 'progress_updated', 'completed'])
             ->latest()->first();
-        if ($waiting && (!$resumed || $waiting->created_at > $resumed->created_at)) {
+        if ($waiting && (! $resumed || $waiting->created_at > $resumed->created_at)) {
             return $waiting->action === 'paused' ? 'Paused' : 'Waiting for customer';
         }
         $ms = $project->milestones->where('is_completed', false)->sortBy('sort_order')->first();
-        if ($ms) return $ms->name;
+        if ($ms) {
+            return $ms->name;
+        }
         $task = $project->tasks->whereIn('status', ['in_progress', 'submitted', 'under_review'])->sortByDesc('updated_at')->first();
-        if ($task) return $task->title;
+        if ($task) {
+            return $task->title;
+        }
+
         return ucfirst(str_replace('_', ' ', $project->status));
     }
 
@@ -120,15 +132,18 @@ class ServiceTrackingService
     public static function taskRunning(Task $task): ?array
     {
         $start = $task->start_date ?? $task->created_at;
-        if (!$start) return null;
+        if (! $start) {
+            return null;
+        }
         $end = $task->completed_at;
         $frozen = false;
-        if (!$end && $task->paused_at) {
+        if (! $end && $task->paused_at) {
             $end = $task->paused_at;
             $frozen = true;
         }
         $end = $end ?? now();
         $seconds = max(0, $end->diffInSeconds($start));
+
         return ['seconds' => $seconds, 'human' => self::humanDuration($seconds), 'frozen' => $frozen, 'started_at' => $start];
     }
 
@@ -137,8 +152,13 @@ class ServiceTrackingService
         $d = intdiv($seconds, 86400);
         $h = intdiv($seconds % 86400, 3600);
         $m = intdiv(($seconds % 3600), 60);
-        if ($d > 0) return "{$d} days {$h} hours";
-        if ($h > 0) return "{$h} hours {$m} min";
+        if ($d > 0) {
+            return "{$d} days {$h} hours";
+        }
+        if ($h > 0) {
+            return "{$h} hours {$m} min";
+        }
+
         return "{$m} min";
     }
 
@@ -146,8 +166,11 @@ class ServiceTrackingService
     public static function etaFor($entity): array
     {
         $deadline = $entity->deadline ?? $entity->preferred_date ?? null;
-        if (!$deadline) return ['label' => 'Being assessed', 'date' => null];
+        if (! $deadline) {
+            return ['label' => 'Being assessed', 'date' => null];
+        }
         $deadline = $deadline instanceof \DateTimeInterface ? $deadline : \Carbon\Carbon::parse($deadline);
+
         return ['label' => $deadline->format('d M Y'), 'date' => $deadline];
     }
 
@@ -172,8 +195,9 @@ class ServiceTrackingService
         return $tasks->map(function ($t) use ($waiting, $resumed) {
             $w = $waiting->get($t->id);
             $r = $resumed->get($t->id);
-            $isWaiting = $w && (!$r || $w->created_at > $r->created_at);
+            $isWaiting = $w && (! $r || $w->created_at > $r->created_at);
             $run = self::taskRunning($t);
+
             return [
                 'task' => $t,
                 'waiting' => $isWaiting ? $w : null,
@@ -193,6 +217,7 @@ class ServiceTrackingService
         $completedToday = Task::where('status', 'completed')->whereDate('updated_at', today())->count();
         $updateRequests = ServiceEvent::whereIn('action', ['update_requested', 'query_asked'])->where('created_at', '>=', now()->subDays(14))->count();
         $maintenanceDue = \App\Models\ServiceMaintenance::whereIn('status', ['scheduled', 'active'])->whereDate('next_due_at', '<=', today()->addDays(14))->count();
+
         return compact('active', 'queued', 'waitingCustomers', 'overdue', 'completedToday', 'updateRequests', 'maintenanceDue');
     }
 
@@ -201,10 +226,11 @@ class ServiceTrackingService
     {
         $orders = ServiceOrder::with(['service', 'tasks.project.milestones', 'tasks.project.tasks', 'invoices'])
             ->where('customer_id', $customer->id)->latest()->take(50)->get();
+
         return $orders->map(function ($o) {
             // Order→project bridge: task link first, recorded event link second.
             $project = $o->tasks->firstWhere('project_id', '!==', null)?->project;
-            if (!$project) {
+            if (! $project) {
                 $eventProjectId = ServiceEvent::where('order_id', $o->id)->whereNotNull('project_id')->latest()->first()?->project_id;
                 $project = $eventProjectId ? Project::with(['milestones', 'tasks'])->find($eventProjectId) : null;
             }
@@ -213,6 +239,7 @@ class ServiceTrackingService
                 ? ServiceEvent::where('project_id', $project->id)->where('customer_visible', true)->latest()->first()
                 : null;
             $due = round((float) $o->invoices->sum('amount_due'), 2);
+
             return [
                 'order' => $o,
                 'project' => $project,
@@ -228,9 +255,16 @@ class ServiceTrackingService
     public static function serviceTimeline(?int $orderId, ?int $projectId, bool $customerOnly = false): \Illuminate\Support\Collection
     {
         $q = ServiceEvent::with('actor')->latest();
-        if ($orderId) $q->where('order_id', $orderId);
-        if ($projectId) $q->where('project_id', $projectId);
-        if ($customerOnly) $q->where('customer_visible', true);
+        if ($orderId) {
+            $q->where('order_id', $orderId);
+        }
+        if ($projectId) {
+            $q->where('project_id', $projectId);
+        }
+        if ($customerOnly) {
+            $q->where('customer_visible', true);
+        }
+
         return $q->take(150)->get();
     }
 }

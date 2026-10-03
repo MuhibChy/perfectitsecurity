@@ -23,5 +23,8 @@ class PaymentWebhookEvent extends Model
         'processed_at' => 'datetime',
     ];
 
-    public function scopePending($q) { return $q->whereIn('status', ['received', 'failed']); }
+    public function scopePending($q)
+    {
+        return $q->whereIn('status', ['received', 'failed']);
+    }
 }

@@ -28,6 +28,7 @@ class PaymentProviderRegistry
     {
         $map = self::providers();
         $class = $map[strtolower($key)] ?? ManualPaymentProvider::class;
+
         return app($class);
     }
 

@@ -12,6 +12,7 @@ class AiSkillController extends Controller
     public function index()
     {
         $skills = AiSkill::orderBy('priority')->latest('id')->paginate(20);
+
         return view('admin.ai.skills-index', compact('skills'));
     }
 
@@ -26,6 +27,7 @@ class AiSkillController extends Controller
         $v['slug'] = Str::slug($v['slug'] ?? $v['name']);
         $v['created_by'] = auth()->id();
         AiSkill::create($v);
+
         return redirect()->route('admin.ai.skills.index')->with('success', 'Skill created.');
     }
 
@@ -41,24 +43,27 @@ class AiSkillController extends Controller
         $v['updated_by'] = auth()->id();
         $v['version'] = $skill->version + 1;
         $skill->update($v);
+
         return redirect()->route('admin.ai.skills.index')->with('success', 'Skill updated.');
     }
 
     public function destroy(AiSkill $skill)
     {
         $skill->delete();
+
         return redirect()->route('admin.ai.skills.index')->with('success', 'Skill deleted.');
     }
 
     public function duplicate(AiSkill $skill)
     {
         $copy = $skill->replicate(['slug']);
-        $copy->slug = $skill->slug . '-copy-' . Str::random(4);
-        $copy->name = $skill->name . ' (Copy)';
+        $copy->slug = $skill->slug.'-copy-'.Str::random(4);
+        $copy->name = $skill->name.' (Copy)';
         $copy->status = 'disabled';
         $copy->version = 1;
         $copy->created_by = auth()->id();
         $copy->save();
+
         return redirect()->route('admin.ai.skills.edit', $copy)->with('success', 'Skill duplicated as disabled draft.');
     }
 
@@ -68,6 +73,7 @@ class AiSkillController extends Controller
             'status' => $skill->status === 'enabled' ? 'disabled' : 'enabled',
             'updated_by' => auth()->id(),
         ]);
+
         return redirect()->back()->with('success', 'Skill status updated.');
     }
 
@@ -75,7 +81,7 @@ class AiSkillController extends Controller
     {
         $v = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:ai_skills,slug' . ($ignoreId ? ",{$ignoreId}" : ''),
+            'slug' => 'nullable|string|max:255|unique:ai_skills,slug'.($ignoreId ? ",{$ignoreId}" : ''),
             'description' => 'nullable|string|max:2000',
             'system_instructions' => 'required|string|max:8000',
             'trigger_keywords' => 'nullable|string|max:2000',
@@ -91,6 +97,7 @@ class AiSkillController extends Controller
         $v['trigger_keywords'] = collect(preg_split('/[\r\n,]+/', $v['trigger_keywords'] ?? ''))
             ->map(fn ($k) => trim($k))->filter()->values()->all();
         $v['allowed_roles'] = array_values($v['allowed_roles'] ?? []);
+
         return $v;
     }
 }

@@ -20,7 +20,18 @@ class SlaBreachLog extends Model
         'acknowledged_at' => 'datetime',
     ];
 
-    public function ticket() { return $this->belongsTo(Ticket::class); }
-    public function slaPolicy() { return $this->belongsTo(SlaPolicy::class); }
-    public function acknowledger() { return $this->belongsTo(User::class, 'acknowledged_by'); }
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function slaPolicy()
+    {
+        return $this->belongsTo(SlaPolicy::class);
+    }
+
+    public function acknowledger()
+    {
+        return $this->belongsTo(User::class, 'acknowledged_by');
+    }
 }

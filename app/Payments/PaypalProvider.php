@@ -8,6 +8,13 @@ namespace App\Payments;
  */
 class PaypalProvider extends AbstractInternationalGatewayProvider
 {
-    public function key(): string { return 'paypal'; }
-    public function label(): string { return 'PayPal'; }
+    public function key(): string
+    {
+        return 'paypal';
+    }
+
+    public function label(): string
+    {
+        return 'PayPal';
+    }
 }

@@ -25,6 +25,13 @@ class PaymentReconciliationRecord extends Model
         'checked_at' => 'datetime',
     ];
 
-    public function scopeMismatches($q) { return $q->where('result', 'mismatch'); }
-    public function scopeNeedsReview($q) { return $q->whereIn('result', ['mismatch', 'requires_verification']); }
+    public function scopeMismatches($q)
+    {
+        return $q->where('result', 'mismatch');
+    }
+
+    public function scopeNeedsReview($q)
+    {
+        return $q->whereIn('result', ['mismatch', 'requires_verification']);
+    }
 }

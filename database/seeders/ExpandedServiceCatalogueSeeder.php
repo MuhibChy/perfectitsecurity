@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Country;
-use App\Models\ServiceCategory;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceCountryPrice;
+use Illuminate\Database\Seeder;
 
 class ExpandedServiceCatalogueSeeder extends Seeder
 {
@@ -27,10 +27,12 @@ class ExpandedServiceCatalogueSeeder extends Seeder
 
         $createService = function (array $data, array $prices) use ($uk, $us, $bd) {
             $cat = ServiceCategory::where('slug', $data['category'])->first();
-            if (!$cat) return null;
+            if (! $cat) {
+                return null;
+            }
             unset($data['category']);
 
-            if (!isset($data['slug'])) {
+            if (! isset($data['slug'])) {
                 $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
             }
             $data['category_id'] = $cat->id;
@@ -279,7 +281,7 @@ class ExpandedServiceCatalogueSeeder extends Seeder
         $totalCats = ServiceCategory::count();
         $totalPrices = ServiceCountryPrice::count();
 
-        $this->command->info("✅ Expanded catalogue complete!");
+        $this->command->info('✅ Expanded catalogue complete!');
         $this->command->info("   📂 Categories: {$totalCats}");
         $this->command->info("   🛠️  Services: {$total}");
         $this->command->info("   💰 Country prices: {$totalPrices}");

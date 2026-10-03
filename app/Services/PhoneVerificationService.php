@@ -12,7 +12,9 @@ use Twilio\Rest\Client;
 class PhoneVerificationService
 {
     public const MAX_ATTEMPTS = 5;
+
     public const RESEND_COOLDOWN_SECONDS = 60;
+
     public const OTP_LIFETIME_MINUTES = 10;
 
     public function start(User $user, string $phone): array
@@ -33,7 +35,7 @@ class PhoneVerificationService
         }
 
         // Rate limiting (max 3 requests per 10 minutes)
-        $rateLimitKey = 'phone-verification-send:' . $user->id;
+        $rateLimitKey = 'phone-verification-send:'.$user->id;
         abort_if(RateLimiter::tooManyAttempts($rateLimitKey, 3), 429, 'Too many verification code requests. Please wait before trying again.');
         RateLimiter::hit($rateLimitKey, 600);
 
@@ -53,7 +55,7 @@ class PhoneVerificationService
 
                 return ['success' => true, 'provider' => 'twilio', 'message' => 'Verification code sent via SMS.'];
             } catch (\Throwable $e) {
-                Log::warning('Twilio verification dispatch failed, falling back to secure local OTP: ' . $e->getMessage());
+                Log::warning('Twilio verification dispatch failed, falling back to secure local OTP: '.$e->getMessage());
             }
         }
 
@@ -102,10 +104,13 @@ class PhoneVerificationService
                 abort_unless($check->status === 'approved' && $check->valid, 422, 'The verification code is invalid or expired.');
 
                 $this->markVerified($user);
+
                 return true;
             } catch (\Throwable $e) {
-                if ($e->getCode() == 422) throw $e;
-                Log::warning('Twilio verification check failed: ' . $e->getMessage());
+                if ($e->getCode() == 422) {
+                    throw $e;
+                }
+                Log::warning('Twilio verification check failed: '.$e->getMessage());
             }
         }
 
@@ -122,7 +127,7 @@ class PhoneVerificationService
         }
 
         // Expiration check
-        if (!$user->phone_otp_expires_at || now()->isAfter($user->phone_otp_expires_at)) {
+        if (! $user->phone_otp_expires_at || now()->isAfter($user->phone_otp_expires_at)) {
             $user->update([
                 'phone_otp_hash' => null,
                 'phone_otp_expires_at' => null,
@@ -137,12 +142,13 @@ class PhoneVerificationService
         $stored = (string) $user->phone_otp_hash;
         $valid = Hash::check($code, $stored)
             || (preg_match('/^[0-9a-f]{64}$/i', $stored) && hash_equals($stored, hash('sha256', $code)));
-        if (!$valid) {
+        if (! $valid) {
             $remaining = self::MAX_ATTEMPTS - (int) $user->phone_otp_attempts;
             abort(422, "Invalid verification code. {$remaining} attempts remaining.");
         }
 
         $this->markVerified($user);
+
         return true;
     }
 
@@ -163,6 +169,7 @@ class PhoneVerificationService
     {
         $phone = preg_replace('/[^0-9+]/', '', $phone);
         abort_unless(preg_match('/^\+[1-9][0-9]{7,14}$/', $phone), 422, 'Use an international phone number beginning with + (e.g. +447123456789 or +12025550123).');
+
         return $phone;
     }
 
@@ -183,11 +190,12 @@ class PhoneVerificationService
         }
         $national = ltrim($clean, '0');
         abort_if($national === '', 422, 'Please enter a mobile number.');
-        return $this->normalize('+' . $entry['dial'] . $national);
+
+        return $this->normalize('+'.$entry['dial'].$national);
     }
 
     /** Registry dial code for a user (own country_code first, then country text). */
-    public function dialCodeForUser(\App\Models\User $user): ?string
+    public function dialCodeForUser(User $user): ?string
     {
         $code = strtoupper(trim((string) ($user->country_code ?? '')));
         if ($code !== '' && ($entry = \App\Support\PhoneCountries::find($code))) {
@@ -199,6 +207,7 @@ class PhoneVerificationService
                 return $entry['dial'];
             }
         }
+
         return null;
     }
 
@@ -206,7 +215,7 @@ class PhoneVerificationService
      * Explicit phone verification state — never confused with email,
      * identity or 2FA states.
      */
-    public function phoneStateFor(\App\Models\User $user): string
+    public function phoneStateFor(User $user): string
     {
         if ($user->isPhoneVerified()) {
             return 'VERIFIED';
@@ -223,14 +232,15 @@ class PhoneVerificationService
         if ($user->phone_otp_hash) {
             return $user->phone_otp_sent_at ? 'PENDING' : 'SENT';
         }
+
         return 'PROVIDED';
     }
 
     private function hasTwilioCredentials(): bool
     {
-        return !empty(config('services.twilio.account_sid'))
-            && !empty(config('services.twilio.auth_token'))
-            && !empty(config('services.twilio.verify_service_sid'));
+        return ! empty(config('services.twilio.account_sid'))
+            && ! empty(config('services.twilio.auth_token'))
+            && ! empty(config('services.twilio.verify_service_sid'));
     }
 
     private function twilioClient(): Client

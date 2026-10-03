@@ -6,7 +6,6 @@ use App\Models\KbArticle;
 use App\Models\KbCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 /**
  * Approved AI Knowledge library: categories + customer-friendly FAQ and
@@ -20,8 +19,9 @@ class AiKnowledgeSeeder extends Seeder
     public function run(): void
     {
         $author = User::whereIn('role', ['super_admin', 'admin'])->first();
-        if (!$author) {
+        if (! $author) {
             $this->command?->warn('AiKnowledgeSeeder: no admin user found, skipping.');
+
             return;
         }
 

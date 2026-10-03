@@ -14,6 +14,13 @@ class KbArticleVote extends Model
         'is_helpful' => 'boolean',
     ];
 
-    public function article() { return $this->belongsTo(KbArticle::class, 'article_id'); }
-    public function user() { return $this->belongsTo(User::class, 'user_id'); }
+    public function article()
+    {
+        return $this->belongsTo(KbArticle::class, 'article_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -22,21 +22,26 @@ class ManualBankPaymentController extends Controller
     public function index(Request $request)
     {
         $query = ManualBankPayment::with(['customer', 'invoice', 'bankAccount'])->latest('id');
-        if ($request->filled('status')) $query->where('status', $request->input('status'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
         $payments = $query->paginate(20)->withQueryString();
         $pendingCount = ManualBankPayment::where('status', 'pending_verification')->count();
+
         return view('admin.payments.bank-transfers.index', compact('payments', 'pendingCount'));
     }
 
     public function show(ManualBankPayment $bankTransfer)
     {
         $bankTransfer->load(['customer', 'invoice', 'serviceOrder', 'bankAccount', 'paymentTransaction']);
+
         return view('admin.payments.bank-transfers.show', ['transfer' => $bankTransfer]);
     }
 
     public function receipt(ManualBankPayment $bankTransfer)
     {
         abort_unless($bankTransfer->receipt_path && Storage::disk('private')->exists($bankTransfer->receipt_path), 404);
+
         return Storage::disk('private')->download($bankTransfer->receipt_path);
     }
 
@@ -44,12 +49,13 @@ class ManualBankPaymentController extends Controller
     {
         abort_unless($bankTransfer->status === 'pending_verification', 422, 'Already reviewed.');
         $data = $request->validate(['admin_notes' => 'nullable|string|max:2000']);
+
         return DB::transaction(function () use ($bankTransfer, $data, $settlement) {
             $bankTransfer = ManualBankPayment::lockForUpdate()->findOrFail($bankTransfer->id);
             abort_unless($bankTransfer->status === 'pending_verification', 422, 'Already reviewed.');
 
             $txn = $bankTransfer->paymentTransaction()->lockForUpdate()->first();
-            if (!$txn) {
+            if (! $txn) {
                 // Older submission without a checkout transaction: create the
                 // internal record first so settlement stays single-sourced.
                 $txn = PaymentTransaction::create([
@@ -88,6 +94,7 @@ class ManualBankPaymentController extends Controller
                 'amount' => $bankTransfer->amount,
                 'currency' => $bankTransfer->currency,
             ]));
+
             return redirect()->route('admin.bank-transfers.show', $bankTransfer)->with('success', 'Transfer verified and payment recorded.');
         });
     }
@@ -104,13 +111,14 @@ class ManualBankPaymentController extends Controller
         ]);
         if ($bankTransfer->payment_transaction_id) {
             $txn = PaymentTransaction::find($bankTransfer->payment_transaction_id);
-            if ($txn && !$txn->isTerminal()) {
-                $txn->failure_reason = 'Bank transfer rejected: ' . $data['admin_notes'];
+            if ($txn && ! $txn->isTerminal()) {
+                $txn->failure_reason = 'Bank transfer rejected: '.$data['admin_notes'];
                 $txn->save();
                 $txn->transitionTo('rejected');
             }
         }
         AuditLog::log('bank_transfer.rejected', 'manual_bank_payments', $bankTransfer, "Transfer {$bankTransfer->reference} rejected.");
+
         return redirect()->route('admin.bank-transfers.show', $bankTransfer)->with('success', 'Transfer rejected with reason sent to the customer.');
     }
 }

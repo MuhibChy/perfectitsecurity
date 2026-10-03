@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->timestamp('deployed_at')->nullable();
             $table->timestamp('rollback_triggered_at')->nullable();
             $table->text('rollback_reason')->nullable();
-            
+
             // Indexes
             $table->index('version_number', 'idx_config_versions_version');
             $table->index('status', 'idx_config_versions_status');
@@ -59,7 +59,7 @@ return new class extends Migration
             $table->timestamp('restored_at')->nullable();
             $table->string('restored_to_version', 50)->nullable();
             $table->text('notes')->nullable();
-            
+
             // Indexes
             $table->index('backup_id', 'idx_backup_points_backup_id');
             $table->index('status', 'idx_backup_points_status');
@@ -78,7 +78,7 @@ return new class extends Migration
             $table->text('error_message')->nullable();
             $table->text('response_body')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index('check_name', 'idx_health_check_logs_check_name');
             $table->index('is_healthy', 'idx_health_check_logs_is_healthy');
@@ -100,7 +100,7 @@ return new class extends Migration
             $table->text('errors_encountered')->nullable(); // JSON stored as text
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index('rollback_id', 'idx_rollback_history_rollback_id');
             $table->index('status', 'idx_rollback_history_status');
@@ -128,7 +128,7 @@ return new class extends Migration
             $table->boolean('is_sent')->default(false);
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index('notification_type', 'idx_failback_notifications_type');
             $table->index('is_sent', 'idx_failback_notifications_is_sent');
@@ -160,4 +160,3 @@ return new class extends Migration
         Schema::dropIfExists('config_versions');
     }
 };
-

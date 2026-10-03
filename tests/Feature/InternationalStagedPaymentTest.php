@@ -28,7 +28,7 @@ class InternationalStagedPaymentTest extends TestCase
         return User::factory()->create([
             'name' => '[TEST] International Customer Alpha',
             'role' => 'customer', 'is_active' => true,
-            'email' => 'alpha.' . Str::random(6) . '@example.test',
+            'email' => 'alpha.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'country' => 'GB', 'preferred_currency' => 'GBP',
         ]);
@@ -37,10 +37,11 @@ class InternationalStagedPaymentTest extends TestCase
     private function makeService(): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 'test-cyber'], ['name' => 'Cybersecurity']);
+
         return Service::create([
             'category_id' => $cat->id,
             'name' => '[TEST] Managed Cybersecurity Assessment',
-            'slug' => 'test-cyber-' . Str::random(6),
+            'slug' => 'test-cyber-'.Str::random(6),
             'short_description' => 'Synthetic staged-payment service',
             'starting_price' => 1500.00, 'is_active' => true,
         ]);
@@ -84,7 +85,7 @@ class InternationalStagedPaymentTest extends TestCase
         foreach ($amounts as $step => $amt) {
             $result = $svc->recordPayment($order->fresh(), [
                 'amount' => $amt, 'payment_method' => 'bank_transfer',
-                'transaction_id' => 'STAGED-TEST-' . $step . '-' . Str::random(4),
+                'transaction_id' => 'STAGED-TEST-'.$step.'-'.Str::random(4),
             ], $customer);
             $order = $result['order']->fresh();
             $invoice = $order->invoices()->first()->fresh();

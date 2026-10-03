@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\CaseStudy;
 use App\Models\CareerPost;
+use App\Models\CaseStudy;
 use App\Models\PortfolioItem;
 use Illuminate\Http\Request;
 
@@ -27,24 +27,28 @@ class ContentPageController extends Controller
         $items = $items->paginate(12)->withQueryString();
         $industries = CaseStudy::published()->select('industry')
             ->whereNotNull('industry')->distinct()->orderBy('industry')->pluck('industry');
+
         return view('public.case-studies', compact('items', 'industries'));
     }
 
     public function caseStudy(string $slug)
     {
         $item = CaseStudy::published()->where('slug', $slug)->firstOrFail();
+
         return view('public.case-study-show', compact('item'));
     }
 
     public function careers()
     {
         $items = CareerPost::published()->latest('published_at')->paginate(12);
+
         return view('public.careers', compact('items'));
     }
 
     public function career(string $slug)
     {
         $item = CareerPost::published()->where('slug', $slug)->firstOrFail();
+
         return view('public.career-show', compact('item'));
     }
 
@@ -66,12 +70,14 @@ class ContentPageController extends Controller
         $featured = PortfolioItem::published()->where('is_featured', true)->orderBy('sort_order')->limit(6)->get();
         $categories = PortfolioItem::published()->select('category')
             ->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
+
         return view('public.portfolio', compact('items', 'featured', 'categories'));
     }
 
     public function portfolioItem(string $slug)
     {
         $item = PortfolioItem::published()->where('slug', $slug)->firstOrFail();
+
         return view('public.portfolio-show', compact('item'));
     }
 }

@@ -15,20 +15,22 @@ class TotpService
         for ($i = 0; $i < $length; $i++) {
             $secret .= $alphabet[random_int(0, strlen($alphabet) - 1)];
         }
+
         return $secret;
     }
 
     public function getProvisioningUri(string $secret, string $email, string $issuer = 'TechSupport'): string
     {
-        $label = rawurlencode($issuer . ':' . $email);
+        $label = rawurlencode($issuer.':'.$email);
         $issuerEnc = rawurlencode($issuer);
+
         return "otpauth://totp/{$label}?secret={$secret}&issuer={$issuerEnc}&digits=6&period=30";
     }
 
     public function verify(string $secret, string $code, int $window = 1): bool
     {
         $code = preg_replace('/\s+/', '', $code);
-        if (!preg_match('/^\d{6}$/', $code)) {
+        if (! preg_match('/^\d{6}$/', $code)) {
             return false;
         }
 
@@ -38,6 +40,7 @@ class TotpService
                 return true;
             }
         }
+
         return false;
     }
 

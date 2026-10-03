@@ -26,7 +26,9 @@ class AiProviderFallbackTest extends TestCase
     use RefreshDatabase;
 
     private const CLOUD = 'https://openrouter.ai/api/v1/chat/completions';
+
     private const LOCAL_CHAT = 'http://127.0.0.1:11434/api/chat';
+
     private const LOCAL_TAGS = 'http://127.0.0.1:11434/api/tags';
 
     protected function setUp(): void

@@ -28,7 +28,7 @@ class Contract extends Model
     {
         static::creating(function ($c) {
             if (empty($c->contract_number)) {
-                $c->contract_number = 'CT-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $c->contract_number = 'CT-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }

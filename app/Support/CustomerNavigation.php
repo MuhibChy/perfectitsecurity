@@ -54,21 +54,23 @@ class CustomerNavigation
     /** Whether $user may see the item identified by $key. */
     public static function visible($user, string $key): bool
     {
-        if (!$user || !method_exists($user, 'isCustomer') || !$user->isCustomer()) {
+        if (! $user || ! method_exists($user, 'isCustomer') || ! $user->isCustomer()) {
             return false;
         }
         foreach (self::items() as $item) {
             if ($item['key'] !== $key) {
                 continue;
             }
-            if (!$user->hasCapability($item['capability'] ?? 'portal.own')) {
+            if (! $user->hasCapability($item['capability'] ?? 'portal.own')) {
                 return false;
             }
-            if (!empty($item['unverified_only']) && $user->isFullyVerified()) {
+            if (! empty($item['unverified_only']) && $user->isFullyVerified()) {
                 return false;
             }
+
             return \Illuminate\Support\Facades\Route::has($item['route']);
         }
+
         return false;
     }
 
@@ -79,18 +81,18 @@ class CustomerNavigation
      */
     public static function for($user): array
     {
-        if (!$user || !method_exists($user, 'isCustomer') || !$user->isCustomer()) {
+        if (! $user || ! method_exists($user, 'isCustomer') || ! $user->isCustomer()) {
             return [];
         }
         $out = [];
         foreach (self::items() as $item) {
-            if (!$user->hasCapability($item['capability'] ?? 'portal.own')) {
+            if (! $user->hasCapability($item['capability'] ?? 'portal.own')) {
                 continue;
             }
-            if (!empty($item['unverified_only']) && $user->isFullyVerified()) {
+            if (! empty($item['unverified_only']) && $user->isFullyVerified()) {
                 continue;
             }
-            if (!\Illuminate\Support\Facades\Route::has($item['route'])) {
+            if (! \Illuminate\Support\Facades\Route::has($item['route'])) {
                 continue;
             }
             $active = false;
@@ -102,6 +104,7 @@ class CustomerNavigation
             }
             $out[] = $item + ['isActive' => $active];
         }
+
         return $out;
     }
 }

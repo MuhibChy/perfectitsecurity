@@ -18,8 +18,9 @@ class SecurityDashboardController extends Controller
             ->whereIn('action', ['login', 'login_failed', 'logout', 'mfa.challenge_passed', 'mfa.recovery_used', 'mfa.enabled', 'mfa.disabled', 'password.changed', 'identity.verified'])
             ->latest()->limit(20)->get();
         $summary = $user->verificationSummary();
-        $summary['recovery_codes'] = $user->hasMfaEnabled() ? count($user->two_factor_recovery_codes ?? []) . ' remaining' : 'not configured';
+        $summary['recovery_codes'] = $user->hasMfaEnabled() ? count($user->two_factor_recovery_codes ?? []).' remaining' : 'not configured';
         $summary['member_id'] = $user->member_number;
+
         return view('security.dashboard', compact('user', 'logins', 'summary'));
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lead;
 use App\Models\Proposal;
 use App\Models\ProposalSection;
 use App\Models\ProposalVersion;
-use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -15,6 +15,7 @@ class ProposalController extends Controller
     public function index()
     {
         $proposals = Proposal::with('customer', 'lead')->latest()->paginate(20);
+
         return view('admin.proposals.index', compact('proposals'));
     }
 
@@ -22,6 +23,7 @@ class ProposalController extends Controller
     {
         $customers = User::customers()->active()->orderBy('name')->get();
         $leads = Lead::whereNotIn('status', ['won', 'lost'])->latest()->limit(100)->get();
+
         return view('admin.proposals.create', compact('customers', 'leads'));
     }
 
@@ -84,6 +86,7 @@ class ProposalController extends Controller
     public function show(Proposal $proposal)
     {
         $proposal->load('sections', 'versions', 'customer', 'lead');
+
         return view('admin.proposals.show', compact('proposal'));
     }
 
@@ -118,6 +121,7 @@ class ProposalController extends Controller
     public function send(Proposal $proposal)
     {
         $proposal->update(['status' => 'sent', 'sent_at' => now()]);
+
         return back()->with('success', 'Proposal marked as sent.');
     }
 

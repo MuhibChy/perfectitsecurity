@@ -17,7 +17,9 @@ class PaymentProvider extends Model
     use HasFactory;
 
     public const STATUSES = ['enabled', 'disabled', 'test', 'live', 'maintenance'];
+
     public const ENVIRONMENTS = ['test', 'live'];
+
     public const TYPES = ['mobile_wallet', 'bank', 'gateway', 'card', 'manual', 'wallet'];
 
     protected $fillable = [
@@ -52,9 +54,12 @@ class PaymentProvider extends Model
 
     public function getCredentialsAttribute($value): array
     {
-        if ($value === null || $value === '') return [];
+        if ($value === null || $value === '') {
+            return [];
+        }
         try {
             $decoded = json_decode(Crypt::decryptString($value), true);
+
             return is_array($decoded) ? $decoded : [];
         } catch (\Throwable $e) {
             return [];
@@ -70,7 +75,9 @@ class PaymentProvider extends Model
 
     public function getWebhookSecretAttribute($value): ?string
     {
-        if ($value === null || $value === '') return null;
+        if ($value === null || $value === '') {
+            return null;
+        }
         try {
             return Crypt::decryptString($value);
         } catch (\Throwable $e) {
@@ -82,6 +89,7 @@ class PaymentProvider extends Model
     public function credential(string $key, $default = null)
     {
         $creds = $this->credentials ?? [];
+
         return $creds[$key] ?? $default;
     }
 
@@ -98,14 +106,22 @@ class PaymentProvider extends Model
     public function supportsCurrency(string $code): bool
     {
         $list = $this->currencies ?? [];
-        if ($list === []) return true;
+        if ($list === []) {
+            return true;
+        }
+
         return in_array(strtoupper($code), array_map('strtoupper', $list), true);
     }
 
     public function supportsAmount(float $amount): bool
     {
-        if ($this->min_amount !== null && $amount < (float) $this->min_amount) return false;
-        if ($this->max_amount !== null && $amount > (float) $this->max_amount) return false;
+        if ($this->min_amount !== null && $amount < (float) $this->min_amount) {
+            return false;
+        }
+        if ($this->max_amount !== null && $amount > (float) $this->max_amount) {
+            return false;
+        }
+
         return true;
     }
 
@@ -121,6 +137,7 @@ class PaymentProvider extends Model
             $providerFee = round((float) $this->fee_value, 2);
         }
         $platformFee = round((float) ($this->platform_fee_value ?? 0), 2);
+
         return [
             'gross' => round($gross, 2),
             'provider_fee' => $providerFee,
@@ -129,9 +146,23 @@ class PaymentProvider extends Model
         ];
     }
 
-    public function transactions() { return $this->hasMany(PaymentTransaction::class, 'provider_id'); }
+    public function transactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'provider_id');
+    }
 
-    public function scopeActive($q) { return $q->where('is_active', true); }
-    public function scopeUsable($q) { return $q->where('is_active', true)->whereIn('status', ['enabled', 'test', 'live']); }
-    public function scopeOrdered($q) { return $q->orderBy('priority')->orderBy('name'); }
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
+
+    public function scopeUsable($q)
+    {
+        return $q->where('is_active', true)->whereIn('status', ['enabled', 'test', 'live']);
+    }
+
+    public function scopeOrdered($q)
+    {
+        return $q->orderBy('priority')->orderBy('name');
+    }
 }

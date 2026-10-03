@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Country;
-use App\Models\ServiceCategory;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceCountryPrice;
+use Illuminate\Database\Seeder;
 
 class ServiceCatalogueSeeder extends Seeder
 {
@@ -43,7 +43,7 @@ class ServiceCatalogueSeeder extends Seeder
             $cat = $cats[$data['category']];
             unset($data['category']);
 
-            if (!isset($data['slug'])) {
+            if (! isset($data['slug'])) {
                 $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
             }
             $data['category_id'] = $cat->id;
@@ -1778,7 +1778,7 @@ class ServiceCatalogueSeeder extends Seeder
         $totalCategories = ServiceCategory::count();
         $totalPrices = ServiceCountryPrice::count();
 
-        $this->command->info("✅ Service catalogue seeded successfully!");
+        $this->command->info('✅ Service catalogue seeded successfully!');
         $this->command->info("   📂 Categories: {$totalCategories}");
         $this->command->info("   🛠️  Services: {$totalServices}");
         $this->command->info("   💰 Country prices: {$totalPrices}");

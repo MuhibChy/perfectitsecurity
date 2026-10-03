@@ -17,7 +17,7 @@ class UpdateLastActivity
         $response = $next($request);
 
         $user = $request->user();
-        if ($user && !$request->is('healthz') && !$request->is('api/health/*')) {
+        if ($user && ! $request->is('healthz') && ! $request->is('api/health/*')) {
             $key = 'last_activity_ping';
             $last = $request->session()->get($key, 0);
             if (time() - (int) $last > 300) {

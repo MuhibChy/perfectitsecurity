@@ -44,29 +44,67 @@ class Invoice extends Model
     {
         static::creating(function ($invoice) {
             if (empty($invoice->invoice_number)) {
-                $invoice->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(4));
+                $invoice->invoice_number = 'INV-'.date('Ymd').'-'.strtoupper(Str::random(4));
             }
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function project() { return $this->belongsTo(Project::class); }
-    public function quotation() { return $this->belongsTo(Quotation::class); }
-    public function subscription() { return $this->belongsTo(Subscription::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function items() { return $this->hasMany(InvoiceItem::class); }
-    public function payments() { return $this->hasMany(Payment::class); }
-    public function financialTransactions() { return $this->hasMany(FinancialTransaction::class); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function quotation()
+    {
+        return $this->belongsTo(Quotation::class);
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
 
     public function getIsOverdueAttribute()
     {
-        return $this->due_date && $this->due_date->isPast() && !in_array($this->status, ['paid', 'cancelled', 'refunded']);
+        return $this->due_date && $this->due_date->isPast() && ! in_array($this->status, ['paid', 'cancelled', 'refunded']);
     }
 
     public function getRemainingDaysAttribute()
     {
-        if (!$this->due_date || in_array($this->status, ['paid', 'cancelled'])) return null;
+        if (! $this->due_date || in_array($this->status, ['paid', 'cancelled'])) {
+            return null;
+        }
+
         return max(0, now()->diffInDays($this->due_date, false));
     }
 

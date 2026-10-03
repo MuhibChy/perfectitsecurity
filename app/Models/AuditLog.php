@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AuditLog extends Model
 {
     protected $fillable = ['user_id', 'action', 'module', 'auditable_type', 'auditable_id', 'description', 'old_values', 'new_values', 'ip_address', 'user_agent'];
+
     protected $casts = ['old_values' => 'array', 'new_values' => 'array'];
 
     /**
@@ -20,8 +21,15 @@ class AuditLog extends Model
         static::deleting(fn () => throw new \RuntimeException('Audit log entries are immutable and cannot be deleted.'));
     }
 
-    public function user() { return $this->belongsTo(User::class); }
-    public function auditable() { return $this->morphTo(); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function auditable()
+    {
+        return $this->morphTo();
+    }
 
     public static function log($action, $module, $model = null, $description = null, $old = null, $new = null)
     {

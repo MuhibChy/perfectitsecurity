@@ -14,13 +14,16 @@ use Illuminate\Support\Facades\Storage;
  */
 class IdentityController extends Controller
 {
-    public function __construct(private IdentityVerificationService $identity) {}
+    public function __construct(private IdentityVerificationService $identity)
+    {
+    }
 
     public function index()
     {
         $user = auth()->user();
         $documents = $user->identityDocuments()->latest()->get();
         $types = IdentityDocument::TYPES;
+
         return view('identity.index', compact('user', 'documents', 'types'));
     }
 
@@ -28,7 +31,7 @@ class IdentityController extends Controller
     {
         $user = auth()->user();
         $data = $request->validate([
-            'document_type' => 'required|in:' . implode(',', IdentityDocument::TYPES),
+            'document_type' => 'required|in:'.implode(',', IdentityDocument::TYPES),
             'issuing_country' => 'nullable|string|size:3',
             'expiry_date' => 'nullable|date|after:today',
             // Real content check: image/pdf MIME + 8MB cap; executable content rejected.
@@ -36,6 +39,7 @@ class IdentityController extends Controller
         ]);
 
         $doc = $this->identity->submit($user, $request->file('document'), $data);
+
         return back()->with('success', "Document received (reference #{$doc->id}). Status: submitted — review pending.");
     }
 
@@ -46,6 +50,7 @@ class IdentityController extends Controller
         abort_unless((int) $document->user_id === (int) $user->id, 404);
         abort_unless(Storage::disk('private')->exists($document->path), 404);
         $this->identity->recordAccess($document, $user, 'downloaded_own');
+
         return Storage::disk('private')->download($document->path, $document->original_name ?? 'identity-document');
     }
 }

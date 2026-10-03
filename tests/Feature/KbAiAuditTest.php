@@ -32,11 +32,12 @@ class KbAiAuditTest extends TestCase
         // Fresh author per call: RefreshDatabase wipes tables between tests,
         // so no ID may be cached across tests in the same process.
         $authorId = User::factory()->create(['role' => 'admin', 'is_active' => true])->id;
+
         return KbArticle::create([
             'category_id' => $this->category->id,
             'author_id' => $authorId,
             'title' => "Audit article {$marker}",
-            'slug' => 'audit-' . strtolower($marker),
+            'slug' => 'audit-'.strtolower($marker),
             'content' => "Body containing unique marker {$marker} for retrieval verification.",
             'visibility' => $visibility,
             'is_published' => $published,

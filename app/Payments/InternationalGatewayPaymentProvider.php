@@ -8,6 +8,13 @@ namespace App\Payments;
  */
 class InternationalGatewayPaymentProvider extends AbstractInternationalGatewayProvider
 {
-    public function key(): string { return 'international_gateway'; }
-    public function label(): string { return 'International Gateway'; }
+    public function key(): string
+    {
+        return 'international_gateway';
+    }
+
+    public function label(): string
+    {
+        return 'International Gateway';
+    }
 }

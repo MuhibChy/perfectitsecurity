@@ -64,8 +64,9 @@ class ProjectVerify extends Command
             ];
 
             foreach ($requiredDirs as $dir) {
-                if (!File::exists($dir)) {
+                if (! File::exists($dir)) {
                     $this->error("Missing directory: {$dir}");
+
                     return false;
                 }
             }
@@ -73,6 +74,7 @@ class ProjectVerify extends Command
             return true;
         } catch (\Exception $e) {
             $this->error("Architecture check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -83,13 +85,14 @@ class ProjectVerify extends Command
             $routes = Route::getRoutes();
             if (count($routes) === 0) {
                 $this->error('No routes registered');
+
                 return false;
             }
 
             // Check for critical route groups
             $criticalRoutes = ['home', 'login', 'register', 'admin.dashboard', 'portal.dashboard'];
             foreach ($criticalRoutes as $routeName) {
-                if (!Route::has($routeName)) {
+                if (! Route::has($routeName)) {
                     $this->warn("Missing critical route: {$routeName}");
                 }
             }
@@ -97,6 +100,7 @@ class ProjectVerify extends Command
             return true;
         } catch (\Exception $e) {
             $this->error("Routes check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -104,14 +108,16 @@ class ProjectVerify extends Command
     private function checkDatabase(): bool
     {
         try {
-            if (!Schema::hasTable('users')) {
+            if (! Schema::hasTable('users')) {
                 $this->error('Users table missing');
+
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
             $this->error("Database check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -120,14 +126,16 @@ class ProjectVerify extends Command
     {
         try {
             // Check auth layout exists
-            if (!File::exists(resource_path('views/layouts/app.blade.php'))) {
+            if (! File::exists(resource_path('views/layouts/app.blade.php'))) {
                 $this->error('Authenticated layout missing');
+
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
             $this->error("Authentication check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -144,7 +152,7 @@ class ProjectVerify extends Command
 
             foreach ($requiredControllers as $controller) {
                 $controllerPath = app_path("Http/Controllers/{$controller}.php");
-                if (!File::exists($controllerPath)) {
+                if (! File::exists($controllerPath)) {
                     $this->line("Controller may be missing: {$controller}", 'comment');
                 }
             }
@@ -152,6 +160,7 @@ class ProjectVerify extends Command
             return true;
         } catch (\Exception $e) {
             $this->error("Core features check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -160,19 +169,22 @@ class ProjectVerify extends Command
     {
         try {
             // Check theme files exist
-            if (!File::exists(resource_path('css/app.css'))) {
+            if (! File::exists(resource_path('css/app.css'))) {
                 $this->error('CSS file missing');
+
                 return false;
             }
 
-            if (!File::exists(resource_path('js/app.js'))) {
+            if (! File::exists(resource_path('js/app.js'))) {
                 $this->error('JS file missing');
+
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
             $this->error("Theme system check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -181,26 +193,30 @@ class ProjectVerify extends Command
     {
         try {
             // Check glove component exists
-            if (!File::exists(resource_path('views/components/glove-control.blade.php'))) {
+            if (! File::exists(resource_path('views/components/glove-control.blade.php'))) {
                 $this->error('Glove control component missing');
+
                 return false;
             }
 
             // Check 3D scene component exists
-            if (!File::exists(resource_path('views/components/global-3d-scene.blade.php'))) {
+            if (! File::exists(resource_path('views/components/global-3d-scene.blade.php'))) {
                 $this->error('3D scene component missing');
+
                 return false;
             }
 
             // Check 3D JS exists
-            if (!File::exists(resource_path('js/global-3d.js'))) {
+            if (! File::exists(resource_path('js/global-3d.js'))) {
                 $this->error('3D JavaScript file missing');
+
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
             $this->error("Glove check failed: {$e->getMessage()}");
+
             return false;
         }
     }
@@ -209,20 +225,23 @@ class ProjectVerify extends Command
     {
         try {
             // Check composer.json exists
-            if (!File::exists(base_path('composer.json'))) {
+            if (! File::exists(base_path('composer.json'))) {
                 $this->error('composer.json missing');
+
                 return false;
             }
 
             // Check package.json exists
-            if (!File::exists(base_path('package.json'))) {
+            if (! File::exists(base_path('package.json'))) {
                 $this->error('package.json missing');
+
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
             $this->error("Dependencies check failed: {$e->getMessage()}");
+
             return false;
         }
     }

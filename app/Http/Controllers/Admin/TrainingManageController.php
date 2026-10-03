@@ -10,7 +10,6 @@ use App\Models\TrainingCourse;
 use App\Models\TrainingLesson;
 use App\Models\TrainingLessonProgress;
 use App\Models\TrainingModule;
-use App\Models\TrainingPracticalAssessment;
 use App\Models\TrainingQuestion;
 use App\Models\TrainingQuiz;
 use App\Models\TrainingQuizAttempt;
@@ -39,7 +38,9 @@ class TrainingManageController extends Controller
         $avgProgress = 0;
         if ($assignments->count()) {
             $sum = 0;
-            foreach ($assignments as $a) $sum += TrainingService::courseProgress($a->course, $a->user_id)['percent'];
+            foreach ($assignments as $a) {
+                $sum += TrainingService::courseProgress($a->course, $a->user_id)['percent'];
+            }
             $avgProgress = (int) round($sum / $assignments->count());
         }
         $failedAttempts = TrainingQuizAttempt::with('quiz', 'user')->where('passed', false)->latest()->take(8)->get();
@@ -47,6 +48,7 @@ class TrainingManageController extends Controller
         $pendingSubmissions = TrainingAssessmentSubmission::with('assessment.course', 'user')->where('status', 'submitted')->latest()->take(8)->get();
         $byRole = $assignments->groupBy(fn ($a) => $a->user->role ?? 'unknown')->map->count();
         $courses = TrainingCourse::withCount('assignments')->orderBy('title')->get();
+
         return view('admin.training.dashboard', compact('totalEmployees', 'inTraining', 'completed', 'overdue', 'avgProgress', 'failedAttempts', 'recentCertificates', 'pendingSubmissions', 'byRole', 'courses'));
     }
 
@@ -54,6 +56,7 @@ class TrainingManageController extends Controller
     public function courses()
     {
         $courses = TrainingCourse::withCount(['modules', 'assignments'])->orderBy('title')->paginate(20);
+
         return view('admin.training.courses', compact('courses'));
     }
 
@@ -73,15 +76,17 @@ class TrainingManageController extends Controller
             'is_mandatory' => 'boolean', 'is_published' => 'boolean',
             'version' => 'required|string|max:20',
         ]);
-        $data['slug'] = Str::slug($data['title']) . '-' . Str::lower(Str::random(4));
+        $data['slug'] = Str::slug($data['title']).'-'.Str::lower(Str::random(4));
         $data['created_by'] = auth()->id();
         $course = TrainingCourse::create($data);
+
         return redirect()->route('admin.training.courses.show', $course)->with('success', 'Course created.');
     }
 
     public function showCourse(TrainingCourse $course)
     {
         $course->load(['modules.lessons', 'quizzes.questions', 'practicals', 'assignments.user']);
+
         return view('admin.training.course-show', compact('course'));
     }
 
@@ -102,7 +107,8 @@ class TrainingManageController extends Controller
             'version' => 'required|string|max:20',
         ]);
         $course->update($data);
-        return redirect()->route('admin.training.courses.show', $course)->with('success', 'Course updated to version ' . $course->version . '.');
+
+        return redirect()->route('admin.training.courses.show', $course)->with('success', 'Course updated to version '.$course->version.'.');
     }
 
     // ── Modules & lessons ──────────────────────────────────────
@@ -111,6 +117,7 @@ class TrainingManageController extends Controller
         $data = $request->validate(['title' => 'required|string|max:255', 'description' => 'nullable|string']);
         $data['sort_order'] = $course->modules()->count();
         $course->modules()->create($data);
+
         return back()->with('success', 'Module added.');
     }
 
@@ -118,12 +125,14 @@ class TrainingManageController extends Controller
     {
         $course = $module->course;
         $module->delete();
+
         return redirect()->route('admin.training.courses.show', $course)->with('success', 'Module deleted.');
     }
 
     public function createLesson(TrainingCourse $course)
     {
         $course->load('modules');
+
         return view('admin.training.lesson-form', ['course' => $course, 'lesson' => new TrainingLesson()]);
     }
 
@@ -131,18 +140,21 @@ class TrainingManageController extends Controller
     {
         $data = $this->lessonData($request);
         $lesson = TrainingLesson::create($data + ['sort_order' => TrainingLesson::where('module_id', $data['module_id'])->count()]);
+
         return redirect()->route('admin.training.courses.show', $course)->with('success', 'Lesson created.');
     }
 
     public function editLesson(TrainingLesson $lesson)
     {
         $lesson->load('module.course.modules');
+
         return view('admin.training.lesson-form', ['course' => $lesson->module->course, 'lesson' => $lesson]);
     }
 
     public function updateLesson(Request $request, TrainingLesson $lesson)
     {
         $lesson->update($this->lessonData($request));
+
         return redirect()->route('admin.training.courses.show', $lesson->module->course)->with('success', 'Lesson updated.');
     }
 
@@ -162,6 +174,7 @@ class TrainingManageController extends Controller
         foreach (['objectives', 'steps', 'why_matters', 'common_mistakes', 'discussion_questions'] as $f) {
             $data[$f] = $data[$f] ? array_values(array_filter(array_map('trim', preg_split('/\r?\n/', $data[$f])))) : null;
         }
+
         return $data;
     }
 
@@ -175,6 +188,7 @@ class TrainingManageController extends Controller
             'is_published' => 'boolean',
         ]);
         $course->quizzes()->create($data);
+
         return back()->with('success', 'Quiz created. Add questions below.');
     }
 
@@ -193,12 +207,14 @@ class TrainingManageController extends Controller
             'explanation' => $data['explanation'] ?? null, 'points' => $data['points'],
             'sort_order' => $quiz->questions()->count(),
         ]);
+
         return back()->with('success', 'Question added. For correct: option indexes (0-based), comma-separated for multiple.');
     }
 
     public function destroyQuestion(TrainingQuestion $question)
     {
         $question->delete();
+
         return back()->with('success', 'Question deleted.');
     }
 
@@ -211,6 +227,7 @@ class TrainingManageController extends Controller
             'checklist' => $data['checklist'] ? array_values(array_filter(array_map('trim', preg_split('/\r?\n/', $data['checklist'])))) : null,
             'is_published' => $data['is_published'] ?? false,
         ]);
+
         return back()->with('success', 'Practical assessment created.');
     }
 
@@ -225,13 +242,15 @@ class TrainingManageController extends Controller
             'role' => 'nullable|string|max:50', 'due_at' => 'nullable|date|after:today',
         ]);
         $targets = collect($data['user_ids'] ?? []);
-        if (!empty($data['role'])) {
+        if (! empty($data['role'])) {
             $targets = $targets->merge(User::where('role', $data['role'])->pluck('id'));
         }
         $count = 0;
         foreach ($targets->unique() as $uid) {
             $user = User::find($uid);
-            if (!$user || !$user->isStaff()) continue;
+            if (! $user || ! $user->isStaff()) {
+                continue;
+            }
             $assignment = TrainingAssignment::firstOrCreate(
                 ['course_id' => $course->id, 'user_id' => $uid],
                 ['assigned_by' => auth()->id(), 'due_at' => $data['due_at'] ?? null, 'status' => 'assigned']
@@ -241,6 +260,7 @@ class TrainingManageController extends Controller
                 TrainingService::notify($uid, 'training_assigned', 'Training assigned', "You were assigned '{$course->title}'.");
             }
         }
+
         return back()->with('success', "Assigned to {$count} employee(s).");
     }
 
@@ -252,6 +272,7 @@ class TrainingManageController extends Controller
         TrainingAssessmentSubmission::where('user_id', $assignment->user_id)->whereIn('assessment_id', $course->practicals()->pluck('id'))->delete();
         TrainingCertificate::where('course_id', $course->id)->where('user_id', $assignment->user_id)->delete();
         $assignment->update(['status' => 'assigned']);
+
         return back()->with('success', 'Employee training reset.');
     }
 
@@ -259,6 +280,7 @@ class TrainingManageController extends Controller
     public function submissions()
     {
         $submissions = TrainingAssessmentSubmission::with('assessment.course', 'user')->latest()->paginate(20);
+
         return view('admin.training.submissions', compact('submissions'));
     }
 
@@ -269,6 +291,7 @@ class TrainingManageController extends Controller
         $course = $submission->assessment->course;
         TrainingService::refreshAssignment($course, $submission->user_id);
         TrainingService::notify($submission->user_id, 'assessment_reviewed', 'Practical assessment reviewed', "Your submission for '{$submission->assessment->title}' was marked {$data['status']}.");
+
         return back()->with('success', 'Review recorded.');
     }
 
@@ -276,10 +299,13 @@ class TrainingManageController extends Controller
     {
         abort_unless($user->isStaff(), 404);
         $assignments = TrainingAssignment::with('course')->where('user_id', $user->id)->get();
-        foreach ($assignments as $a) $a->progress = TrainingService::courseProgress($a->course, $user->id);
+        foreach ($assignments as $a) {
+            $a->progress = TrainingService::courseProgress($a->course, $user->id);
+        }
         $notes = TrainingTrainerNote::with('author')->where('user_id', $user->id)->latest()->get();
         $attempts = TrainingQuizAttempt::with('quiz.course')->where('user_id', $user->id)->latest()->take(15)->get();
         $certificates = TrainingCertificate::with('course')->where('user_id', $user->id)->get();
+
         return view('admin.training.employee', compact('user', 'assignments', 'notes', 'attempts', 'certificates'));
     }
 
@@ -288,6 +314,7 @@ class TrainingManageController extends Controller
         $data = $request->validate(['note' => 'required|string|min:3|max:5000']);
         TrainingTrainerNote::create(['user_id' => $user->id, 'author_id' => auth()->id(), 'note' => $data['note']]);
         TrainingService::notify($user->id, 'trainer_note', 'Trainer message', 'Your trainer left feedback on your training record.');
+
         return back()->with('success', 'Note added.');
     }
 
@@ -300,8 +327,9 @@ class TrainingManageController extends Controller
             'status' => 'revoked', 'revoked_at' => now(),
             'revoked_by' => auth()->id(), 'revoke_reason' => $data['reason'],
         ]);
-        \App\Models\AuditLog::log('certificate.revoked', 'training', $certificate, "Certificate {$certificate->certificate_no} revoked by " . auth()->user()->name . ": {$data['reason']}");
+        \App\Models\AuditLog::log('certificate.revoked', 'training', $certificate, "Certificate {$certificate->certificate_no} revoked by ".auth()->user()->name.": {$data['reason']}");
         TrainingService::notify($certificate->user_id, 'certificate_revoked', 'Certificate revoked', "Your certificate {$certificate->certificate_no} was revoked: {$data['reason']}");
+
         return back()->with('success', 'Certificate revoked.');
     }
 
@@ -320,6 +348,7 @@ class TrainingManageController extends Controller
                 'overdue' => $course->assignments->filter->isOverdue()->count(),
             ];
         }
+
         return view('admin.training.reports', compact('rows'));
     }
 
@@ -327,6 +356,7 @@ class TrainingManageController extends Controller
     {
         $staff = User::staff()->active()->orderBy('name')->get();
         $courses = TrainingCourse::published()->orderBy('title')->get();
+
         return view('admin.training.assign', compact('staff', 'courses'));
     }
 }

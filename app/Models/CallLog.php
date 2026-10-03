@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class CallLog extends Model
 {
     public const OUTCOMES = ['completed', 'missed', 'failed', 'voicemail', 'scheduled'];
+
     public const DIRECTIONS = ['outbound', 'inbound'];
 
     protected $fillable = [
@@ -28,14 +29,31 @@ class CallLog extends Model
     protected static function booted(): void
     {
         static::creating(function (self $log) {
-            if (empty($log->uuid)) $log->uuid = (string) \Illuminate\Support\Str::uuid();
+            if (empty($log->uuid)) {
+                $log->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
         });
     }
 
-    public function caller() { return $this->belongsTo(User::class, 'caller_id'); }
-    public function recipient() { return $this->belongsTo(User::class, 'recipient_id'); }
-    public function creator() { return $this->belongsTo(User::class, 'created_by'); }
-    public function related() { return $this->morphTo(); }
+    public function caller()
+    {
+        return $this->belongsTo(User::class, 'caller_id');
+    }
+
+    public function recipient()
+    {
+        return $this->belongsTo(User::class, 'recipient_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function related()
+    {
+        return $this->morphTo();
+    }
 
     public function scopeVisibleTo($query, User $viewer)
     {
@@ -44,6 +62,7 @@ class CallLog extends Model
                 $w->where('caller_id', $viewer->id)->orWhere('recipient_id', $viewer->id);
             });
         }
+
         return $query;
     }
 }

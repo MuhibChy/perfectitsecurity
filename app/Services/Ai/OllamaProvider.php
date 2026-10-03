@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\Log;
 class OllamaProvider implements AiProviderInterface
 {
     private string $baseUrl;
+
     private string $model;
+
     private int $timeout;
+
     private int $connectTimeout;
+
     private string $keepAlive;
 
     public function __construct()
@@ -98,6 +102,7 @@ class OllamaProvider implements AiProviderInterface
     {
         try {
             $res = Http::connectTimeout(2)->timeout(5)->get("{$this->baseUrl}/api/tags");
+
             return $res->successful();
         } catch (\Throwable $e) {
             return false;
@@ -116,11 +121,12 @@ class OllamaProvider implements AiProviderInterface
             $res = Http::connectTimeout($this->connectTimeout)
                 ->timeout(10)
                 ->get("{$this->baseUrl}/api/tags");
-            if (!$res->successful()) {
+            if (! $res->successful()) {
                 return $this->unhealthy($checkedAt, 'server_error');
             }
             $models = collect($res->json('models') ?? [])->pluck('name')->all();
             $modelAvailable = in_array($this->model, $models, true);
+
             return [
                 'provider' => 'ollama',
                 'reachable' => true,
@@ -133,6 +139,7 @@ class OllamaProvider implements AiProviderInterface
             ];
         } catch (\Throwable $e) {
             Log::warning('Ollama health check failed', ['error' => $e->getMessage()]);
+
             return $this->unhealthy($checkedAt, 'unreachable');
         }
     }

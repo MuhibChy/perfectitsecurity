@@ -15,7 +15,9 @@ class CustomerServiceOrderTest extends TestCase
     use RefreshDatabase;
 
     private User $verifiedCustomer;
+
     private User $unverifiedCustomer;
+
     private Service $service;
 
     protected function setUp(): void

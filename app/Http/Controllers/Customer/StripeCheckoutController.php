@@ -13,7 +13,7 @@ class StripeCheckoutController extends Controller
     {
         $invoice = Invoice::where('customer_id', auth()->id())->findOrFail($id);
 
-        if (!$stripe->isConfigured()) {
+        if (! $stripe->isConfigured()) {
             return redirect()->back()->withErrors([
                 'payment' => 'Online payments are not configured. Please contact support or pay offline.',
             ]);
@@ -22,14 +22,14 @@ class StripeCheckoutController extends Controller
         try {
             $session = $stripe->createInvoiceCheckout(
                 $invoice,
-                route('portal.invoices.checkout.success', $invoice->id) . '?session_id={CHECKOUT_SESSION_ID}',
+                route('portal.invoices.checkout.success', $invoice->id).'?session_id={CHECKOUT_SESSION_ID}',
                 route('portal.invoices.show', $invoice->id)
             );
         } catch (\Throwable $e) {
             return redirect()->back()->withErrors(['payment' => $e->getMessage()]);
         }
 
-        if (!$session) {
+        if (! $session) {
             return redirect()->back()->withErrors(['payment' => 'Unable to start Stripe checkout.']);
         }
 

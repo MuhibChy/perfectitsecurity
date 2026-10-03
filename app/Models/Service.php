@@ -71,7 +71,7 @@ class Service extends Model
     public function getPriceFormatted($countryId): string
     {
         $countryPrice = $this->priceForCountry($countryId);
-        if (!$countryPrice) {
+        if (! $countryPrice) {
             return 'Contact for pricing';
         }
 
@@ -81,11 +81,11 @@ class Service extends Model
 
         return match ($countryPrice->pricing_type) {
             'fixed' => $fmt,
-            'starting_from' => 'From ' . $fmt,
-            'hourly' => $fmt . '/hr',
-            'daily' => $fmt . '/day',
-            'monthly' => $fmt . '/mo',
-            'recurring' => $fmt . '/mo',
+            'starting_from' => 'From '.$fmt,
+            'hourly' => $fmt.'/hr',
+            'daily' => $fmt.'/day',
+            'monthly' => $fmt.'/mo',
+            'recurring' => $fmt.'/mo',
             'custom_quote' => 'Custom Quote',
             default => $fmt,
         };

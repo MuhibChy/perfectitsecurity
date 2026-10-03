@@ -334,8 +334,11 @@ class TrainingCenterProblems
     public static function find(string $slug): ?array
     {
         foreach (self::all() as $article) {
-            if ($article['slug'] === $slug) return $article;
+            if ($article['slug'] === $slug) {
+                return $article;
+            }
         }
+
         return null;
     }
 }

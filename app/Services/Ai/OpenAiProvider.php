@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 class OpenAiProvider implements AiProviderInterface
 {
     private string $apiKey;
+
     private string $model;
+
     private string $baseUrl;
 
     // Pricing per 1K tokens (approximate)
@@ -42,7 +44,7 @@ class OpenAiProvider implements AiProviderInterface
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(30)->post("{$this->baseUrl}/chat/completions", [
                 'model' => $model,
@@ -93,13 +95,14 @@ class OpenAiProvider implements AiProviderInterface
 
     public function isAvailable(): bool
     {
-        return !empty($this->apiKey);
+        return ! empty($this->apiKey);
     }
 
     public function healthCheck(): array
     {
         // No network call: must not burn customer budget on a status page.
-        $configured = !empty($this->apiKey);
+        $configured = ! empty($this->apiKey);
+
         return [
             'provider' => 'openai',
             'reachable' => $configured,
@@ -115,6 +118,7 @@ class OpenAiProvider implements AiProviderInterface
     private function calculateCost(string $model, int $inputTokens, int $outputTokens): float
     {
         $pricing = self::PRICING[$model] ?? self::PRICING['gpt-4o-mini'];
+
         return (($inputTokens * $pricing['input']) + ($outputTokens * $pricing['output'])) / 1000;
     }
 }

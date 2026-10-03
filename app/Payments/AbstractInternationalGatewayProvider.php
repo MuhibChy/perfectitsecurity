@@ -26,12 +26,13 @@ abstract class AbstractInternationalGatewayProvider implements PaymentProviderIn
     }
 
     abstract public function key(): string;
+
     abstract public function label(): string;
 
     public function supportsCurrency(string $currencyCode): bool
     {
         $currencies = $this->config?->currencies;
-        if (!empty($currencies) && is_array($currencies)) {
+        if (! empty($currencies) && is_array($currencies)) {
             return in_array(strtoupper($currencyCode), array_map('strtoupper', $currencies), true);
         }
         // By default, international gateways support major currencies
@@ -48,21 +49,23 @@ abstract class AbstractInternationalGatewayProvider implements PaymentProviderIn
         $creds = $this->config?->credentials ?? [];
         $key = $creds['api_key'] ?? $creds['client_id'] ?? null;
         $secret = $creds['secret_key'] ?? $creds['secret'] ?? null;
-        if (!$this->isLive() || empty($key) || empty($secret)) {
-            abort(422, $this->label() . ' live payments are not configured. Complete merchant credentials in Admin → Payments → Providers first.');
+        if (! $this->isLive() || empty($key) || empty($secret)) {
+            abort(422, $this->label().' live payments are not configured. Complete merchant credentials in Admin → Payments → Providers first.');
         }
+
         return $creds;
     }
 
     public function createPayment(Invoice $invoice, float $amount, array $options = []): array
     {
         $chargeCurrency = strtoupper($options['pay_currency'] ?? ($invoice->currency ?? 'USD'));
-        abort_unless($this->supportsCurrency($chargeCurrency), 422, $this->label() . ' does not support currency ' . $chargeCurrency . '.');
+        abort_unless($this->supportsCurrency($chargeCurrency), 422, $this->label().' does not support currency '.$chargeCurrency.'.');
 
-        $reference = ($options['provider_reference'] ?? null) ?: strtoupper($this->key()) . '-' . date('Ymd') . '-' . strtoupper(Str::random(8));
+        $reference = ($options['provider_reference'] ?? null) ?: strtoupper($this->key()).'-'.date('Ymd').'-'.strtoupper(Str::random(8));
 
         if ($this->isLive()) {
             $this->requireLiveCredentials();
+
             return [
                 'provider' => $this->key(),
                 'provider_reference' => $reference,
@@ -86,14 +89,18 @@ abstract class AbstractInternationalGatewayProvider implements PaymentProviderIn
     public function verifyPayment(string $providerReference, array $payload = []): array
     {
         $txn = PaymentTransaction::where('provider_reference', $providerReference)->first();
-        if (!$txn) return ['status' => 'PENDING', 'found' => false];
+        if (! $txn) {
+            return ['status' => 'PENDING', 'found' => false];
+        }
 
         if ($this->isLive() && ($payload['provider_status'] ?? null)) {
             $map = ['success' => 'SUCCEEDED', 'completed' => 'SUCCEEDED', 'paid' => 'SUCCEEDED', 'failed' => 'FAILED', 'cancelled' => 'CANCELLED'];
+
             return ['status' => $map[strtolower($payload['provider_status'])] ?? 'PENDING', 'found' => true, 'transaction_id' => $txn->id];
         }
 
         $settled = $txn->payment_id ? 'completed' : $txn->status;
+
         return [
             'status' => \App\Services\PaymentState::canonicalTransactionStatus($settled),
             'found' => true,
@@ -104,15 +111,18 @@ abstract class AbstractInternationalGatewayProvider implements PaymentProviderIn
     public function handleWebhook(string $payload, ?string $signature = null): array
     {
         $data = json_decode($payload, true);
-        if (!is_array($data)) return ['handled' => false, 'reason' => 'invalid_json'];
+        if (! is_array($data)) {
+            return ['handled' => false, 'reason' => 'invalid_json'];
+        }
         $secret = $this->config?->webhook_secret;
         if ($secret && $signature) {
             $expected = hash_hmac('sha256', $payload, $secret);
-            if (!hash_equals($expected, $signature)) {
+            if (! hash_equals($expected, $signature)) {
                 return ['handled' => false, 'reason' => 'bad_signature'];
             }
             $data['_signature_valid'] = true;
         }
+
         return ['handled' => true, 'provider' => $this->key(), 'data' => $data];
     }
 

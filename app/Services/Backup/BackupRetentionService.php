@@ -41,6 +41,7 @@ class BackupRetentionService
             $monthKey = $created->format('Y-m');
             if ($backup->type === 'pre_deploy' && config('backup.retention.keep_pre_deploy', true)) {
                 $keepIds[] = $backup->id;
+
                 continue;
             }
             if ($daily < $keepDaily) {
@@ -48,6 +49,7 @@ class BackupRetentionService
                 $daily++;
                 $seenWeeks[$weekKey] = true;
                 $seenMonths[$monthKey] = true;
+
                 continue;
             }
             if (! isset($seenWeeks[$weekKey]) && $weekly < $keepWeekly) {
@@ -55,6 +57,7 @@ class BackupRetentionService
                 $weekly++;
                 $seenWeeks[$weekKey] = true;
                 $seenMonths[$monthKey] = true;
+
                 continue;
             }
             if (! isset($seenMonths[$monthKey]) && $monthly < $keepMonthly) {

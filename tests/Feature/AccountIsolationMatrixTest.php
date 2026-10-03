@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Commission;
 use App\Models\CommissionRule;
-use App\Models\Invoice;
-use App\Models\Payment;
 use App\Models\Salary;
 use App\Models\Service;
 use App\Models\ServiceCategory;
@@ -30,7 +28,7 @@ class AccountIsolationMatrixTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'country' => 'GB',
         ]);
@@ -39,7 +37,7 @@ class AccountIsolationMatrixTest extends TestCase
     private function orderFor(User $customer, float $total = 800): ServiceOrder
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-matrix'], ['name' => 'Matrix']);
-        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] Matrix Service', 'slug' => 't-mx-' . Str::random(6), 'short_description' => 'x', 'starting_price' => $total, 'is_active' => true]);
+        $service = Service::create(['category_id' => $cat->id, 'name' => '[TEST] Matrix Service', 'slug' => 't-mx-'.Str::random(6), 'short_description' => 'x', 'starting_price' => $total, 'is_active' => true]);
         $order = ServiceOrder::create([
             'customer_id' => $customer->id, 'service_id' => $service->id, 'created_by' => $customer->id,
             'source' => 'test', 'requirements' => 'Matrix scope.',
@@ -48,6 +46,7 @@ class AccountIsolationMatrixTest extends TestCase
             'total' => $total, 'amount_paid' => 0, 'amount_due' => $total, 'price_locked' => true, 'customer_accepted_at' => now(),
         ]);
         app(ServiceOrderWorkflowService::class)->generateConnectedRecords($order->fresh(), $customer);
+
         return $order->fresh();
     }
 

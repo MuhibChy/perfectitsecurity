@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class ExpireQuotations extends Command
 {
     protected $signature = 'quotes:expire';
+
     protected $description = 'Mark sent quotations past their validity date as expired';
 
     public function handle(): int

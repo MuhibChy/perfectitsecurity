@@ -29,15 +29,33 @@ class SiteVisit extends Model
     {
         static::creating(function ($visit) {
             if (empty($visit->visit_number)) {
-                $visit->visit_number = 'VST-' . strtoupper(Str::random(8));
+                $visit->visit_number = 'VST-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function ticket() { return $this->belongsTo(Ticket::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function technician() { return $this->belongsTo(User::class, 'technician_id'); }
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
 
-    public function scopeForCustomer($query, $customerId) { return $query->where('customer_id', $customerId); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function technician()
+    {
+        return $this->belongsTo(User::class, 'technician_id');
+    }
+
+    public function scopeForCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
 }

@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AiConversation;
 use App\Services\Ai\AiChatService;
-use App\Services\Ai\AiAnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 
 class AiChatController extends Controller
 {
@@ -24,14 +22,14 @@ class AiChatController extends Controller
     public function startConversation(Request $request)
     {
         // Rate limit: 10 starts per minute per IP
-        if (RateLimiter::tooManyAttempts('ai:start:' . $request->ip(), 10)) {
+        if (RateLimiter::tooManyAttempts('ai:start:'.$request->ip(), 10)) {
             return response()->json(['error' => 'Too many requests. Please try again later.'], 429);
         }
-        RateLimiter::hit('ai:start:' . $request->ip(), 60);
+        RateLimiter::hit('ai:start:'.$request->ip(), 60);
 
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             $request->validate([
                 'guest_name' => 'required|string|max:255',
                 'guest_email' => 'required|email|max:255',
@@ -61,10 +59,10 @@ class AiChatController extends Controller
     public function sendMessage(Request $request)
     {
         // Rate limit: 30 messages per minute per IP
-        if (RateLimiter::tooManyAttempts('ai:chat:' . $request->ip(), 30)) {
+        if (RateLimiter::tooManyAttempts('ai:chat:'.$request->ip(), 30)) {
             return response()->json(['error' => 'Too many messages. Please slow down.'], 429);
         }
-        RateLimiter::hit('ai:chat:' . $request->ip(), 60);
+        RateLimiter::hit('ai:chat:'.$request->ip(), 60);
 
         $request->validate([
             'conversation_id' => 'required|exists:ai_conversations,id',
@@ -82,14 +80,14 @@ class AiChatController extends Controller
         }
 
         // Authorization: guest conversations can only access their own
-        if (!$request->user()) {
+        if (! $request->user()) {
             $sessionId = $request->header('X-Session-ID');
             if ($conversation->session_id !== $sessionId) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         } elseif ($conversation->user_id && $conversation->user_id !== $request->user()->id) {
             // Staff can view any conversation
-            if (!$request->user()->isStaff()) {
+            if (! $request->user()->isStaff()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         }
@@ -115,7 +113,7 @@ class AiChatController extends Controller
         $conversation = AiConversation::findOrFail($request->conversation_id);
         $user = $request->user();
 
-        if (!$user || !$user->isCustomer()) {
+        if (! $user || ! $user->isCustomer()) {
             return response()->json(['error' => 'Please log in to create a ticket.'], 401);
         }
         if ($response = $this->authorizeConversation($request, $conversation)) {
@@ -172,7 +170,7 @@ class AiChatController extends Controller
         $messages = $conversation->messages()->orderBy('created_at')->get();
 
         return response()->json([
-            'messages' => $messages->map(fn($m) => [
+            'messages' => $messages->map(fn ($m) => [
                 'id' => $m->id,
                 'role' => $m->role,
                 'content' => $m->content,
@@ -220,6 +218,7 @@ class AiChatController extends Controller
     public function suggestions(Request $request)
     {
         $user = $request->user();
+
         return response()->json([
             'questions' => $this->chatService->getSuggestedQuestions($user),
         ]);
@@ -239,12 +238,12 @@ class AiChatController extends Controller
             ? implode(', ', $services)
             : 'IT support, cybersecurity, cloud, and software services';
 
-        return "Hi {$name}! I'm the " . config('app.name') . " AI Support Assistant. "
-            . "I can help you understand our services ({$serviceList}), explain how quoting and support work, "
-            . "and guide you toward the right service or request.\n\n"
-            . "General questions need no account. If you'd like me to submit a ticket or request for you, "
-            . "I'll ask you to sign in first so your identity is verified.\n\n"
-            . "How can I help you today?";
+        return "Hi {$name}! I'm the ".config('app.name').' AI Support Assistant. '
+            ."I can help you understand our services ({$serviceList}), explain how quoting and support work, "
+            ."and guide you toward the right service or request.\n\n"
+            ."General questions need no account. If you'd like me to submit a ticket or request for you, "
+            ."I'll ask you to sign in first so your identity is verified.\n\n"
+            .'How can I help you today?';
     }
 
     /** Return a response only when the requester does not own this conversation. */
@@ -255,11 +254,12 @@ class AiChatController extends Controller
             if ($user->isStaff() || $conversation->user_id === $user->id) {
                 return null;
             }
+
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $sessionId = $request->header('X-Session-ID');
-        if (!$sessionId || !hash_equals((string) $conversation->session_id, (string) $sessionId)) {
+        if (! $sessionId || ! hash_equals((string) $conversation->session_id, (string) $sessionId)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

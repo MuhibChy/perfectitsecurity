@@ -10,10 +10,12 @@ use Illuminate\Validation\Rules\Password;
 class ProfileController extends Controller
 {
     use \App\Http\Controllers\Concerns\ResolvesPhoneInput;
+
     public function edit()
     {
         $user = auth()->user();
         $user->loadMissing('profileDetail');
+
         return view('customer.profile.edit', [
             'user' => $user,
             'completion' => app(\App\Services\ProfileCompletionService::class)->for($user),
@@ -28,7 +30,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'phone' => 'nullable|string|max:20',
             'company_name' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
@@ -59,11 +61,11 @@ class ProfileController extends Controller
         // Preferred currency must be an active catalog code — stored as code.
         // Customers are further limited to their own allowed set
         // (supported local currency + USD) via CustomerCurrencyService.
-        if (!empty($validated['preferred_currency'])) {
+        if (! empty($validated['preferred_currency'])) {
             $code = strtoupper($validated['preferred_currency']);
             abort_unless(\App\Services\Money::isActive($code), 422, 'Unsupported currency.');
             if ($user->isCustomer()
-                && !app(\App\Services\CustomerCurrencyService::class)->allows($user, $code)) {
+                && ! app(\App\Services\CustomerCurrencyService::class)->allows($user, $code)) {
                 abort(422, 'This currency is not available for your account.');
             }
             $validated['preferred_currency'] = $code;
@@ -85,7 +87,9 @@ class ProfileController extends Controller
         $detailKeys = ['secondary_phone', 'whatsapp_number', 'preferred_contact_method', 'contact_hours', 'availability_note', 'business_info'];
         $detailData = [];
         foreach ($detailKeys as $k) {
-            if (array_key_exists($k, $validated)) $detailData[$k] = $validated[$k];
+            if (array_key_exists($k, $validated)) {
+                $detailData[$k] = $validated[$k];
+            }
             unset($validated[$k]);
         }
 
@@ -94,12 +98,20 @@ class ProfileController extends Controller
         // via profile edit).
         $emailChanged = isset($validated['email']) && $validated['email'] !== $user->email;
         $phoneChanged = array_key_exists('phone', $validated) && $validated['phone'] !== $user->phone;
-        if ($emailChanged) { $validated['email_verified_at'] = null; }
-        if ($phoneChanged) { $validated['phone_verified_at'] = null; }
+        if ($emailChanged) {
+            $validated['email_verified_at'] = null;
+        }
+        if ($phoneChanged) {
+            $validated['phone_verified_at'] = null;
+        }
 
         $user->update($validated);
-        if ($emailChanged) \App\Models\AuditLog::log('profile.email_changed', 'users', $user, 'Email changed — re-verification required.');
-        if ($phoneChanged) \App\Models\AuditLog::log('profile.phone_changed', 'users', $user, 'Mobile number changed — re-verification required.');
+        if ($emailChanged) {
+            \App\Models\AuditLog::log('profile.email_changed', 'users', $user, 'Email changed — re-verification required.');
+        }
+        if ($phoneChanged) {
+            \App\Models\AuditLog::log('profile.phone_changed', 'users', $user, 'Mobile number changed — re-verification required.');
+        }
         if ($detailData !== []) {
             $user->profileDetail()->updateOrCreate(['user_id' => $user->id], $detailData);
             \App\Models\AuditLog::log('profile.contact_updated', 'users', $user, 'Contact & communication preferences updated.');
@@ -107,7 +119,9 @@ class ProfileController extends Controller
 
         // Avatar upload (private disk, validated image only; old file removed).
         if ($avatarFile) {
-            if ($user->avatar) \Illuminate\Support\Facades\Storage::disk('private')->delete($user->avatar);
+            if ($user->avatar) {
+                \Illuminate\Support\Facades\Storage::disk('private')->delete($user->avatar);
+            }
             $path = $avatarFile->store('avatars', 'private');
             $user->update(['avatar' => $path]);
             \App\Models\AuditLog::log('profile.avatar_updated', 'users', $user, 'Profile photo updated.');
@@ -129,9 +143,12 @@ class ProfileController extends Controller
             'sms_notifications' => 'nullable|boolean',
         ]);
         foreach (['theme' => 'string', 'locale' => 'string', 'dashboard_layout' => 'string', 'email_notifications' => 'bool', 'sms_notifications' => 'bool'] as $k => $t) {
-            if (array_key_exists($k, $data)) \App\Models\UserSetting::set($user, 'preferences', $k, $data[$k], $t);
+            if (array_key_exists($k, $data)) {
+                \App\Models\UserSetting::set($user, 'preferences', $k, $data[$k], $t);
+            }
         }
         \App\Models\AuditLog::log('profile.settings_updated', 'users', $user, 'Account settings updated.');
+
         return back()->with('success', 'Settings saved.');
     }
 
@@ -151,7 +168,7 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
 

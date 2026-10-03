@@ -11,6 +11,13 @@ class CiRelationship extends Model
 
     protected $fillable = ['parent_ci_id', 'child_ci_id', 'relationship_type'];
 
-    public function parent() { return $this->belongsTo(ConfigurationItem::class, 'parent_ci_id'); }
-    public function child() { return $this->belongsTo(ConfigurationItem::class, 'child_ci_id'); }
+    public function parent()
+    {
+        return $this->belongsTo(ConfigurationItem::class, 'parent_ci_id');
+    }
+
+    public function child()
+    {
+        return $this->belongsTo(ConfigurationItem::class, 'child_ci_id');
+    }
 }

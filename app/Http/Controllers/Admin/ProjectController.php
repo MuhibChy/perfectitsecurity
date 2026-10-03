@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Service;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,7 +15,9 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $query = Project::with('customer', 'projectManager');
-        if ($request->status) $query->where('status', $request->status);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
@@ -23,6 +25,7 @@ class ProjectController extends Controller
             });
         }
         $projects = $query->latest()->paginate(20);
+
         return view('admin.projects.index', compact('projects'));
     }
 
@@ -31,6 +34,7 @@ class ProjectController extends Controller
         $customers = User::customers()->get();
         $managers = User::where('role', 'project_manager')->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.projects.create', compact('customers', 'managers', 'services'));
     }
 
@@ -49,7 +53,7 @@ class ProjectController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
         ]);
 
-        $validated['project_number'] = 'PRJ-' . strtoupper(Str::random(8));
+        $validated['project_number'] = 'PRJ-'.strtoupper(Str::random(8));
         $validated['slug'] = Str::slug($validated['name']);
 
         $project = Project::create($validated);
@@ -61,6 +65,7 @@ class ProjectController extends Controller
     {
         $project = Project::with('customer', 'projectManager', 'tasks', 'milestones', 'comments.user', 'files', 'invoices')->findOrFail($id);
         $tasks = Task::where('project_id', $id)->with('assignee')->get();
+
         return view('admin.projects.show', compact('project', 'tasks'));
     }
 
@@ -70,6 +75,7 @@ class ProjectController extends Controller
         $customers = User::customers()->get();
         $managers = User::where('role', 'project_manager')->get();
         $services = Service::where('is_active', true)->get();
+
         return view('admin.projects.edit', compact('project', 'customers', 'managers', 'services'));
     }
 
@@ -90,12 +96,14 @@ class ProjectController extends Controller
         ]);
 
         $project->update($validated);
+
         return redirect()->route('admin.projects.index')->with('success', 'Project updated!');
     }
 
     public function destroy($id)
     {
         Project::findOrFail($id)->delete();
+
         return redirect()->route('admin.projects.index')->with('success', 'Project deleted.');
     }
 
@@ -115,6 +123,7 @@ class ProjectController extends Controller
                 'visible' => in_array($request->status, ['in_progress', 'review', 'completed'], true),
             ]);
         }
+
         return redirect()->back()->with('success', 'Project status updated!');
     }
 }

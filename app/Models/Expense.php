@@ -34,16 +34,43 @@ class Expense extends Model
     {
         static::creating(function ($expense) {
             if (empty($expense->expense_number)) {
-                $expense->expense_number = 'EXP-' . date('Y') . '-' . str_pad((string) (static::max('id') + 1), 6, '0', STR_PAD_LEFT);
+                $expense->expense_number = 'EXP-'.date('Y').'-'.str_pad((string) (static::max('id') + 1), 6, '0', STR_PAD_LEFT);
             }
         });
     }
 
-    public function category() { return $this->belongsTo(ExpenseCategory::class); }
-    public function approver() { return $this->belongsTo(User::class, 'approved_by'); }
-    public function creator() { return $this->belongsTo(User::class, 'created_by'); }
-    public function worker() { return $this->belongsTo(User::class, 'worker_id'); }
-    public function project() { return $this->belongsTo(Project::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function task() { return $this->belongsTo(Task::class); }
+    public function category()
+    {
+        return $this->belongsTo(ExpenseCategory::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function worker()
+    {
+        return $this->belongsTo(User::class, 'worker_id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
 }

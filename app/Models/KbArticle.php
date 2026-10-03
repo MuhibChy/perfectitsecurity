@@ -23,31 +23,90 @@ class KbArticle extends Model
         'ai_readable' => 'boolean',
     ];
 
-    public function category() { return $this->belongsTo(KbCategory::class, 'category_id'); }
-    public function author() { return $this->belongsTo(User::class, 'author_id'); }
-    public function tags() { return $this->belongsToMany(KbTag::class, 'kb_article_tag', 'article_id', 'tag_id'); }
-    public function relatedArticles() { return $this->belongsToMany(KbArticle::class, 'kb_related_article', 'article_id', 'related_article_id'); }
+    public function category()
+    {
+        return $this->belongsTo(KbCategory::class, 'category_id');
+    }
 
-    public function scopePublished($q) { return $q->where('is_published', true); }
-    public function scopePublic($q) { return $q->where('visibility', 'public'); }
-    public function scopeForCustomer($q) { return $q->whereIn('visibility', ['public', 'customer']); }
-    public function scopeForStaff($q) { return $q->whereIn('visibility', ['public', 'customer', 'employee']); }
-    public function scopeForLanguage($q, $lang) { return $q->where('language', $lang); }
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(KbTag::class, 'kb_article_tag', 'article_id', 'tag_id');
+    }
+
+    public function relatedArticles()
+    {
+        return $this->belongsToMany(KbArticle::class, 'kb_related_article', 'article_id', 'related_article_id');
+    }
+
+    public function scopePublished($q)
+    {
+        return $q->where('is_published', true);
+    }
+
+    public function scopePublic($q)
+    {
+        return $q->where('visibility', 'public');
+    }
+
+    public function scopeForCustomer($q)
+    {
+        return $q->whereIn('visibility', ['public', 'customer']);
+    }
+
+    public function scopeForStaff($q)
+    {
+        return $q->whereIn('visibility', ['public', 'customer', 'employee']);
+    }
+
+    public function scopeForLanguage($q, $lang)
+    {
+        return $q->where('language', $lang);
+    }
 
     public function getVisibilityForUser($user = null)
     {
-        if (!$user) return $this->visibility === 'public';
-        if ($user->isAdmin()) return true;
-        if ($user->isEmployee()) return in_array($this->visibility, ['public', 'customer', 'employee']);
+        if (! $user) {
+            return $this->visibility === 'public';
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        if ($user->isEmployee()) {
+            return in_array($this->visibility, ['public', 'customer', 'employee']);
+        }
+
         return in_array($this->visibility, ['public', 'customer']);
     }
 
-    public function versions() { return $this->hasMany(KbArticleVersion::class, 'article_id'); }
-    public function votes() { return $this->hasMany(KbArticleVote::class, 'article_id'); }
+    public function versions()
+    {
+        return $this->hasMany(KbArticleVersion::class, 'article_id');
+    }
 
-    public function markHelpful() { $this->increment('helpful_count'); }
-    public function markNotHelpful() { $this->increment('not_helpful_count'); }
-    public function incrementViewCount() { $this->increment('view_count'); }
+    public function votes()
+    {
+        return $this->hasMany(KbArticleVote::class, 'article_id');
+    }
+
+    public function markHelpful()
+    {
+        $this->increment('helpful_count');
+    }
+
+    public function markNotHelpful()
+    {
+        $this->increment('not_helpful_count');
+    }
+
+    public function incrementViewCount()
+    {
+        $this->increment('view_count');
+    }
 
     /**
      * Save a new version of this article.

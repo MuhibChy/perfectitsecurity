@@ -28,6 +28,7 @@ class AvatarController extends Controller
         abort_unless($allowed, 404);
 
         $path = Storage::disk('private')->path($user->avatar);
+
         return response()->file($path, ['Cache-Control' => 'private, max-age=3600']);
     }
 
@@ -36,14 +37,19 @@ class AvatarController extends Controller
         if ($viewer->isStaff() || $target->isStaff()) {
             $sharedTicket = \App\Models\Ticket::where('customer_id', $viewer->isCustomer() ? $viewer->id : $target->id)
                 ->where('assigned_to', $viewer->isCustomer() ? $target->id : $viewer->id)->exists();
-            if ($sharedTicket) return true;
+            if ($sharedTicket) {
+                return true;
+            }
             $sharedTask = \App\Models\Task::where(function ($q) use ($viewer, $target) {
                 $q->where('assigned_to', $viewer->id)->where('customer_id', $target->id);
             })->orWhere(function ($q) use ($viewer, $target) {
                 $q->where('assigned_to', $target->id)->where('customer_id', $viewer->id);
             })->exists();
-            if ($sharedTask) return true;
+            if ($sharedTask) {
+                return true;
+            }
         }
+
         return \App\Models\DirectMessage::where(function ($q) use ($viewer, $target) {
             $q->where('sender_id', $viewer->id)->where('recipient_id', $target->id);
         })->orWhere(function ($q) use ($viewer, $target) {

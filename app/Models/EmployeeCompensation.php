@@ -27,17 +27,35 @@ class EmployeeCompensation extends Model
         'salary_start_date' => 'date',
     ];
 
-    public function user() { return $this->belongsTo(User::class); }
-    public function rule() { return $this->belongsTo(CommissionRule::class, 'commission_rule_id'); }
-    public function updater() { return $this->belongsTo(User::class, 'updated_by'); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function rule()
+    {
+        return $this->belongsTo(CommissionRule::class, 'commission_rule_id');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 
     /** Human-readable model label, e.g. "Salary + Commission". */
     public function modelLabel(): string
     {
         $parts = [];
-        if ($this->has_salary) $parts[] = 'Salary';
-        if ($this->has_commission) $parts[] = 'Commission';
-        if ($this->has_project_pay) $parts[] = 'Project';
+        if ($this->has_salary) {
+            $parts[] = 'Salary';
+        }
+        if ($this->has_commission) {
+            $parts[] = 'Commission';
+        }
+        if ($this->has_project_pay) {
+            $parts[] = 'Project';
+        }
+
         return $parts === [] ? 'Not configured' : implode(' + ', $parts);
     }
 }

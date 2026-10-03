@@ -21,7 +21,7 @@ class FinancialTransaction extends Model
     {
         static::creating(function ($txn) {
             if (empty($txn->transaction_id)) {
-                $txn->transaction_id = 'TXN-' . strtoupper(\Illuminate\Support\Str::random(10));
+                $txn->transaction_id = 'TXN-'.strtoupper(\Illuminate\Support\Str::random(10));
             }
             // Serialize running-balance computation so concurrent income/
             // refund/expense writes cannot interleave into a duplicated or
@@ -34,14 +34,48 @@ class FinancialTransaction extends Model
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function invoice() { return $this->belongsTo(Invoice::class); }
-    public function payment() { return $this->belongsTo(Payment::class); }
-    public function serviceOrder() { return $this->belongsTo(ServiceOrder::class); }
-    public function project() { return $this->belongsTo(Project::class); }
-    public function creator() { return $this->belongsTo(User::class, 'created_by'); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeIncome($q) { return $q->where('type', 'income'); }
-    public function scopeExpenses($q) { return $q->where('type', 'expense'); }
-    public function scopeDateRange($q, $from, $to) { return $q->whereBetween('created_at', [$from, $to]); }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function serviceOrder()
+    {
+        return $this->belongsTo(ServiceOrder::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function scopeIncome($q)
+    {
+        return $q->where('type', 'income');
+    }
+
+    public function scopeExpenses($q)
+    {
+        return $q->where('type', 'expense');
+    }
+
+    public function scopeDateRange($q, $from, $to)
+    {
+        return $q->whereBetween('created_at', [$from, $to]);
+    }
 }

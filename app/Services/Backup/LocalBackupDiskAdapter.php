@@ -24,7 +24,7 @@ class LocalBackupDiskAdapter implements BackupStorageAdapter
     public function put(string $localPath, string $destination): string
     {
         $base = trim(config('backup.directory', 'backups'), '/');
-        $key = $base . '/' . ltrim($destination, '/');
+        $key = $base.'/'.ltrim($destination, '/');
         $contents = @file_get_contents($localPath);
         if ($contents === false) {
             throw new RuntimeException("Cannot read local file for backup upload: {$localPath}");
@@ -64,7 +64,7 @@ class LocalBackupDiskAdapter implements BackupStorageAdapter
 
     public function connectionTest(): void
     {
-        $probe = trim(config('backup.directory', 'backups'), '/') . '/.connection-probe';
+        $probe = trim(config('backup.directory', 'backups'), '/').'/.connection-probe';
         if (! $this->disk()->put($probe, (string) time())) {
             throw new RuntimeException('Local backup disk is not writable.');
         }

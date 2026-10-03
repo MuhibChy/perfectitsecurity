@@ -3,17 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ticket;
 use App\Models\Project;
-use App\Models\Invoice;
-use App\Models\Expense;
+use App\Models\Ticket;
 use App\Models\User;
-use App\Models\Commission;
 use App\Services\FinancialService;
 use App\Services\SlaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class ReportController extends Controller
 {
@@ -29,6 +25,7 @@ class ReportController extends Controller
             $number = trim((string) $request->get('order_number', ''));
             abort_if($number === '', 422, 'Provide an order number.');
             $order = \App\Models\ServiceOrder::where('order_number', $number)->firstOrFail();
+
             return redirect()->route('admin.reports.service', $order->id);
         }
         $report = app(\App\Services\ReportExportService::class)->build('service', ['order_id' => (int) $id], auth()->user());
@@ -36,10 +33,11 @@ class ReportController extends Controller
         $timeline = \App\Services\ServiceTrackingService::serviceTimeline($order->id, null, false)->map(fn ($e) => [
             'at' => $e->created_at,
             'label' => ucfirst(str_replace('_', ' ', $e->action)),
-            'detail' => trim(($e->comment ?? '') . ($e->actor ? ' — by ' . $e->actor->name : '')) ?: ucfirst(str_replace('_', ' ', $e->action)),
+            'detail' => trim(($e->comment ?? '').($e->actor ? ' — by '.$e->actor->name : '')) ?: ucfirst(str_replace('_', ' ', $e->action)),
             'url' => null,
         ]);
         $statusHistory = \App\Services\TraceabilityService::statusHistory(\App\Models\ServiceOrder::class, $order->id);
+
         return view('reports.service', compact('report', 'order', 'timeline', 'statusHistory'));
     }
 
@@ -59,7 +57,7 @@ class ReportController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="financial-report-' . $from->format('Y-m-d') . '-to-' . $to->format('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="financial-report-'.$from->format('Y-m-d').'-to-'.$to->format('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($transactions) {
@@ -101,7 +99,7 @@ class ReportController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="tickets-report-' . $from->format('Y-m-d') . '-to-' . $to->format('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="tickets-report-'.$from->format('Y-m-d').'-to-'.$to->format('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($tickets) {
@@ -157,7 +155,7 @@ class ReportController extends Controller
         $to = $request->to ? Carbon::parse($request->to) : now()->endOfMonth();
 
         $resolvedTickets = Ticket::whereNotNull('resolved_at')->whereBetween('created_at', [$from, $to])->get();
-        $avgHours = $resolvedTickets->count() > 0 
+        $avgHours = $resolvedTickets->count() > 0
             ? round($resolvedTickets->avg(function ($t) {
                 return $t->created_at && $t->resolved_at ? $t->created_at->diffInHours($t->resolved_at) : 0;
             }), 1)
@@ -167,7 +165,7 @@ class ReportController extends Controller
             'totalTickets' => Ticket::whereBetween('created_at', [$from, $to])->count(),
             'byStatus' => Ticket::whereBetween('created_at', [$from, $to])->selectRaw('status, count(*) as count')->groupBy('status')->get(),
             'byPriority' => Ticket::whereBetween('created_at', [$from, $to])->selectRaw('priority, count(*) as count')->groupBy('priority')->get(),
-            'avgResolutionTime' => (object)['avg_hours' => $avgHours],
+            'avgResolutionTime' => (object) ['avg_hours' => $avgHours],
         ];
 
         return view('admin.reports.tickets', $data);
@@ -176,6 +174,7 @@ class ReportController extends Controller
     public function employees(Request $request)
     {
         $employees = User::staff()->with('tasks', 'salary')->get();
+
         return view('admin.reports.employees', compact('employees'));
     }
 
@@ -184,17 +183,23 @@ class ReportController extends Controller
         $slaService = app(SlaService::class);
         $data = $slaService->getSlaComplianceStats();
         $data['breached'] = $slaService->getBreachedTickets()->load('customer', 'assignee');
+
         return view('admin.reports.sla', $data);
     }
 
     public function profitability(Request $request)
     {
-        $projects = Project::with(['invoices' => function ($q) { $q->where('status', 'paid'); }, 'tasks' => function ($q) { $q->with('commissions'); }])->get();
+        $projects = Project::with(['invoices' => function ($q) {
+        $q->where('status', 'paid');
+        }, 'tasks' => function ($q) {
+        $q->with('commissions');
+        }])->get();
 
         $projectProfitability = $projects->map(function ($project) {
             $revenue = $project->invoices->sum('total');
             $costs = $project->actual_cost;
             $commissions = $project->tasks->sum('commissions.commission_amount');
+
             return [
                 'project' => $project,
                 'revenue' => $revenue,
@@ -211,6 +216,7 @@ class ReportController extends Controller
             $cost = (float) $order->total_cost;
             $profit = $revenue - $cost;
             $margin = $revenue > 0 ? round(($profit / $revenue) * 100, 1) : 0;
+
             return [
                 'order' => $order,
                 'order_value' => (float) $order->total,
@@ -228,6 +234,7 @@ class ReportController extends Controller
             $revenue = $items->sum('amount_paid');
             $costs = $items->sum('total_cost');
             $profit = $revenue - $costs;
+
             return [
                 'service_name' => $service?->name ?? 'Unknown',
                 'category_name' => $service?->category?->name ?? 'General',

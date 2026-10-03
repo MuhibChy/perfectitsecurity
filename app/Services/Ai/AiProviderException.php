@@ -12,16 +12,25 @@ namespace App\Services\Ai;
 class AiProviderException extends \RuntimeException
 {
     public const BILLING_ERROR = 'billing_error';       // HTTP 402: billing/quota/model-access
+
     public const AUTH_ERROR = 'auth_error';             // HTTP 401/403
+
     public const MODEL_MISSING = 'model_missing';       // HTTP 404
+
     public const TIMEOUT = 'timeout';                   // HTTP 408 / client timeout
+
     public const RATE_LIMITED = 'rate_limited';         // HTTP 429
+
     public const SERVER_ERROR = 'server_error';         // HTTP 5xx
+
     public const CONNECTION_ERROR = 'connection_error'; // DNS/refused/reset
+
     public const INVALID_RESPONSE = 'invalid_response'; // 200 with malformed/empty content
+
     public const UNKNOWN = 'unknown';
 
     private string $category;
+
     private ?int $status;
 
     public function __construct(string $category, ?int $status = null)

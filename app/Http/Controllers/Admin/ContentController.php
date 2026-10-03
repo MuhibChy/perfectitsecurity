@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CaseStudy;
 use App\Models\CareerPost;
+use App\Models\CaseStudy;
 use App\Models\PortfolioItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,33 +15,37 @@ class ContentController extends Controller
     public function caseStudies()
     {
         $items = CaseStudy::latest()->paginate(20);
+
         return view('admin.content.case-studies', compact('items'));
     }
 
     public function storeCaseStudy(Request $request)
     {
         $data = $this->validateContent($request, true);
-        $data['slug'] = Str::slug($data['title']) . '-' . Str::random(4);
-        if (!empty($data['is_published'])) {
+        $data['slug'] = Str::slug($data['title']).'-'.Str::random(4);
+        if (! empty($data['is_published'])) {
             $data['published_at'] = now();
         }
         CaseStudy::create($data);
+
         return back()->with('success', 'Case study saved.');
     }
 
     public function updateCaseStudy(Request $request, CaseStudy $caseStudy)
     {
         $data = $this->validateContent($request, true);
-        if (!empty($data['is_published']) && !$caseStudy->published_at) {
+        if (! empty($data['is_published']) && ! $caseStudy->published_at) {
             $data['published_at'] = now();
         }
         $caseStudy->update($data);
+
         return back()->with('success', 'Case study updated.');
     }
 
     public function destroyCaseStudy(CaseStudy $caseStudy)
     {
         $caseStudy->delete();
+
         return back()->with('success', 'Case study deleted.');
     }
 
@@ -49,6 +53,7 @@ class ContentController extends Controller
     public function careers()
     {
         $items = CareerPost::latest()->paginate(20);
+
         return view('admin.content.careers', compact('items'));
     }
 
@@ -65,11 +70,12 @@ class ContentController extends Controller
             'is_published' => 'nullable|boolean',
         ]);
         $data['is_published'] = $request->boolean('is_published');
-        $data['slug'] = Str::slug($data['title']) . '-' . Str::random(4);
+        $data['slug'] = Str::slug($data['title']).'-'.Str::random(4);
         if ($data['is_published']) {
             $data['published_at'] = now();
         }
         CareerPost::create($data);
+
         return back()->with('success', 'Career post saved.');
     }
 
@@ -87,17 +93,19 @@ class ContentController extends Controller
         ]);
         if ($request->has('is_published')) {
             $data['is_published'] = $request->boolean('is_published');
-            if ($data['is_published'] && !$career->published_at) {
+            if ($data['is_published'] && ! $career->published_at) {
                 $data['published_at'] = now();
             }
         }
         $career->update($data);
+
         return back()->with('success', 'Career post updated.');
     }
 
     public function destroyCareer(CareerPost $career)
     {
         $career->delete();
+
         return back()->with('success', 'Career post deleted.');
     }
 
@@ -105,6 +113,7 @@ class ContentController extends Controller
     public function portfolio()
     {
         $items = PortfolioItem::latest()->paginate(20);
+
         return view('admin.content.portfolio', compact('items'));
     }
 
@@ -122,11 +131,12 @@ class ContentController extends Controller
         ]);
         $data['is_published'] = $request->boolean('is_published');
         $data['is_featured'] = $request->boolean('is_featured');
-        $data['slug'] = Str::slug($data['title']) . '-' . Str::random(4);
+        $data['slug'] = Str::slug($data['title']).'-'.Str::random(4);
         if ($data['is_published']) {
             $data['published_at'] = now();
         }
         PortfolioItem::create($data);
+
         return back()->with('success', 'Portfolio item saved.');
     }
 
@@ -149,12 +159,14 @@ class ContentController extends Controller
             $data['is_featured'] = $request->boolean('is_featured');
         }
         $portfolio->update($data);
+
         return back()->with('success', 'Portfolio item updated.');
     }
 
     public function destroyPortfolio(PortfolioItem $portfolio)
     {
         $portfolio->delete();
+
         return back()->with('success', 'Portfolio item deleted.');
     }
 
@@ -172,6 +184,7 @@ class ContentController extends Controller
             'is_published' => 'nullable|boolean',
         ]);
         $data['is_published'] = $request->boolean('is_published');
+
         return $data;
     }
 }

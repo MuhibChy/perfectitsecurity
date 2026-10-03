@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Subscription;
-use App\Models\Service;
-use App\Models\User;
 use App\Models\Country;
+use App\Models\Service;
+use App\Models\Subscription;
+use App\Models\User;
 use App\Services\BusinessHoursService;
 use App\Services\RecurringBillingService;
 use Illuminate\Http\Request;
@@ -16,6 +16,7 @@ class SubscriptionController extends Controller
     public function index()
     {
         $subscriptions = Subscription::with('customer', 'service')->latest()->paginate(20);
+
         return view('admin.subscriptions.index', compact('subscriptions'));
     }
 
@@ -24,6 +25,7 @@ class SubscriptionController extends Controller
         $customers = User::customers()->active()->orderBy('name')->get();
         $services = Service::where('is_active', true)->orderBy('name')->get();
         $countries = Country::active()->orderBy('sort_order')->get();
+
         return view('admin.subscriptions.create', compact('customers', 'services', 'countries'));
     }
 
@@ -42,7 +44,7 @@ class SubscriptionController extends Controller
             'starts_at' => 'nullable|date',
         ]);
 
-        if ($request->filled('country_id') && !isset($data['tax_rate'])) {
+        if ($request->filled('country_id') && ! isset($data['tax_rate'])) {
             $country = Country::find($data['country_id']);
             $data['tax_rate'] = app(BusinessHoursService::class)->taxRateForCountry($country);
         }
@@ -68,6 +70,7 @@ class SubscriptionController extends Controller
     public function show(Subscription $subscription)
     {
         $subscription->load('customer', 'service', 'invoices');
+
         return view('admin.subscriptions.show', compact('subscription'));
     }
 
@@ -83,13 +86,15 @@ class SubscriptionController extends Controller
             $data['cancelled_at'] = now();
         }
 
-        $subscription->update(array_filter($data, fn ($v) => !is_null($v)));
+        $subscription->update(array_filter($data, fn ($v) => ! is_null($v)));
+
         return back()->with('success', 'Subscription updated.');
     }
 
     public function billNow(Subscription $subscription, RecurringBillingService $billing)
     {
         $invoice = $billing->generateInvoice($subscription);
+
         return redirect()->route('admin.invoices.edit', $invoice)->with('success', 'Invoice generated from subscription.');
     }
 }

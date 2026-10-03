@@ -70,7 +70,7 @@ return new class extends Migration
         foreach (\App\Models\User::orderBy('id')->get(['id', 'role']) as $user) {
             $prefix = self::PREFIXES[$user->role] ?? 'MBR';
             \App\Models\User::where('id', $user->id)->update([
-                'member_number' => $prefix . '-' . str_pad((string) $user->id, 6, '0', STR_PAD_LEFT),
+                'member_number' => $prefix.'-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT),
             ]);
         }
     }

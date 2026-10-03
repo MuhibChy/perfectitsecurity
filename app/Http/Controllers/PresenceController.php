@@ -26,6 +26,7 @@ class PresenceController extends Controller
             'last_activity_at' => now(),
             ...(array_key_exists('presence_visible', $data) ? ['presence_visible' => (bool) $data['presence_visible']] : []),
         ])->saveQuietly();
+
         return response()->json([
             'presence' => $user->effectivePresence(),
             'label' => $user->presenceLabel(),
@@ -41,13 +42,14 @@ class PresenceController extends Controller
         foreach (User::whereIn('id', $data['ids'])->get() as $u) {
             if ((int) $u->id === (int) $viewer->id || $viewer->isAdmin()) {
                 $out[$u->id] = ['presence' => $u->effectivePresence(), 'label' => $u->presenceLabel()];
-            } elseif (!$u->presence_visible) {
+            } elseif (! $u->presence_visible) {
                 $out[$u->id] = ['presence' => 'offline', 'label' => 'Offline'];
             } else {
                 $out[$u->id] = ['presence' => $u->effectivePresence(), 'label' => $u->presenceLabel()];
             }
         }
-        AuditLog::log('presence.roster', 'presence', null, "Presence roster viewed by {$viewer->name} (" . count($out) . ' members).');
+        AuditLog::log('presence.roster', 'presence', null, "Presence roster viewed by {$viewer->name} (".count($out).' members).');
+
         return response()->json($out);
     }
 }

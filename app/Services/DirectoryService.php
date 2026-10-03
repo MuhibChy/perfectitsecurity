@@ -36,6 +36,7 @@ class DirectoryService
             $ids = $this->linkedCustomerIds($viewer);
             $q->whereIn('id', $ids);
         }
+
         return $q->paginate(20);
     }
 
@@ -43,6 +44,7 @@ class DirectoryService
     {
         $staff->loadMissing('profileDetail');
         $d = $staff->profileDetail;
+
         return [
             'id' => $staff->id,
             'name' => $staff->name,
@@ -60,8 +62,12 @@ class DirectoryService
     /** Direct phone/whatsapp/email only with a working relationship (or staff viewer). */
     public function canSeeDirectContact(User $viewer, User $staff): bool
     {
-        if ((int) $viewer->id === (int) $staff->id) return true;
-        if ($viewer->isStaff()) return true;
+        if ((int) $viewer->id === (int) $staff->id) {
+            return true;
+        }
+        if ($viewer->isStaff()) {
+            return true;
+        }
         // Any working relationship unlocks direct contact: a direct
         // assignment to this customer, or a shared ticket/project/order.
         return $this->linkedToStaff($viewer, $staff);
@@ -75,12 +81,21 @@ class DirectoryService
     protected function linkedToStaff(User $customer, User $staff): bool
     {
         if (EmployeeAssignment::where('employee_id', $staff->id)->active()
-            ->where('assignable_type', User::class)->where('assignable_id', $customer->id)->exists()) return true;
-        if (Ticket::where('customer_id', $customer->id)->where('assigned_to', $staff->id)->exists()) return true;
+            ->where('assignable_type', User::class)->where('assignable_id', $customer->id)->exists()) {
+            return true;
+        }
+        if (Ticket::where('customer_id', $customer->id)->where('assigned_to', $staff->id)->exists()) {
+            return true;
+        }
         if (Project::where('customer_id', $customer->id)->where(function ($q) use ($staff) {
             $q->where('project_manager_id', $staff->id)->orWhereHas('members', fn ($m) => $m->where('user_id', $staff->id));
-        })->exists()) return true;
-        if (ServiceOrder::where('customer_id', $customer->id)->where('assigned_to', $staff->id)->exists()) return true;
+        })->exists()) {
+            return true;
+        }
+        if (ServiceOrder::where('customer_id', $customer->id)->where('assigned_to', $staff->id)->exists()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -92,8 +107,11 @@ class DirectoryService
         $ids = [];
         foreach ($tasks as $t) {
             $c = $t->project?->customer ?? $t->customer ?? $t->serviceOrder?->customer;
-            if ($c) $ids[] = $c->id;
+            if ($c) {
+                $ids[] = $c->id;
+            }
         }
+
         return array_values(array_unique($ids));
     }
 }

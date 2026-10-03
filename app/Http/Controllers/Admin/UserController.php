@@ -10,13 +10,20 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     use \App\Http\Controllers\Concerns\ResolvesPhoneInput;
+
     public function index(Request $request)
     {
         $query = User::with('company');
-        if ($request->role) $query->where('role', $request->role);
-        if ($request->status === 'pending') $query->where('is_active', false)->whereNull('approved_at');
-        elseif ($request->status === 'approved') $query->where('is_active', true)->whereNotNull('approved_at');
-        elseif ($request->status === 'suspended') $query->where('is_active', false)->whereNotNull('approved_at');
+        if ($request->role) {
+            $query->where('role', $request->role);
+        }
+        if ($request->status === 'pending') {
+            $query->where('is_active', false)->whereNull('approved_at');
+        } elseif ($request->status === 'approved') {
+            $query->where('is_active', true)->whereNotNull('approved_at');
+        } elseif ($request->status === 'suspended') {
+            $query->where('is_active', false)->whereNotNull('approved_at');
+        }
         if ($request->search) {
             $search = addcslashes($request->search, '%_\\');
             $query->where(function ($q) use ($search) {
@@ -25,6 +32,7 @@ class UserController extends Controller
             });
         }
         $users = $query->latest()->paginate(20);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -59,6 +67,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['tickets', 'projects', 'commissions', 'invoices']);
+
         return view('admin.users.show', compact('user'));
     }
 
@@ -71,14 +80,14 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:super_admin,admin,finance_manager,support_manager,support_agent,project_manager,employee,freelancer,commission_agent,sales_agent,training_manager,customer',
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'is_active' => 'boolean',
         ]);
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -106,6 +115,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'This user has wallet financial history and cannot be deleted. Deactivate the account instead — history is preserved.');
         }
         $user->delete();
+
         return redirect()->route('admin.users.index')->with('success', 'User deleted.');
     }
 
@@ -121,8 +131,9 @@ class UserController extends Controller
             'approved_at' => now(),
             'approval_note' => $data['approval_note'] ?? null,
         ]);
-        \App\Models\AuditLog::log('user.approved', 'users', $user, "Account approved by " . auth()->user()->name . '.', ['is_active' => $wasActive], ['is_active' => true]);
+        \App\Models\AuditLog::log('user.approved', 'users', $user, 'Account approved by '.auth()->user()->name.'.', ['is_active' => $wasActive], ['is_active' => true]);
         \App\Services\ServiceTrackingService::notify($user->id, 'account_approved', 'Account approved', 'Your PerfectITSecurity account has been approved. You can now use the platform.');
+
         return back()->with('success', "User {$user->name} approved.");
     }
 
@@ -137,7 +148,8 @@ class UserController extends Controller
             'approved_at' => now(),
             'approval_note' => $data['approval_note'] ?? 'Rejected by administrator.',
         ]);
-        \App\Models\AuditLog::log('user.rejected', 'users', $user, "Account rejected by " . auth()->user()->name . '.');
+        \App\Models\AuditLog::log('user.rejected', 'users', $user, 'Account rejected by '.auth()->user()->name.'.');
+
         return back()->with('success', "User {$user->name} rejected.");
     }
 
@@ -150,7 +162,8 @@ class UserController extends Controller
             'is_active' => false,
             'approval_note' => $data['approval_note'] ?? 'Suspended by administrator.',
         ]);
-        \App\Models\AuditLog::log('user.suspended', 'users', $user, "Account suspended by " . auth()->user()->name . '.', ['is_active' => true], ['is_active' => false]);
+        \App\Models\AuditLog::log('user.suspended', 'users', $user, 'Account suspended by '.auth()->user()->name.'.', ['is_active' => true], ['is_active' => false]);
+
         return back()->with('success', "User {$user->name} suspended. History preserved.");
     }
 }

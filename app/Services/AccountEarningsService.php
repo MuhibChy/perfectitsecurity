@@ -17,7 +17,9 @@ use App\Models\Wallet;
  */
 class AccountEarningsService
 {
-    public function __construct(private CommissionService $commissions) {}
+    public function __construct(private CommissionService $commissions)
+    {
+    }
 
     public function forEmployee(User $employee): array
     {

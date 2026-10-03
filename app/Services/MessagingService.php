@@ -19,13 +19,16 @@ class MessagingService
 {
     public function canMessage(User $sender, User $recipient): bool
     {
-        if ((int) $sender->id === (int) $recipient->id) return false;
+        if ((int) $sender->id === (int) $recipient->id) {
+            return false;
+        }
         if ($sender->isCustomer()) {
-            return !$recipient->isCustomer(); // customer → staff only
+            return ! $recipient->isCustomer(); // customer → staff only
         }
         if ($sender->isFreelancer()) {
             return $recipient->isStaff(); // agent/contractor → management only
         }
+
         return true; // staff → anyone
     }
 
@@ -37,13 +40,13 @@ class MessagingService
         // Ownership check: parent message must belong to the sender/recipient pair,
         // otherwise an ID change could attach to (or probe) another conversation.
         // Generic 403 — never reveal whether the parent exists.
-        if (!empty($options['parent_id'])) {
+        if (! empty($options['parent_id'])) {
             $parent = DirectMessage::find((int) $options['parent_id']);
             abort_unless($parent, 403, 'You are not permitted to reply to this conversation.');
             $inThread = ((int) $parent->sender_id === (int) $sender->id && (int) $parent->recipient_id === (int) $recipient->id)
                 || ((int) $parent->sender_id === (int) $recipient->id && (int) $parent->recipient_id === (int) $sender->id);
             abort_unless($inThread, 403, 'You are not permitted to reply to this conversation.');
-            if ($sender->isCustomer() && ($parent->is_internal || !$parent->is_customer_visible)) {
+            if ($sender->isCustomer() && ($parent->is_internal || ! $parent->is_customer_visible)) {
                 abort(403, 'You are not permitted to reply to this conversation.');
             }
         }
@@ -51,7 +54,9 @@ class MessagingService
         return DB::transaction(function () use ($sender, $recipient, $body, $subject, $options) {
             $internal = (bool) ($options['is_internal'] ?? false);
             // Customers can never create internal notes nor see them.
-            if ($sender->isCustomer()) $internal = false;
+            if ($sender->isCustomer()) {
+                $internal = false;
+            }
             $message = DirectMessage::create([
                 'sender_id' => $sender->id,
                 'recipient_id' => $recipient->id,
@@ -61,8 +66,9 @@ class MessagingService
                 'is_internal' => $internal,
                 'is_customer_visible' => $internal ? false : true,
             ]);
-            AuditLog::log('message.sent', 'direct_messages', $message, "Message from {$sender->name} to {$recipient->name}." . ($internal ? ' (internal)' : ''));
+            AuditLog::log('message.sent', 'direct_messages', $message, "Message from {$sender->name} to {$recipient->name}.".($internal ? ' (internal)' : ''));
             ServiceTrackingService::notify((int) $recipient->id, 'message_received', "New message from {$sender->name}", (string) mb_substr($body, 0, 140));
+
             return $message->fresh();
         });
     }
@@ -74,6 +80,7 @@ class MessagingService
             $w->where(fn ($x) => $x->where('sender_id', $viewer->id)->where('recipient_id', $other->id))
               ->orWhere(fn ($x) => $x->where('sender_id', $other->id)->where('recipient_id', $viewer->id));
         })->visibleTo($viewer)->with(['sender', 'recipient'])->latest();
+
         return $q->paginate(25);
     }
 
@@ -86,7 +93,10 @@ class MessagingService
     public function markRead(DirectMessage $message, User $viewer): DirectMessage
     {
         abort_unless((int) $message->recipient_id === (int) $viewer->id, 403);
-        if (!$message->read_at) $message->update(['read_at' => now()]);
+        if (! $message->read_at) {
+            $message->update(['read_at' => now()]);
+        }
+
         return $message->fresh();
     }
 }

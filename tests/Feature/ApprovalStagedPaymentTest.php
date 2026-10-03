@@ -2,16 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\CashMemo;
 use App\Models\Invoice;
 use App\Models\OrderPaymentSchedule;
 use App\Models\Payment;
 use App\Models\Project;
-use App\Models\ProjectMilestone;
 use App\Models\Receipt;
 use App\Models\Service;
 use App\Models\ServiceCategory;
-use App\Models\ServiceEvent;
 use App\Models\ServiceOrder;
 use App\Models\Task;
 use App\Models\User;
@@ -98,6 +95,7 @@ class ApprovalStagedPaymentTest extends TestCase
             if ($scheduleTitle) {
                 $payload['schedule_id'] = OrderPaymentSchedule::where('order_id', $order->id)->where('title', $scheduleTitle)->firstOrFail()->id;
             }
+
             return $this->actingAs($finance)->post(route('admin.work-orders.record-payment', $order), $payload)->assertSessionHas('success');
         };
 
@@ -169,9 +167,10 @@ class ApprovalStagedPaymentTest extends TestCase
         $service = Service::create(['category_id' => $cat->id, 'name' => 'Doc Service', 'slug' => 'doc-service']);
         $makeOrder = function ($cust, $num) use ($service) {
             $order = ServiceOrder::create(['order_number' => $num, 'customer_id' => $cust->id, 'service_id' => $service->id, 'requirements' => 'Req', 'status' => 'confirmed', 'total' => 500, 'amount_paid' => 0, 'amount_due' => 500]);
-            $invoice = Invoice::create(['invoice_number' => 'INV-' . $num, 'customer_id' => $cust->id, 'service_order_id' => $order->id, 'subtotal' => 500, 'total' => 500, 'amount_paid' => 0, 'amount_due' => 500, 'status' => 'sent', 'due_date' => now()->addDays(7)]);
-            $payment = Payment::create(['payment_number' => 'PAY-' . $num, 'invoice_id' => $invoice->id, 'customer_id' => $cust->id, 'service_order_id' => $order->id, 'amount' => 500, 'status' => 'completed', 'payment_method' => 'cash', 'paid_at' => now()]);
+            $invoice = Invoice::create(['invoice_number' => 'INV-'.$num, 'customer_id' => $cust->id, 'service_order_id' => $order->id, 'subtotal' => 500, 'total' => 500, 'amount_paid' => 0, 'amount_due' => 500, 'status' => 'sent', 'due_date' => now()->addDays(7)]);
+            $payment = Payment::create(['payment_number' => 'PAY-'.$num, 'invoice_id' => $invoice->id, 'customer_id' => $cust->id, 'service_order_id' => $order->id, 'amount' => 500, 'status' => 'completed', 'payment_method' => 'cash', 'paid_at' => now()]);
             $receipt = \App\Models\Receipt::create(['payment_id' => $payment->id, 'invoice_id' => $invoice->id, 'customer_id' => $cust->id, 'service_order_id' => $order->id, 'amount' => 500, 'remaining_balance' => 0, 'currency' => 'USD', 'issued_at' => now()]);
+
             return compact('order', 'receipt');
         };
         $ra = $makeOrder($a, 'ORD-DOC-A');

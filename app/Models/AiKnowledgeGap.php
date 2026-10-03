@@ -13,8 +13,15 @@ class AiKnowledgeGap extends Model
 
     protected $casts = ['sample_answers' => 'array'];
 
-    public function resolver() { return $this->belongsTo(User::class, 'resolved_by'); }
-    public function kbArticle() { return $this->belongsTo(KbArticle::class, 'created_kb_article_id'); }
+    public function resolver()
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
+    }
+
+    public function kbArticle()
+    {
+        return $this->belongsTo(KbArticle::class, 'created_kb_article_id');
+    }
 
     public function incrementOccurrence()
     {

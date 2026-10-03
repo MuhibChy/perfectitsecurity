@@ -30,15 +30,38 @@ class Commission extends Model
     {
         static::creating(function ($commission) {
             if (empty($commission->commission_number)) {
-                $commission->commission_number = 'COM-' . strtoupper(Str::random(8));
+                $commission->commission_number = 'COM-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function worker() { return $this->belongsTo(User::class, 'worker_id'); }
-    public function rule() { return $this->belongsTo(CommissionRule::class, 'rule_id'); }
-    public function task() { return $this->belongsTo(Task::class); }
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function project() { return $this->belongsTo(Project::class); }
-    public function approver() { return $this->belongsTo(User::class, 'approved_by'); }
+    public function worker()
+    {
+        return $this->belongsTo(User::class, 'worker_id');
+    }
+
+    public function rule()
+    {
+        return $this->belongsTo(CommissionRule::class, 'rule_id');
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }

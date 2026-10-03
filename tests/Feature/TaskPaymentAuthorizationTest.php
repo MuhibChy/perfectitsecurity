@@ -16,9 +16,13 @@ class TaskPaymentAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $tech;
+
     private User $manager;
+
     private ServiceOrder $order;
+
     private Task $task;
 
     protected function setUp(): void

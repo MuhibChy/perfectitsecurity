@@ -13,9 +13,20 @@ class AiEscalation extends Model
 
     protected $casts = ['resolved_at' => 'datetime'];
 
-    public function conversation() { return $this->belongsTo(AiConversation::class, 'conversation_id'); }
-    public function ticket() { return $this->belongsTo(Ticket::class, 'ticket_id'); }
-    public function assignee() { return $this->belongsTo(User::class, 'assigned_to'); }
+    public function conversation()
+    {
+        return $this->belongsTo(AiConversation::class, 'conversation_id');
+    }
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class, 'ticket_id');
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
 
     public function resolve()
     {

@@ -15,10 +15,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('countries', function (Blueprint $table) {
-            if (!Schema::hasColumn('countries', 'decimal_places')) {
+            if (! Schema::hasColumn('countries', 'decimal_places')) {
                 $table->unsignedTinyInteger('decimal_places')->default(2)->after('currency_name');
             }
-            if (!Schema::hasColumn('countries', 'region')) {
+            if (! Schema::hasColumn('countries', 'region')) {
                 $table->string('region', 30)->nullable()->after('decimal_places');
             }
         });
@@ -49,7 +49,7 @@ return new class extends Migration
         ];
         foreach ($rows as [$code, $name, $ccy, $symbol, $ccyName, $dp, $region, $sort]) {
             // Insert-only: never overwrite seeder rows or admin toggles.
-            if (!DB::table('countries')->where('code', $code)->exists()) {
+            if (! DB::table('countries')->where('code', $code)->exists()) {
                 DB::table('countries')->insert(
                     ['code' => $code, 'name' => $name, 'currency_code' => $ccy, 'currency_symbol' => $symbol,
                         'currency_name' => $ccyName, 'decimal_places' => $dp, 'region' => $region,

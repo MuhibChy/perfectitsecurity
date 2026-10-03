@@ -24,6 +24,7 @@ class PaymentSettlementService
     // Bank-transfer human verification settles directly from
     // pending_verification: the review itself is the authorization.
     public const SETTLEABLE = ['pending', 'processing', 'authorized', 'verified', 'pending_verification', 'requires_verification'];
+
     public const PAYABLE = ['sent', 'viewed', 'overdue', 'partially_paid'];
 
     /**
@@ -88,7 +89,9 @@ class PaymentSettlementService
                 $invoice->amount_paid = round((float) $invoice->amount_paid + $amount, 2);
                 $invoice->amount_due = max(0, round((float) $invoice->total - (float) $invoice->amount_paid, 2));
                 $invoice->status = $invoice->amount_due == 0 ? 'paid' : 'partially_paid';
-                if ($invoice->amount_due == 0) $invoice->paid_at = now();
+                if ($invoice->amount_due == 0) {
+                    $invoice->paid_at = now();
+                }
                 $invoice->save();
 
                 $receipt = Receipt::create([
@@ -159,7 +162,9 @@ class PaymentSettlementService
     {
         DB::transaction(function () use ($txn, $reason) {
             $txn = PaymentTransaction::lockForUpdate()->findOrFail($txn->id);
-            if ($txn->isTerminal()) return;
+            if ($txn->isTerminal()) {
+                return;
+            }
             $txn->failure_reason = mb_substr($reason, 0, 1000);
             $txn->save();
             $txn->transitionTo('failed');

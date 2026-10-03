@@ -23,7 +23,7 @@ class SearchController extends Controller
         $q = mb_substr($q, 0, 100);
         $results = ['staff' => [], 'references' => []];
         if ($q !== '') {
-            $like = '%' . addcslashes($q, '%_\\') . '%';
+            $like = '%'.addcslashes($q, '%_\\').'%';
             $me = auth()->user();
             $staff = User::where('is_active', true)->whereNotIn('role', ['customer'])
                 ->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like))
@@ -41,6 +41,7 @@ class SearchController extends Controller
             $find(Project::class, 'project_number', 'Project', 'portal.projects.show');
             $results['references'] = $refs;
         }
+
         return view('customer.search.index', ['q' => $q, 'results' => $results]);
     }
 }

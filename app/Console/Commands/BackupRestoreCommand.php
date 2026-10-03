@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class BackupRestoreCommand extends Command
 {
     protected $signature = 'backup:restore {backup_id : backup_id to restore} {--scope=full : db|files|full} {--confirm-token= : must equal backup_id} {--test : isolated restore test only}';
+
     protected $description = 'Restore a verified backup (requires confirmation token + pre-restore safety backup).';
 
     public function handle(RestoreService $restore): int
@@ -17,7 +18,7 @@ class BackupRestoreCommand extends Command
         try {
             if ($this->option('test')) {
                 $result = $restore->restoreTest($backup);
-                $this->info('Restore test: ' . $result['status']);
+                $this->info('Restore test: '.$result['status']);
 
                 return self::SUCCESS;
             }
@@ -32,7 +33,7 @@ class BackupRestoreCommand extends Command
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error('Restore failed: ' . $e->getMessage());
+            $this->error('Restore failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

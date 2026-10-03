@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Artisan;
 class HealthController extends Controller
 {
     protected SystemHealthService $healthService;
+
     protected PageHealthService $pageService;
+
     protected ErrorLoggingService $errorService;
 
     public function __construct(
@@ -34,7 +36,7 @@ class HealthController extends Controller
     public function index()
     {
         $moduleChecks = $this->healthService->getLatestModuleStatuses();
-        
+
         $totalModules = count($moduleChecks);
         $healthyModules = collect($moduleChecks)->where('status', 'healthy')->count();
         $warningModules = collect($moduleChecks)->where('status', 'warning')->count();
@@ -194,6 +196,7 @@ class HealthController extends Controller
     public function resolveError(Request $request, $id)
     {
         $this->errorService->markResolved($id, $request->note);
+
         return redirect()->back()->with('success', 'Error marked as resolved.');
     }
 
@@ -204,6 +207,7 @@ class HealthController extends Controller
     {
         $request->validate(['note' => 'required|string|max:1000']);
         $this->errorService->addNote($id, $request->note);
+
         return redirect()->back()->with('success', 'Note added to error log.');
     }
 
@@ -225,7 +229,7 @@ class HealthController extends Controller
      */
     public function cleanupHistory(Request $request)
     {
-        $days = (int)($request->days ?? 30);
+        $days = (int) ($request->days ?? 30);
         $cutoff = now()->subDays($days);
 
         $deletedChecks = SystemHealthCheck::where('checked_at', '<', $cutoff)->delete();

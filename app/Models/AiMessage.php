@@ -16,5 +16,8 @@ class AiMessage extends Model
         'sources' => 'array',
     ];
 
-    public function conversation() { return $this->belongsTo(AiConversation::class, 'conversation_id'); }
+    public function conversation()
+    {
+        return $this->belongsTo(AiConversation::class, 'conversation_id');
+    }
 }

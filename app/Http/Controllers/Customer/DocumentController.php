@@ -50,7 +50,7 @@ class DocumentController extends Controller
         $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'zip'];
         $ext = strtolower($file->getClientOriginalExtension());
         abort_unless(in_array($ext, $allowedExtensions, true), 422, 'File type not allowed.');
-        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $fileName = Str::uuid().'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('documents', $fileName, 'private');
 
         CustomerDocument::create([

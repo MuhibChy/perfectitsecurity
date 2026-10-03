@@ -254,6 +254,7 @@ class PhoneCountries
                 return $entry;
             }
         }
+
         return null;
     }
 
@@ -289,6 +290,7 @@ class PhoneCountries
                 }
             }
         }
+
         return $out;
     }
 
@@ -326,6 +328,7 @@ class PhoneCountries
                 }
             }
         }
+
         return null;
     }
 }

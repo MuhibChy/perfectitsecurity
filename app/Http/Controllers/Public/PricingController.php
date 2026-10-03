@@ -10,9 +10,9 @@ class PricingController extends Controller
     public function index()
     {
         $services = Service::where('is_active', true)->with('category')->orderBy('sort_order')->get();
-        
+
         $plans = [
-            (object)[
+            (object) [
                 'name' => 'Essential Support',
                 'description' => 'Core IT infrastructure management and proactive helpdesk support for growing businesses.',
                 'price' => 499,
@@ -24,9 +24,9 @@ class PricingController extends Controller
                     'Patch Management & Antivirus',
                     'Cloud Backup Management',
                     'Monthly System Health Report',
-                ]
+                ],
             ],
-            (object)[
+            (object) [
                 'name' => 'Professional Managed IT',
                 'description' => 'Comprehensive IT operations, advanced security, and dedicated engineering for standard enterprises.',
                 'price' => 1299,
@@ -39,9 +39,9 @@ class PricingController extends Controller
                     'Cloud Infrastructure & Microsoft 365 Admin',
                     'Quarterly Strategic IT Review & vCIO',
                     'Guaranteed 1-Hour SLA Response Time',
-                ]
+                ],
             ],
-            (object)[
+            (object) [
                 'name' => 'Enterprise Architecture',
                 'description' => 'Dedicated engineering teams, round-the-clock SOC oversight, and bespoke hybrid-cloud architecture.',
                 'price' => 2899,
@@ -54,8 +54,8 @@ class PricingController extends Controller
                     'Disaster Recovery & Business Continuity',
                     'Compliance Audits (SOC 2, HIPAA, ISO 27001)',
                     'Custom SLA (15-Minute Critical Response)',
-                ]
-            ]
+                ],
+            ],
         ];
 
         return view('public.pricing', compact('services', 'plans'));

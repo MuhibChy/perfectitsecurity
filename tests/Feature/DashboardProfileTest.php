@@ -93,8 +93,9 @@ class DashboardProfileTest extends TestCase
     private function realPng(string $name): UploadedFile
     {
         // 1x1 transparent PNG bytes (no GD required for fake()->image()).
-        $path = tempnam(sys_get_temp_dir(), 'ava') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'ava').'.png';
         file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='));
+
         return new UploadedFile($path, $name, 'image/png', null, true);
     }
 

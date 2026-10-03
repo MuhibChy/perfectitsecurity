@@ -20,8 +20,13 @@ trait RespectsNotificationPreferences
         $pref = NotificationPreference::where('user_id', $notifiable->id ?? $notifiable->getKey())
             ->where('notification_type', $this->preferenceType())
             ->first();
-        if (!$pref || (bool) $pref->in_app_enabled) $channels[] = 'database';
-        if (!$pref || (bool) $pref->email_enabled) $channels[] = 'mail';
+        if (! $pref || (bool) $pref->in_app_enabled) {
+            $channels[] = 'database';
+        }
+        if (! $pref || (bool) $pref->email_enabled) {
+            $channels[] = 'mail';
+        }
+
         return $channels ?: ['database'];
     }
 }

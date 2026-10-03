@@ -21,14 +21,28 @@ class ServiceApproval extends Model
     {
         static::creating(function ($approval) {
             if (empty($approval->approval_number)) {
-                $approval->approval_number = 'APR-' . strtoupper(Str::random(8));
+                $approval->approval_number = 'APR-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function approvable() { return $this->morphTo(); }
-    public function requester() { return $this->belongsTo(User::class, 'requested_by'); }
-    public function approver() { return $this->belongsTo(User::class, 'approver_id'); }
+    public function approvable()
+    {
+        return $this->morphTo();
+    }
 
-    public function scopePending($query) { return $query->where('status', 'pending'); }
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
 }

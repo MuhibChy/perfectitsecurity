@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\UsefulLink;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class UsefulLinkController extends Controller
 {
     public function index()
     {
         $links = UsefulLink::orderBy('sort_order')->orderBy('title')->paginate(20);
+
         return view('admin.useful-links.index', compact('links'));
     }
 
@@ -71,12 +71,14 @@ class UsefulLinkController extends Controller
     public function destroy(UsefulLink $usefulLink)
     {
         $usefulLink->delete();
+
         return redirect()->route('admin.useful-links.index')->with('success', 'Link deleted.');
     }
 
     public function toggle(UsefulLink $usefulLink)
     {
-        $usefulLink->update(['is_active' => !$usefulLink->is_active]);
+        $usefulLink->update(['is_active' => ! $usefulLink->is_active]);
+
         return redirect()->route('admin.useful-links.index')->with('success', 'Link status toggled.');
     }
 }

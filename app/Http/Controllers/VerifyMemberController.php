@@ -16,6 +16,7 @@ class VerifyMemberController extends Controller
     {
         abort_if(strlen($token) > 128, 404);
         $result = $cards->verifyToken($token);
+
         return view('verify.member', ['result' => $result]);
     }
 }

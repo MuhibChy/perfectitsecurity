@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\UsefulLink;
 use App\Models\LinkSubmission;
+use App\Models\UsefulLink;
 use Illuminate\Http\Request;
 
 class UsefulLinksController extends Controller

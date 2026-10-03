@@ -30,7 +30,7 @@ class S3BackupAdapter implements BackupStorageAdapter
 
     private function key(string $destination): string
     {
-        return trim((string) config('backup.s3.prefix', 'techsupport-backups'), '/') . '/' . ltrim($destination, '/');
+        return trim((string) config('backup.s3.prefix', 'techsupport-backups'), '/').'/'.ltrim($destination, '/');
     }
 
     public function put(string $localPath, string $destination): string
@@ -47,7 +47,7 @@ class S3BackupAdapter implements BackupStorageAdapter
             @fclose($stream);
         }
 
-        return 's3://' . $this->key($destination);
+        return 's3://'.$this->key($destination);
     }
 
     public function get(string $identifier, string $localPath): void

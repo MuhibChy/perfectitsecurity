@@ -29,6 +29,7 @@ class GloveBackgroundLayerTest extends TestCase
     {
         preg_match('/\.global-3d-fg\s*\{[^}]*\}/', $this->css(), $m);
         $this->assertNotEmpty($m, '.global-3d-fg rule must exist');
+
         return $m[0];
     }
 
@@ -125,16 +126,18 @@ class GloveBackgroundLayerTest extends TestCase
 
     private function cssZIndex(string $css, string $selector): int
     {
-        preg_match('/' . $selector . '\s*\{[^}]*z-index:\s*(\d+)/', $css, $m);
+        preg_match('/'.$selector.'\s*\{[^}]*z-index:\s*(\d+)/', $css, $m);
         $this->assertNotEmpty($m, "z-index rule must exist for {$selector}");
+
         return (int) $m[1];
     }
 
     private function bladeZIndex(string $blade, string $tag): int
     {
         // Matches Tailwind `z-<n>` and arbitrary `z-[<n>]` on the element.
-        preg_match('/<' . $tag . '\b[^>]*\bz-(?:\[(\d+)\]|(\d+))/', $blade, $m);
+        preg_match('/<'.$tag.'\b[^>]*\bz-(?:\[(\d+)\]|(\d+))/', $blade, $m);
         $this->assertNotEmpty($m, "<{$tag}> must declare an explicit z-index");
+
         return (int) ((($m[1] ?? '') !== '') ? $m[1] : $m[2]);
     }
 }

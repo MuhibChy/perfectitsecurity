@@ -35,7 +35,7 @@ class BackupOrchestratorService
 
         $workDir = $this->workDir();
         $backup = Backup::create([
-            'backup_id' => 'BKP-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(6)),
+            'backup_id' => 'BKP-'.now()->format('Ymd-His').'-'.strtoupper(Str::random(6)),
             'type' => $type,
             'scope' => $scope,
             'status' => 'running',
@@ -79,7 +79,7 @@ class BackupOrchestratorService
                 $payload = $info['path'];
                 $isEnc = false;
                 if ($encrypted) {
-                    $encPath = $payload . '.enc';
+                    $encPath = $payload.'.enc';
                     BackupEncryptionService::encrypt($payload, $encPath);
                     $payload = $encPath;
                     $isEnc = true;
@@ -97,7 +97,7 @@ class BackupOrchestratorService
             $adapter = new LocalBackupDiskAdapter();
             $adapter->connectionTest();
             foreach ($storeFiles as $kind => $sf) {
-                $destination = $backup->backup_id . '/' . $kind . ($sf['encrypted'] ? '.enc' : ($kind === 'db' ? '.gz' : '.zip'));
+                $destination = $backup->backup_id.'/'.$kind.($sf['encrypted'] ? '.enc' : ($kind === 'db' ? '.gz' : '.zip'));
                 $identifier = $adapter->put($sf['payload'], $destination);
                 $backup->files()->create([
                     'kind' => $kind,
@@ -114,11 +114,11 @@ class BackupOrchestratorService
                 $s3 = new S3BackupAdapter();
                 try {
                     foreach ($storeFiles as $kind => $sf) {
-                        $destination = $backup->backup_id . '/' . $kind . ($sf['encrypted'] ? '.enc' : ($kind === 'db' ? '.gz' : '.zip'));
+                        $destination = $backup->backup_id.'/'.$kind.($sf['encrypted'] ? '.enc' : ($kind === 'db' ? '.gz' : '.zip'));
                         $s3->put($sf['payload'], $destination);
                     }
                 } catch (\Throwable $e) {
-                    throw new RuntimeException('External (S3) upload failed — backup NOT marked successful: ' . $e->getMessage());
+                    throw new RuntimeException('External (S3) upload failed — backup NOT marked successful: '.$e->getMessage());
                 }
             }
 
@@ -155,7 +155,7 @@ class BackupOrchestratorService
             try {
                 app(BackupRetentionService::class)->prune($actor);
             } catch (\Throwable $e) {
-                app(AuditService::class)->log('backup.retention_failed', 'backups', $backup, 'Retention cleanup failed: ' . $e->getMessage());
+                app(AuditService::class)->log('backup.retention_failed', 'backups', $backup, 'Retention cleanup failed: '.$e->getMessage());
             }
 
             return $backup->fresh('files');
@@ -166,7 +166,7 @@ class BackupOrchestratorService
                 'duration_ms' => (int) ((microtime(true) - $started) * 1000),
                 'error_message' => substr($e->getMessage(), 0, 2000),
             ]);
-            app(AuditService::class)->log('backup.failed', 'backups', $backup, "Backup {$backup->backup_id} failed: " . $e->getMessage());
+            app(AuditService::class)->log('backup.failed', 'backups', $backup, "Backup {$backup->backup_id} failed: ".$e->getMessage());
             $this->notify($backup->fresh(), false, $e->getMessage());
             throw $e;
         } finally {
@@ -209,7 +209,7 @@ class BackupOrchestratorService
             Mail::raw(
                 $success
                     ? "Backup {$backup->backup_id} ({$backup->type}) verified successfully. Size: {$backup->size_bytes} bytes."
-                    : "Backup {$backup->backup_id} ({$backup->type}) FAILED. Error: " . ($error ?: $backup->error_message),
+                    : "Backup {$backup->backup_id} ({$backup->type}) FAILED. Error: ".($error ?: $backup->error_message),
                 fn ($m) => $m->to($to)->subject($success ? "[Backup] {$backup->backup_id} verified" : "[Backup] {$backup->backup_id} FAILED")
             );
         } catch (\Throwable) {
@@ -218,7 +218,7 @@ class BackupOrchestratorService
 
     private function workDir(): string
     {
-        $dir = storage_path('app/backups/tmp/run-' . uniqid('', true));
+        $dir = storage_path('app/backups/tmp/run-'.uniqid('', true));
         @mkdir($dir, 0755, true);
 
         return $dir;
@@ -226,7 +226,7 @@ class BackupOrchestratorService
 
     private function cleanup(string $dir): void
     {
-        foreach (glob($dir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+        foreach (glob($dir.DIRECTORY_SEPARATOR.'*') ?: [] as $f) {
             @unlink($f);
         }
         @rmdir($dir);

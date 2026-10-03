@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Commission;
 use App\Models\CommissionRule;
-use App\Models\Expense;
 use App\Models\FinancialTransaction;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -30,9 +29,13 @@ class FinancialReconciliationTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $tech;
+
     private User $admin;
+
     private ServiceOrder $order;
+
     private ServiceOrderWorkflowService $workflow;
 
     protected function setUp(): void
@@ -60,7 +63,9 @@ class FinancialReconciliationTest extends TestCase
             ->post(route('admin.payments.refund', $payment), ['amount' => 300.00, 'reason' => 'Partial service credit'])
             ->assertRedirect();
 
-        $invoice->refresh(); $payment->refresh(); $this->order->refresh();
+        $invoice->refresh();
+        $payment->refresh();
+        $this->order->refresh();
 
         $this->assertEquals(300.00, (float) $payment->refunded_amount);
         $this->assertEquals(700.00, (float) $invoice->amount_paid);

@@ -33,6 +33,7 @@ class EndToEndVariationTest extends TestCase
     private function service(): \App\Models\Service
     {
         $cat = \App\Models\ServiceCategory::firstOrCreate(['slug' => 'e2e-vary'], ['name' => 'E2E Variations']);
+
         return \App\Models\Service::firstOrCreate(['slug' => 'e2e-vary-svc'], [
             'category_id' => $cat->id, 'name' => '[TEST] Variation Service', 'short_description' => 'x', 'is_active' => true,
         ]);
@@ -47,12 +48,14 @@ class EndToEndVariationTest extends TestCase
             'amount_paid' => 0, 'amount_due' => $total,
         ]);
         app(ServiceOrderWorkflowService::class)->generateConnectedRecords($order->fresh(), $customer);
+
         return $order->fresh();
     }
 
     private function pay(\App\Models\ServiceOrder $order, float $amount, string $method = 'card'): array
     {
         $finance = User::factory()->create(['role' => 'finance_manager', 'is_active' => true, 'email_verified_at' => now()]);
+
         return app(ServiceOrderWorkflowService::class)->recordPayment($order->fresh(), ['amount' => $amount, 'payment_method' => $method], $finance);
     }
 

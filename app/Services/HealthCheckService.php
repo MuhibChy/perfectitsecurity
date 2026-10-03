@@ -1,18 +1,21 @@
 <?php
+
 // app/Services/HealthCheckService.php
 
 namespace App\Services;
 
-use App\Models\HealthCheckLog;
 use App\Models\FailbackSetting;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
+use App\Models\HealthCheckLog;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class HealthCheckService
 {
     protected $settings = [];
+
     protected $failedChecks = [];
+
     protected $allChecksPassed = true;
 
     public function __construct()
@@ -38,9 +41,9 @@ class HealthCheckService
             'storage' => $this->checkStorage(),
         ];
 
-        $allPassed = !in_array(false, $results);
-        
-        if (!$allPassed) {
+        $allPassed = ! in_array(false, $results);
+
+        if (! $allPassed) {
             $this->handleFailure($results);
         }
 
@@ -56,9 +59,11 @@ class HealthCheckService
         try {
             DB::connection()->getPdo();
             $result = DB::select('SELECT 1 as connection_test');
-            return !empty($result);
+
+            return ! empty($result);
         } catch (\Exception $e) {
             $this->logCheckFailure('database', $e->getMessage());
+
             return false;
         }
     }
@@ -66,13 +71,15 @@ class HealthCheckService
     protected function checkCache()
     {
         try {
-            $testKey = 'health_check_' . time();
+            $testKey = 'health_check_'.time();
             Cache::put($testKey, 'test', 10);
             $value = Cache::get($testKey);
             Cache::forget($testKey);
+
             return $value === 'test';
         } catch (\Exception $e) {
             $this->logCheckFailure('cache', $e->getMessage());
+
             return false;
         }
     }
@@ -81,9 +88,11 @@ class HealthCheckService
     {
         try {
             $queueConnection = config('queue.default');
+
             return true; // Simplified check
         } catch (\Exception $e) {
             $this->logCheckFailure('queue', $e->getMessage());
+
             return false;
         }
     }
@@ -92,9 +101,11 @@ class HealthCheckService
     {
         try {
             $response = Http::timeout(5)->get(url('/api/health'));
+
             return $response->successful();
         } catch (\Exception $e) {
             $this->logCheckFailure('api', $e->getMessage());
+
             return false;
         }
     }
@@ -103,9 +114,11 @@ class HealthCheckService
     {
         try {
             $response = Http::timeout(5)->get(url('/'));
+
             return $response->successful() && $response->status() === 200;
         } catch (\Exception $e) {
             $this->logCheckFailure('frontend', $e->getMessage());
+
             return false;
         }
     }
@@ -116,7 +129,7 @@ class HealthCheckService
             'ticket_creation',
             'invoice_generation',
             'payment_processing',
-            'notification_sending'
+            'notification_sending',
         ];
 
         foreach ($criticalServices as $service) {
@@ -124,15 +137,18 @@ class HealthCheckService
                 // Implement service-specific checks
                 // This is a placeholder - implement actual service checks
                 $status = $this->checkSpecificService($service);
-                if (!$status) {
+                if (! $status) {
                     $this->logCheckFailure($service, 'Service check failed');
+
                     return false;
                 }
             } catch (\Exception $e) {
                 $this->logCheckFailure($service, $e->getMessage());
+
                 return false;
             }
         }
+
         return true;
     }
 
@@ -172,15 +188,18 @@ class HealthCheckService
         foreach ($criticalRoutes as $route) {
             try {
                 $response = Http::timeout(3)->get(url($route));
-                if (!$response->successful()) {
-                    $this->logCheckFailure('route_' . $route, 'Route returned ' . $response->status());
+                if (! $response->successful()) {
+                    $this->logCheckFailure('route_'.$route, 'Route returned '.$response->status());
+
                     return false;
                 }
             } catch (\Exception $e) {
-                $this->logCheckFailure('route_' . $route, $e->getMessage());
+                $this->logCheckFailure('route_'.$route, $e->getMessage());
+
                 return false;
             }
         }
+
         return true;
     }
 
@@ -188,9 +207,11 @@ class HealthCheckService
     {
         try {
             $storagePath = storage_path();
+
             return is_writable($storagePath);
         } catch (\Exception $e) {
             $this->logCheckFailure('storage', $e->getMessage());
+
             return false;
         }
     }
@@ -216,7 +237,7 @@ class HealthCheckService
     protected function triggerRollback($results)
     {
         $autoRollback = $this->settings['auto_rollback_enabled'] ?? 'true';
-        
+
         if ($autoRollback === 'true') {
             $rollbackService = app(RollbackService::class);
             $rollbackService->triggerAutomaticRollback($results);
@@ -235,8 +256,7 @@ class HealthCheckService
         // Use Laravel Mail or Notification
         \Log::error('Health Check Failed', [
             'results' => $results,
-            'timestamp' => now()
+            'timestamp' => now(),
         ]);
     }
 }
-

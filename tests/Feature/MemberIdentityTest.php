@@ -3,13 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\IdentityDocument;
-use App\Models\MemberIdCard;
 use App\Models\User;
 use App\Services\MemberIdCardService;
 use App\Services\TotpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -26,7 +24,7 @@ class MemberIdentityTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => \Illuminate\Support\Str::slug($tag) . '.' . \Illuminate\Support\Str::random(5) . '@example.test',
+            'email' => \Illuminate\Support\Str::slug($tag).'.'.\Illuminate\Support\Str::random(5).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'country' => 'GB',
         ]);
@@ -36,8 +34,9 @@ class MemberIdentityTest extends TestCase
     private function fakeImage(string $name = 'id-document.png'): UploadedFile
     {
         $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
-        $path = tempnam(sys_get_temp_dir(), 'tst') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'tst').'.png';
         file_put_contents($path, $png);
+
         return new UploadedFile($path, $name, 'image/png', null, true);
     }
 
@@ -177,7 +176,9 @@ class MemberIdentityTest extends TestCase
         $this->assertCount(8, $codes);
         // Stored hashes only: no plaintext code anywhere in the raw column.
         $raw = $user->fresh()->getAttributes()['two_factor_recovery_codes'];
-        foreach ($codes as $c) $this->assertStringNotContainsString($c, $raw);
+        foreach ($codes as $c) {
+            $this->assertStringNotContainsString($c, $raw);
+        }
 
         // Login with a recovery code succeeds once…
         $this->actingAs($user)->withSession(['mfa_passed' => null])

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Service;
 use App\Models\ServiceCategory;
-use App\Models\ServiceOrder;
 use App\Models\User;
 use App\Services\ServiceOrderWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +14,9 @@ class InactiveServiceOrderTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private Service $activeService;
+
     private Service $inactiveService;
 
     protected function setUp(): void

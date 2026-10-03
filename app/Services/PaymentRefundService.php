@@ -50,6 +50,7 @@ class PaymentRefundService
                     ]));
                 }
             });
+
             return $refund;
         });
     }
@@ -59,6 +60,7 @@ class PaymentRefundService
         abort_unless($refund->status === 'requested', 422, 'Only requested refunds can be approved.');
         $refund->update(['status' => 'approved', 'approved_by' => $approvedBy]);
         \App\Models\AuditLog::log('refund.approved', 'payment_refunds', $refund, "Refund {$refund->refund_number} approved.");
+
         return $refund->fresh();
     }
 
@@ -67,13 +69,14 @@ class PaymentRefundService
         abort_unless($refund->status === 'requested', 422, 'Only requested refunds can be rejected.');
         $refund->update(['status' => 'rejected', 'approved_by' => $approvedBy]);
         \App\Models\AuditLog::log('refund.rejected', 'payment_refunds', $refund, "Refund {$refund->refund_number} rejected. {$reason}");
+
         return $refund->fresh();
     }
 
     /** Execute an approved refund. Idempotent per refund row. */
     public function execute(PaymentRefund $refund, int $actorId): PaymentRefund
     {
-        return DB::transaction(function () use ($refund, $actorId) {
+        return DB::transaction(function () use ($refund) {
             $refund = PaymentRefund::lockForUpdate()->findOrFail($refund->id);
             abort_unless(in_array($refund->status, ['approved'], true), 422, 'Refund must be approved before execution.');
             $payment = Payment::lockForUpdate()->findOrFail($refund->payment_id);
@@ -118,14 +121,18 @@ class PaymentRefundService
             if ($invoice && $invoice->status !== 'cancelled') {
                 $invoice->amount_paid = max(0, round((float) $invoice->amount_paid - $refund->amount, 2));
                 $invoice->amount_due = max(0, round((float) $invoice->total - (float) $invoice->amount_paid, 2));
-                if ($invoice->status === 'paid') $invoice->status = 'partially_paid';
+                if ($invoice->status === 'paid') {
+                    $invoice->status = 'partially_paid';
+                }
                 $invoice->save();
                 if ($invoice->service_order_id) {
                     $order = \App\Models\ServiceOrder::lockForUpdate()->find($invoice->service_order_id);
                     if ($order && $order->status !== 'closed') {
                         $order->amount_paid = max(0, round((float) $order->amount_paid - $refund->amount, 2));
                         $order->amount_due = max(0, round((float) $order->total - (float) $order->amount_paid, 2));
-                        if ($order->payment_authorization === 'fully_paid') $order->payment_authorization = 'deposit_required';
+                        if ($order->payment_authorization === 'fully_paid') {
+                            $order->payment_authorization = 'deposit_required';
+                        }
                         $order->save();
                     }
                 }
@@ -159,6 +166,7 @@ class PaymentRefundService
                     'payment_number' => $payment->payment_number,
                 ]));
             }
+
             return $refund->fresh();
         });
     }

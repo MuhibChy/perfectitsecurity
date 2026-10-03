@@ -19,6 +19,7 @@ class FakeSupportProvider implements AiProviderInterface
     public function chat(array $messages, array $options = []): array
     {
         self::$lastMessages = $messages;
+
         return [
             'content' => 'We offer penetration testing and vulnerability assessment. **Request a quote** to proceed.',
             'tokens_used' => 42,
@@ -62,6 +63,7 @@ class AiSupportTest extends TestCase
         $ref->setAccessible(true);
         $ref->setValue($svc, new FakeSupportProvider());
         FakeSupportProvider::$lastMessages = [];
+
         return $svc;
     }
 
@@ -74,9 +76,10 @@ class AiSupportTest extends TestCase
     {
         $cat = KbCategory::first() ?? KbCategory::create(['name' => 'Support', 'slug' => 'support']);
         $admin = User::factory()->create(['role' => 'admin']);
+
         return KbArticle::create([
             'category_id' => $cat->id, 'author_id' => $admin->id,
-            'title' => $title, 'slug' => \Illuminate\Support\Str::slug($title) . '-' . \Illuminate\Support\Str::random(4),
+            'title' => $title, 'slug' => \Illuminate\Support\Str::slug($title).'-'.\Illuminate\Support\Str::random(4),
             'content' => $content, 'visibility' => 'public', 'is_published' => true,
         ]);
     }

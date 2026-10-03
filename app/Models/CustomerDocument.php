@@ -24,25 +24,41 @@ class CustomerDocument extends Model
         'size' => 'integer',
     ];
 
-    public function user() { return $this->belongsTo(User::class); }
-    public function project() { return $this->belongsTo(Project::class, 'related_project_id'); }
-    public function ticket() { return $this->belongsTo(Ticket::class, 'related_ticket_id'); }
-    public function invoice() { return $this->belongsTo(Invoice::class, 'related_invoice_id'); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'related_project_id');
+    }
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class, 'related_ticket_id');
+    }
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class, 'related_invoice_id');
+    }
 
     public function getSizeFormattedAttribute(): string
     {
         $bytes = $this->size;
         if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 2) . ' MB';
+            return round($bytes / 1048576, 2).' MB';
         } elseif ($bytes >= 1024) {
-            return round($bytes / 1024, 2) . ' KB';
+            return round($bytes / 1024, 2).' KB';
         }
-        return $bytes . ' B';
+
+        return $bytes.' B';
     }
 
     public function getIconAttribute(): string
     {
-        return match(true) {
+        return match (true) {
             str_contains($this->mime_type, 'pdf') => 'pdf',
             str_contains($this->mime_type, 'image') => 'image',
             str_contains($this->mime_type, 'word') || str_contains($this->mime_type, 'document') => 'doc',

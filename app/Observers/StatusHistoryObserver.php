@@ -23,14 +23,18 @@ class StatusHistoryObserver
     public function updating($model): void
     {
         try {
-            if (!$model->isDirty('status')) return;
+            if (! $model->isDirty('status')) {
+                return;
+            }
             $old = $model->getOriginal('status');
             $new = $model->status;
-            if ($old === $new) return;
+            if ($old === $new) {
+                return;
+            }
             $module = self::MODULES[get_class($model)] ?? 'system';
             AuditLog::log(
                 'status.changed', $module, $model,
-                class_basename($model) . " status changed from '{$old}' to '{$new}'.",
+                class_basename($model)." status changed from '{$old}' to '{$new}'.",
                 ['status' => $old], ['status' => $new]
             );
         } catch (\Throwable $e) {

@@ -2,12 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Notification;
 use App\Models\TrainingAssignment;
 use App\Models\TrainingCertificate;
 use App\Models\TrainingCourse;
 use App\Models\TrainingLessonProgress;
-use App\Models\User;
 use Illuminate\Support\Str;
 
 /**
@@ -31,7 +29,9 @@ class TrainingService
         $quizzesPassed = 0;
         foreach ($quizzes as $quiz) {
             $best = $quiz->bestAttemptFor($userId);
-            if ($best && $best->passed) $quizzesPassed++;
+            if ($best && $best->passed) {
+                $quizzesPassed++;
+            }
         }
 
         $practicals = $course->practicals()->where('is_published', true)->get();
@@ -62,17 +62,21 @@ class TrainingService
     public static function refreshAssignment(TrainingCourse $course, int $userId): ?TrainingAssignment
     {
         $assignment = TrainingAssignment::where('course_id', $course->id)->where('user_id', $userId)->first();
-        if (!$assignment) return null;
+        if (! $assignment) {
+            return null;
+        }
 
         $progress = self::courseProgress($course, $userId);
         if ($progress['complete']) {
-            if (!in_array($assignment->status, ['completed'], true)) {
+            if (! in_array($assignment->status, ['completed'], true)) {
                 $assignment->update(['status' => 'completed']);
                 self::issueCertificate($course, $userId);
                 self::notify($userId, 'training_completed', 'Training completed', "You completed '{$course->title}'. Your completion record is ready.");
             }
         } elseif ($progress['lessons_done'] > 0 || $progress['quizzes_passed'] > 0) {
-            if ($assignment->status === 'assigned') $assignment->update(['status' => 'in_progress']);
+            if ($assignment->status === 'assigned') {
+                $assignment->update(['status' => 'in_progress']);
+            }
         }
 
         return $assignment->fresh();
@@ -81,7 +85,9 @@ class TrainingService
     public static function issueCertificate(TrainingCourse $course, int $userId): TrainingCertificate
     {
         $existing = TrainingCertificate::where('course_id', $course->id)->where('user_id', $userId)->first();
-        if ($existing) return $existing;
+        if ($existing) {
+            return $existing;
+        }
 
         $best = $course->quizzes()->published()->get()
             ->map(fn ($q) => $q->bestAttemptFor($userId))
@@ -91,7 +97,7 @@ class TrainingService
             'course_id' => $course->id,
             'user_id' => $userId,
             'score' => $best !== null ? (int) round($best) : null,
-            'certificate_no' => 'PTA-' . date('Y') . '-' . strtoupper(Str::random(8)),
+            'certificate_no' => 'PTA-'.date('Y').'-'.strtoupper(Str::random(8)),
             'course_version' => $course->version,
             'completed_at' => now(),
         ]);

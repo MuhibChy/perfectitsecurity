@@ -23,7 +23,7 @@ class PresenceCertificateTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified',
         ]);
@@ -49,11 +49,11 @@ class PresenceCertificateTest extends TestCase
         $other->forceFill(['presence' => 'online', 'presence_visible' => false, 'last_activity_at' => now()])->save();
         $resp = $this->actingAs($user)->postJson(route('presence.roster'), ['ids' => [$other->id]]);
         $resp->assertStatus(200);
-        $this->assertEquals('offline', $resp->json((string) $other->id . '.presence'));
+        $this->assertEquals('offline', $resp->json((string) $other->id.'.presence'));
         // Admins still resolve true state where required.
         $admin = $this->person('admin', 'Presence Admin');
         $resp = $this->actingAs($admin)->postJson(route('presence.roster'), ['ids' => [$other->id]]);
-        $this->assertEquals('online', $resp->json((string) $other->id . '.presence'));
+        $this->assertEquals('online', $resp->json((string) $other->id.'.presence'));
     }
 
     /** @test */
@@ -62,18 +62,18 @@ class PresenceCertificateTest extends TestCase
         $learner = $this->person('customer', 'Cert Learner');
         $trainer = $this->person('training_manager', 'Cert Trainer');
         $course = TrainingCourse::create([
-            'title' => '[TEST] Cybersecurity Fundamentals', 'slug' => 't-cert-' . Str::random(6),
+            'title' => '[TEST] Cybersecurity Fundamentals', 'slug' => 't-cert-'.Str::random(6),
             'is_published' => true,
         ]);
         $certificate = TrainingCertificate::create([
             'course_id' => $course->id, 'user_id' => $learner->id, 'score' => 92,
-            'certificate_no' => 'CERT-' . strtoupper(Str::random(8)), 'completed_at' => now(), 'status' => 'active',
+            'certificate_no' => 'CERT-'.strtoupper(Str::random(8)), 'completed_at' => now(), 'status' => 'active',
         ]);
         $token = VerifyCertificateController::tokenFor($certificate);
         $this->get(route('verify.certificate', $token))->assertStatus(200)
             ->assertSee('Certificate Valid')->assertSee($certificate->certificate_no);
         // Forged token is not valid.
-        $this->get(route('verify.certificate', $certificate->id . '.forged'))->assertStatus(200)->assertSee('Not Valid');
+        $this->get(route('verify.certificate', $certificate->id.'.forged'))->assertStatus(200)->assertSee('Not Valid');
 
         // Trainer revokes with reason → verifies as not valid, row preserved.
         $this->actingAs($trainer)->post(route('admin.training.certificates.revoke', $certificate->id), ['reason' => 'Synthetic test revocation.'])

@@ -24,6 +24,7 @@ class RoleTestingController extends Controller
         $pending = User::where('role_approval_status', 'pending')->whereNotNull('requested_role')->with('approver')->latest()->get();
         $roles = Role::orderBy('sort_order')->get();
         $matrix = $this->permissionMatrix();
+
         return view('admin.role-testing.index', compact('testUsers', 'pending', 'roles', 'matrix'));
     }
 
@@ -47,6 +48,7 @@ class RoleTestingController extends Controller
             }
             $rows[] = $row;
         }
+
         return ['roles' => $roles, 'rows' => $rows];
     }
 
@@ -61,8 +63,9 @@ class RoleTestingController extends Controller
             'role_approved_by' => auth()->id(),
             'role_approved_at' => now(),
         ]);
-        AuditLog::log('role.approved', 'roles', $user, "Role changed {$old} → {$user->role} (approved by " . auth()->user()->name . ").", ['role' => $old], ['role' => $user->role]);
-        return back()->with('success', "Role approved: {$user->name} is now " . RoleRegistry::displayName($user->role) . '.');
+        AuditLog::log('role.approved', 'roles', $user, "Role changed {$old} → {$user->role} (approved by ".auth()->user()->name.').', ['role' => $old], ['role' => $user->role]);
+
+        return back()->with('success', "Role approved: {$user->name} is now ".RoleRegistry::displayName($user->role).'.');
     }
 
     public function reject(Request $request, User $user)
@@ -71,15 +74,17 @@ class RoleTestingController extends Controller
         $data = $request->validate(['reason' => 'nullable|string|max:500']);
         $requested = $user->requested_role;
         $user->update(['requested_role' => null, 'role_approval_status' => 'rejected', 'role_approved_by' => auth()->id(), 'role_approved_at' => now()]);
-        AuditLog::log('role.rejected', 'roles', $user, "Role request rejected: {$requested}. " . ($data['reason'] ?? ''));
+        AuditLog::log('role.rejected', 'roles', $user, "Role request rejected: {$requested}. ".($data['reason'] ?? ''));
+
         return back()->with('success', 'Role request rejected.');
     }
 
     public function toggleActive(User $user)
     {
         abort_if($user->id === auth()->id(), 403, 'You cannot deactivate your own account.');
-        $user->update(['is_active' => !$user->is_active]);
-        AuditLog::log($user->is_active ? 'user.reactivated' : 'user.deactivated', 'roles', $user, "Test account status changed to " . ($user->is_active ? 'active' : 'inactive') . '.');
+        $user->update(['is_active' => ! $user->is_active]);
+        AuditLog::log($user->is_active ? 'user.reactivated' : 'user.deactivated', 'roles', $user, 'Test account status changed to '.($user->is_active ? 'active' : 'inactive').'.');
+
         return back()->with('success', 'Account status updated.');
     }
 
@@ -93,6 +98,7 @@ class RoleTestingController extends Controller
         }
         $role->update(['status' => $data['status']]);
         AuditLog::log('role.status', 'roles', null, "Role {$role->name} status → {$data['status']}.");
+
         return back()->with('success', "Role {$role->display_name} marked {$data['status']}. Existing users are unaffected.");
     }
 }

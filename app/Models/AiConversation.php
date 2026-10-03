@@ -36,16 +36,50 @@ class AiConversation extends Model
         });
     }
 
-    public function user() { return $this->belongsTo(User::class); }
-    public function messages() { return $this->hasMany(AiMessage::class, 'conversation_id'); }
-    public function escalations() { return $this->hasMany(AiEscalation::class, 'conversation_id'); }
-    public function relatedTicket() { return $this->belongsTo(Ticket::class, 'related_ticket_id'); }
-    public function escalatedTo() { return $this->belongsTo(User::class, 'escalated_to'); }
-    public function usageRecords() { return $this->hasMany(AiUsageRecord::class, 'conversation_id'); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    public function scopeActive($q) { return $q->where('status', 'active'); }
-    public function scopeForUser($q, $userId) { return $q->where('user_id', $userId); }
-    public function scopePublic($q) { return $q->where('source', 'public'); }
+    public function messages()
+    {
+        return $this->hasMany(AiMessage::class, 'conversation_id');
+    }
+
+    public function escalations()
+    {
+        return $this->hasMany(AiEscalation::class, 'conversation_id');
+    }
+
+    public function relatedTicket()
+    {
+        return $this->belongsTo(Ticket::class, 'related_ticket_id');
+    }
+
+    public function escalatedTo()
+    {
+        return $this->belongsTo(User::class, 'escalated_to');
+    }
+
+    public function usageRecords()
+    {
+        return $this->hasMany(AiUsageRecord::class, 'conversation_id');
+    }
+
+    public function scopeActive($q)
+    {
+        return $q->where('status', 'active');
+    }
+
+    public function scopeForUser($q, $userId)
+    {
+        return $q->where('user_id', $userId);
+    }
+
+    public function scopePublic($q)
+    {
+        return $q->where('source', 'public');
+    }
 
     public function close()
     {

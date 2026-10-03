@@ -51,7 +51,7 @@ class QuotationPolicy
 
     public function send(User $user, Quotation $quotation): bool
     {
-        if (!$user->isFinanceManager() && !$user->isAdmin()) {
+        if (! $user->isFinanceManager() && ! $user->isAdmin()) {
             return false;
         }
 
@@ -60,11 +60,11 @@ class QuotationPolicy
 
     public function convertToInvoice(User $user, Quotation $quotation): bool
     {
-        if (!$user->isFinanceManager() && !$user->isAdmin()) {
+        if (! $user->isFinanceManager() && ! $user->isAdmin()) {
             return false;
         }
 
-        return $quotation->status === 'accepted' && !$quotation->invoice_id;
+        return $quotation->status === 'accepted' && ! $quotation->invoice_id;
     }
 
     public function accept(User $user, Quotation $quotation): bool

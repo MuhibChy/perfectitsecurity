@@ -39,7 +39,7 @@ return new class extends Migration
     {
         foreach (self::TABLES as $table) {
             Schema::table($table, function (Blueprint $t) use ($table) {
-                if (!Schema::hasColumn($table, 'is_demo')) {
+                if (! Schema::hasColumn($table, 'is_demo')) {
                     $t->boolean('is_demo')->default(false)->after('id');
                 }
             });

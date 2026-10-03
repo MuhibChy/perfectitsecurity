@@ -24,13 +24,14 @@ class WalletService
     public static function reference(string $prefix = 'FW'): string
     {
         for ($i = 0; $i < 5; $i++) {
-            $ref = $prefix . '-' . date('Ymd') . '-' . strtoupper(Str::random(6));
-            if (!WalletTransaction::where('transaction_reference', $ref)->exists()
-                && !Wallet::where('wallet_reference', $ref)->exists()) {
+            $ref = $prefix.'-'.date('Ymd').'-'.strtoupper(Str::random(6));
+            if (! WalletTransaction::where('transaction_reference', $ref)->exists()
+                && ! Wallet::where('wallet_reference', $ref)->exists()) {
                 return $ref;
             }
         }
-        return $prefix . '-' . date('Ymd') . '-' . strtoupper(Str::random(8)) . time() % 100;
+
+        return $prefix.'-'.date('Ymd').'-'.strtoupper(Str::random(8)).time() % 100;
     }
 
     /** Idempotent wallet provisioning (safe under double-submit/refresh). */
@@ -38,7 +39,7 @@ class WalletService
     {
         $reason = WalletEligibilityService::ineligibilityReason($user->fresh() ?? $user);
         if ($reason !== null) {
-            throw new \RuntimeException('Wallet not eligible: ' . $reason);
+            throw new \RuntimeException('Wallet not eligible: '.$reason);
         }
         $currency = strtoupper($currency ?? $user->preferred_currency ?? config('app.currency', 'USD') ?? 'USD');
         try {
@@ -49,6 +50,7 @@ class WalletService
             if ($wallet->wasRecentlyCreated) {
                 AuditLog::log('wallet.created', 'wallets', $wallet, "Wallet {$wallet->wallet_reference} created for customer {$user->email}.");
             }
+
             return $wallet;
         } catch (\Illuminate\Database\QueryException $e) {
             return Wallet::where('user_id', $user->id)->where('currency', $currency)->firstOrFail();
@@ -61,7 +63,7 @@ class WalletService
      */
     protected function postLocked(Wallet $wallet, array $data): WalletTransaction
     {
-        if (!in_array($data['type'], WalletTransaction::TYPES, true)) {
+        if (! in_array($data['type'], WalletTransaction::TYPES, true)) {
             throw new \InvalidArgumentException('Unsupported wallet transaction type.');
         }
         if ($wallet->status !== 'active') {
@@ -98,6 +100,7 @@ class WalletService
             $wallet->balance = $after;
             $wallet->save();
         }
+
         return $txn;
     }
 
@@ -113,7 +116,7 @@ class WalletService
                 return ['transaction' => $existing, 'duplicate' => true];
             }
             $wallet = Wallet::lockForUpdate()->findOrFail($wallet->id);
-            if (!WalletEligibilityService::canReceiveFunds($wallet)) {
+            if (! WalletEligibilityService::canReceiveFunds($wallet)) {
                 throw new \RuntimeException('Wallet cannot receive funds in its current state.');
             }
             $txn = $this->postLocked($wallet, [
@@ -127,6 +130,7 @@ class WalletService
                 ['wallet_id' => $wallet->id, 'wallet_transaction_id' => $txn->id, 'customer_id' => $wallet->user_id]
             );
             AuditLog::log('wallet.deposit', 'wallets', $txn, "Wallet {$wallet->wallet_reference} credited {$wallet->currency} {$txn->amount} via {$provider}.");
+
             return ['transaction' => $txn, 'duplicate' => false];
         });
     }
@@ -136,13 +140,20 @@ class WalletService
     {
         return DB::transaction(function () use ($wallet, $amount, $provider, $providerEvent, $by, $meta) {
             $existing = WalletTransaction::where('provider_event_id', $providerEvent)->first();
-            if ($existing) return $existing;
+            if ($existing) {
+                return $existing;
+            }
             $amount = round($amount, 2);
-            if ($amount <= 0) throw new \InvalidArgumentException('Amount must be positive.');
-            if ($wallet->status !== 'active') throw new \RuntimeException('Wallet is not active.');
-            if (!WalletEligibilityService::canReceiveFunds($wallet)) {
+            if ($amount <= 0) {
+                throw new \InvalidArgumentException('Amount must be positive.');
+            }
+            if ($wallet->status !== 'active') {
+                throw new \RuntimeException('Wallet is not active.');
+            }
+            if (! WalletEligibilityService::canReceiveFunds($wallet)) {
                 throw new \RuntimeException('Wallet cannot receive funds in its current state.');
             }
+
             return WalletTransaction::create([
                 'wallet_id' => $wallet->id, 'transaction_reference' => self::reference(),
                 'type' => 'deposit', 'amount' => $amount, 'currency' => $wallet->currency,
@@ -162,10 +173,10 @@ class WalletService
                 return ['transaction' => $pending, 'duplicate' => true];
             }
             if ($pending->status !== 'pending') {
-                throw new \RuntimeException('Top-up cannot be completed from status ' . $pending->status . '.');
+                throw new \RuntimeException('Top-up cannot be completed from status '.$pending->status.'.');
             }
             $wallet = Wallet::lockForUpdate()->findOrFail($pending->wallet_id);
-            if (!WalletEligibilityService::canReceiveFunds($wallet)) {
+            if (! WalletEligibilityService::canReceiveFunds($wallet)) {
                 throw new \RuntimeException('Wallet cannot receive funds in its current state.');
             }
             $before = round((float) $wallet->balance, 2);
@@ -182,6 +193,7 @@ class WalletService
                 ['wallet_id' => $wallet->id, 'wallet_transaction_id' => $pending->id, 'customer_id' => $wallet->user_id]
             );
             AuditLog::log('wallet.deposit', 'wallets', $pending, "Wallet {$wallet->wallet_reference} credited {$wallet->currency} {$pending->amount} via {$pending->payment_provider}.");
+
             return ['transaction' => $pending->fresh(), 'duplicate' => false];
         });
     }
@@ -200,13 +212,13 @@ class WalletService
             if ((int) $wallet->user_id !== (int) $invoice->customer_id) {
                 throw new \RuntimeException('Wallet does not belong to the invoice customer.');
             }
-            if (!WalletEligibilityService::canSpend($wallet)) {
+            if (! WalletEligibilityService::canSpend($wallet)) {
                 throw new \RuntimeException('Wallet cannot make payments in its current state.');
             }
             if (strtoupper($wallet->currency) !== strtoupper($invoice->currency ?? 'USD')) {
                 throw new \RuntimeException('Wallet currency does not match the invoice currency.');
             }
-            if (!in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
+            if (! in_array($invoice->status, ['sent', 'viewed', 'overdue', 'partially_paid'], true)) {
                 throw new \RuntimeException('Invoice is not payable in its current status.');
             }
             $due = round((float) $invoice->amount_due, 2);
@@ -293,7 +305,7 @@ class WalletService
             );
             AuditLog::log('wallet.payment', 'wallets', $txn, "Wallet {$wallet->wallet_reference} paid {$invoice->currency} {$amount} to invoice {$invoice->invoice_number}.");
 
-            if (!$wasPaid && $newDue <= 0 && $invoice->customer) {
+            if (! $wasPaid && $newDue <= 0 && $invoice->customer) {
                 $invoice->customer->notify(new InvoiceCreatedNotification($invoice->fresh(), 'paid'));
             }
 
@@ -314,7 +326,7 @@ class WalletService
             }
             $wallet = Wallet::lockForUpdate()->findOrFail($original->wallet_id);
             $payment = Payment::where('transaction_id', $original->transaction_reference)->where('status', 'completed')->lockForUpdate()->first();
-            if (!$payment) {
+            if (! $payment) {
                 throw new \RuntimeException('Linked payment not found.');
             }
             $amount = round((float) $original->amount, 2);
@@ -327,7 +339,7 @@ class WalletService
                 'metadata' => ['original_transaction_id' => $original->id, 'reason' => $reason], 'by' => $by,
             ]);
             $refund = Payment::create([
-                'payment_number' => 'RFD-' . strtoupper(Str::random(8)),
+                'payment_number' => 'RFD-'.strtoupper(Str::random(8)),
                 'invoice_id' => $invoice->id, 'customer_id' => $payment->customer_id,
                 'service_order_id' => $payment->service_order_id, 'amount' => $amount,
                 'currency' => $payment->currency, 'status' => 'refunded',
@@ -363,12 +375,13 @@ class WalletService
     /** Controlled manual adjustment (mandatory reason, audited). */
     public function adjust(Wallet $wallet, string $direction, float $amount, string $reason, ?int $by = null): WalletTransaction
     {
-        if (!in_array($direction, ['credit', 'debit'], true)) {
+        if (! in_array($direction, ['credit', 'debit'], true)) {
             throw new \InvalidArgumentException('Direction must be credit or debit.');
         }
         if (trim($reason) === '') {
             throw new \InvalidArgumentException('A reason is mandatory for adjustments.');
         }
+
         return DB::transaction(function () use ($wallet, $direction, $amount, $reason, $by) {
             $wallet = Wallet::lockForUpdate()->findOrFail($wallet->id);
             $txn = $this->postLocked($wallet, [
@@ -377,26 +390,29 @@ class WalletService
                 'metadata' => ['reason' => $reason], 'by' => $by,
             ]);
             AuditLog::log('wallet.adjustment', 'wallets', $txn, "Wallet {$wallet->wallet_reference} {$direction} {$wallet->currency} {$txn->amount}. Reason: {$reason}");
+
             return $txn;
         });
     }
 
     public function freeze(Wallet $wallet, ?int $by = null, string $reason = ''): Wallet
     {
-        return DB::transaction(function () use ($wallet, $by, $reason) {
+        return DB::transaction(function () use ($wallet, $reason) {
             $wallet = Wallet::lockForUpdate()->findOrFail($wallet->id);
             $wallet->update(['status' => 'frozen']);
             AuditLog::log('wallet.freeze', 'wallets', $wallet, "Wallet {$wallet->wallet_reference} frozen. Reason: {$reason}");
+
             return $wallet->fresh();
         });
     }
 
     public function unfreeze(Wallet $wallet, ?int $by = null): Wallet
     {
-        return DB::transaction(function () use ($wallet, $by) {
+        return DB::transaction(function () use ($wallet) {
             $wallet = Wallet::lockForUpdate()->findOrFail($wallet->id);
             $wallet->update(['status' => 'active']);
             AuditLog::log('wallet.unfreeze', 'wallets', $wallet, "Wallet {$wallet->wallet_reference} reactivated.");
+
             return $wallet->fresh();
         });
     }
@@ -413,9 +429,10 @@ class WalletService
         }
         $eligible = WalletEligibilityService::ineligibilityReason($newOwner->fresh() ?? $newOwner);
         if ($eligible !== null) {
-            throw new \RuntimeException('New owner not eligible: ' . $eligible);
+            throw new \RuntimeException('New owner not eligible: '.$eligible);
         }
-        return DB::transaction(function () use ($wallet, $newOwner, $reason, $by) {
+
+        return DB::transaction(function () use ($wallet, $newOwner, $reason) {
             $wallet = Wallet::lockForUpdate()->findOrFail($wallet->id);
             $oldOwnerId = (int) $wallet->user_id;
             if ($oldOwnerId === (int) $newOwner->id) {
@@ -425,6 +442,7 @@ class WalletService
             AuditLog::log('wallet.owner_corrected', 'wallets', $wallet,
                 "Wallet {$wallet->wallet_reference} ownership corrected from user #{$oldOwnerId} to user #{$newOwner->id} ({$newOwner->email}). Reason: {$reason}. Ledger preserved.",
                 ['user_id' => $oldOwnerId], ['user_id' => (int) $newOwner->id]);
+
             return $wallet->fresh();
         });
     }

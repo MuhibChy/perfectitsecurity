@@ -67,7 +67,7 @@ return new class extends Migration
             $table->enum('review_status', [
                 'new', 'under_review', 'awaiting_info', 'scope_clarification',
                 'pricing_in_progress', 'pending_approval', 'sent_to_customer',
-                'customer_viewed', 'accepted', 'rejected', 'expired', 'cancelled', 'converted'
+                'customer_viewed', 'accepted', 'rejected', 'expired', 'cancelled', 'converted',
             ])->default('new')->after('status');
         });
     }
@@ -80,7 +80,7 @@ return new class extends Migration
             $table->dropColumn([
                 'country_id', 'currency', 'quoted_price', 'currency_symbol',
                 'assigned_to', 'internal_notes', 'attachment_paths', 'scope_details',
-                'exclusions', 'estimated_delivery', 'priority', 'quotation_id', 'review_status'
+                'exclusions', 'estimated_delivery', 'priority', 'quotation_id', 'review_status',
             ]);
         });
 
@@ -90,7 +90,7 @@ return new class extends Migration
             $table->dropColumn([
                 'subcategory', 'full_description', 'deliverables', 'scope',
                 'exclusions', 'process_steps', 'complexity_level',
-                'seo_title', 'seo_description', 'tags'
+                'seo_title', 'seo_description', 'tags',
             ]);
         });
 

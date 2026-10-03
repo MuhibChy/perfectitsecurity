@@ -27,15 +27,33 @@ class Asset extends Model
     {
         static::creating(function ($asset) {
             if (empty($asset->asset_tag)) {
-                $asset->asset_tag = 'AST-' . strtoupper(Str::random(8));
+                $asset->asset_tag = 'AST-'.strtoupper(Str::random(8));
             }
         });
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'customer_id'); }
-    public function company() { return $this->belongsTo(Company::class); }
-    public function assignedUser() { return $this->belongsTo(User::class, 'assigned_to_user'); }
-    public function configurationItems() { return $this->hasMany(ConfigurationItem::class, 'asset_id'); }
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
-    public function scopeForCustomer($query, $customerId) { return $query->where('customer_id', $customerId); }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to_user');
+    }
+
+    public function configurationItems()
+    {
+        return $this->hasMany(ConfigurationItem::class, 'asset_id');
+    }
+
+    public function scopeForCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
 }

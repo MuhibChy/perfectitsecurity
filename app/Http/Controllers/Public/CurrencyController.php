@@ -12,7 +12,7 @@ class CurrencyController extends Controller
     {
         $currency = strtoupper($currency);
         // Single source of truth: active catalog rows. No hard-coded list.
-        if (!\App\Services\Money::isActive($currency)) {
+        if (! \App\Services\Money::isActive($currency)) {
             abort(400, 'Unsupported currency.');
         }
 
@@ -20,7 +20,7 @@ class CurrencyController extends Controller
         // staff and guests keep the global catalog (storefront browsing).
         $user = $request->user();
         if ($user && $user->isCustomer()
-            && !app(\App\Services\CustomerCurrencyService::class)->allows($user, $currency)) {
+            && ! app(\App\Services\CustomerCurrencyService::class)->allows($user, $currency)) {
             abort(422, 'This currency is not available for your account.');
         }
 

@@ -51,6 +51,7 @@ class PaymentProviderService
         ], true)) {
             return new $class($config);
         }
+
         return app($class);
     }
 
@@ -69,10 +70,14 @@ class PaymentProviderService
             $isBd = stripos($country, 'bangladesh') !== false || stripos($country, 'bd') === 0;
             $rows = $rows->sortBy(function ($p) use ($isBd) {
                 $bdRail = in_array($p->key, ['bkash', 'nagad', 'rocket', 'bank_transfer'], true);
-                if ($isBd) return [$bdRail ? 0 : 1, $p->priority];
+                if ($isBd) {
+                    return [$bdRail ? 0 : 1, $p->priority];
+                }
+
                 return [$bdRail && $p->key !== 'bank_transfer' ? 1 : 0, $p->priority];
             })->values();
         }
+
         return $rows->all();
     }
 
@@ -83,8 +88,13 @@ class PaymentProviderService
 
     public function modeLabel(PaymentProvider $provider): string
     {
-        if (!$provider->is_active || $provider->status === 'disabled') return 'DISABLED';
-        if ($provider->status === 'maintenance') return 'MAINTENANCE';
+        if (! $provider->is_active || $provider->status === 'disabled') {
+            return 'DISABLED';
+        }
+        if ($provider->status === 'maintenance') {
+            return 'MAINTENANCE';
+        }
+
         return $provider->environment === 'live' && $provider->status === 'live' ? 'LIVE' : 'TEST';
     }
 }

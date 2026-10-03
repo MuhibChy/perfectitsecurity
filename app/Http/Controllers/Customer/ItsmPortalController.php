@@ -21,24 +21,28 @@ class ItsmPortalController extends Controller
     public function assets(Request $request)
     {
         $assets = Asset::forCustomer($request->user()->id)->with('configurationItems')->latest()->paginate(15);
+
         return view('customer.itsm.assets', compact('assets'));
     }
 
     public function cis(Request $request)
     {
         $cis = ConfigurationItem::forCustomer($request->user()->id)->with('asset')->latest()->paginate(15);
+
         return view('customer.itsm.cis', compact('cis'));
     }
 
     public function agreements(Request $request)
     {
         $agreements = ServiceAgreement::forCustomer($request->user()->id)->latest()->paginate(15);
+
         return view('customer.itsm.agreements', compact('agreements'));
     }
 
     public function remoteIndex(Request $request)
     {
         $sessions = RemoteSession::forCustomer($request->user()->id)->with('technician', 'ticket')->latest()->paginate(15);
+
         return view('customer.itsm.remote', compact('sessions'));
     }
 
@@ -50,9 +54,9 @@ class ItsmPortalController extends Controller
             'scheduled_at' => 'nullable|date|after:now',
         ]);
         // Ownership check: ticket must belong to the requesting customer.
-        if (!empty($data['ticket_id'])) {
+        if (! empty($data['ticket_id'])) {
             $ticket = \App\Models\Ticket::find($data['ticket_id']);
-            if (!$ticket || (int) $ticket->customer_id !== (int) $request->user()->id) {
+            if (! $ticket || (int) $ticket->customer_id !== (int) $request->user()->id) {
                 return redirect()->back()->withErrors(['ticket_id' => 'Ticket not found.'])->withInput();
             }
         }
@@ -65,7 +69,7 @@ class ItsmPortalController extends Controller
     public function remoteConsent(Request $request, RemoteSession $session)
     {
         abort_unless((int) $session->customer_id === (int) $request->user()->id, 404);
-        if (!in_array($session->status, ['requested', 'scheduled'], true)) {
+        if (! in_array($session->status, ['requested', 'scheduled'], true)) {
             return redirect()->back()->withErrors(['status' => 'This session can no longer accept consent.']);
         }
         $session->update([
@@ -81,6 +85,7 @@ class ItsmPortalController extends Controller
     public function visits(Request $request)
     {
         $visits = SiteVisit::forCustomer($request->user()->id)->with('technician', 'ticket')->latest()->paginate(15);
+
         return view('customer.itsm.visits', compact('visits'));
     }
 

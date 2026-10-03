@@ -39,7 +39,7 @@ class AdversarialSecurityTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'password' => bcrypt('secret'),
         ]);
@@ -48,6 +48,7 @@ class AdversarialSecurityTest extends TestCase
     private function service(string $slug, float $price): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-adv'], ['name' => 'ADV']);
+
         return Service::create([
             'category_id' => $cat->id, 'name' => '[TEST] Adv Service', 'slug' => $slug,
             'short_description' => 'x', 'starting_price' => $price, 'is_active' => true,
@@ -57,6 +58,7 @@ class AdversarialSecurityTest extends TestCase
     private function orderFor(User $customer, Service $svc, array $over = []): ServiceOrder
     {
         $wf = app(ServiceOrderWorkflowService::class);
+
         return $wf->createCustomerOrder(array_merge([
             'service_id' => $svc->id, 'currency' => 'GBP',
             'requirements' => 'Test scope',
@@ -116,14 +118,14 @@ class AdversarialSecurityTest extends TestCase
 
         // Customer tries to record payment via admin endpoint
         $this->actingAs($customer)->post(route('admin.work-orders.record-payment', 1), [
-            'amount' => 100, 'payment_method' => 'card', 'transaction_id' => 'X'
+            'amount' => 100, 'payment_method' => 'card', 'transaction_id' => 'X',
         ])->assertStatus(403);
 
         // Customer tries to propose price on another customer's order
         $svc = $this->service('t-svc-2', 100);
         $victimOrder = $this->orderFor($this->customer(), $svc);
         $this->actingAs($customer)->post(route('admin.work-orders.propose-price', $victimOrder->id), [
-            'amount' => 1, 'kind' => 'employee_offer', 'terms' => 'hack'
+            'amount' => 1, 'kind' => 'employee_offer', 'terms' => 'hack',
         ])->assertStatus(403);
     }
 
@@ -407,7 +409,7 @@ class AdversarialSecurityTest extends TestCase
 
         // Try to refund more than paid: abort(422), never a refund record.
         $this->actingAs($finance)->post(route('admin.payments.refund', $payment->id), [
-            'amount' => 300, 'reason' => 'attempt over-refund'
+            'amount' => 300, 'reason' => 'attempt over-refund',
         ])->assertStatus(422);
         $this->assertSame(0, Payment::where('notes', 'like', '%attempt over-refund%')->count());
         $order->refresh();
@@ -470,7 +472,7 @@ class AdversarialSecurityTest extends TestCase
         // Customer tries to PUT the quotation directly with status=accepted.
         // No customer PUT/PATCH route exists (only accept/reject POST), so
         // the framework must answer 404/405 — never mutate the quotation.
-        $resp = $this->actingAs($customer)->put('/portal/quotations/' . $q->id, ['status' => 'accepted']);
+        $resp = $this->actingAs($customer)->put('/portal/quotations/'.$q->id, ['status' => 'accepted']);
         $this->assertTrue(in_array($resp->getStatusCode(), [404, 405]));
         $this->assertSame('sent', $q->fresh()->status);
 

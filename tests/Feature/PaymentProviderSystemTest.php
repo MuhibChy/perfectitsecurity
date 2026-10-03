@@ -7,13 +7,11 @@ use App\Models\Invoice;
 use App\Models\ManualBankPayment;
 use App\Models\Payment;
 use App\Models\PaymentProvider;
-use App\Models\PaymentRefund;
 use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Services\PaymentCheckoutService;
 use App\Services\PaymentProviderService;
 use App\Services\PaymentRefundService;
-use App\Services\PaymentSettlementService;
 use App\Services\PaymentWebhookService;
 use App\Services\ProviderReconciliationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,7 +41,7 @@ class PaymentProviderSystemTest extends TestCase
     protected function invoice(User $customer, float $total = 1000, array $over = []): Invoice
     {
         return Invoice::create(array_merge([
-            'invoice_number' => 'INV-PT-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            'invoice_number' => 'INV-PT-'.strtoupper(\Illuminate\Support\Str::random(6)),
             'customer_id' => $customer->id, 'subtotal' => $total, 'total' => $total,
             'amount_paid' => 0, 'amount_due' => $total, 'status' => 'sent',
             'currency' => 'USD', 'due_date' => now()->addDays(14),
@@ -466,7 +464,7 @@ class PaymentProviderSystemTest extends TestCase
             $txn = PaymentTransaction::create([
                 'customer_id' => $customer->id, 'invoice_id' => $invoice->id,
                 'provider_key' => 'bkash', 'payment_method' => 'bkash',
-                'provider_reference' => 'BKASH-' . $ref,
+                'provider_reference' => 'BKASH-'.$ref,
                 'original_amount' => $amount, 'original_currency' => 'USD',
                 'settlement_currency' => 'USD', 'gross_amount' => $amount, 'net_amount' => $amount,
                 'status' => 'pending',

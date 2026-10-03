@@ -47,6 +47,7 @@ class PromotionService
     public function campaign(): array
     {
         $stored = Setting::group(self::SETTINGS_GROUP);
+
         return array_merge(self::defaults(), $stored);
     }
 
@@ -60,6 +61,7 @@ class PromotionService
     {
         $raw = $this->campaign()['promo.category_ids'] ?? '[]';
         $ids = json_decode(is_string($raw) ? $raw : json_encode($raw), true);
+
         return array_values(array_filter(array_map('intval', (array) $ids)));
     }
 
@@ -68,31 +70,56 @@ class PromotionService
         $cfg = $this->campaign();
         $tz = $cfg['promo.timezone'] ?: 'UTC';
         $parse = function ($v) use ($tz) {
-            if (!$v) return null;
-            try { return Carbon::parse($v, $tz); } catch (\Throwable $e) { return null; }
+            if (! $v) {
+                return null;
+            }
+            try {
+                return Carbon::parse($v, $tz);
+            } catch (\Throwable $e) {
+                return null;
+            }
         };
+
         return ['starts_at' => $parse($cfg['promo.starts_at']), 'ends_at' => $parse($cfg['promo.ends_at']), 'timezone' => $tz];
     }
 
     public function isActive(?Carbon $now = null): bool
     {
         $cfg = $this->campaign();
-        if (($cfg['promo.enabled'] ?? '0') !== '1') return false;
-        if ($this->percent() <= 0) return false;
+        if (($cfg['promo.enabled'] ?? '0') !== '1') {
+            return false;
+        }
+        if ($this->percent() <= 0) {
+            return false;
+        }
         $now = $now ?? Carbon::now();
         ['starts_at' => $start, 'ends_at' => $end] = $this->window();
-        if ($start && $now->lt($start)) return false;
-        if ($end && $now->gt($end)) return false;
+        if ($start && $now->lt($start)) {
+            return false;
+        }
+        if ($end && $now->gt($end)) {
+            return false;
+        }
+
         return true;
     }
 
     public function isEligibleService(Service $service): bool
     {
-        if (!$this->isActive()) return false;
-        if (!$service->is_active) return false;
-        if (!in_array((int) $service->category_id, $this->eligibleCategoryIds(), true)) return false;
+        if (! $this->isActive()) {
+            return false;
+        }
+        if (! $service->is_active) {
+            return false;
+        }
+        if (! in_array((int) $service->category_id, $this->eligibleCategoryIds(), true)) {
+            return false;
+        }
         $type = strtolower((string) ($service->price_type ?? ''));
-        if (in_array($type, ['custom_quote', 'custom', ''], true)) return false;
+        if (in_array($type, ['custom_quote', 'custom', ''], true)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -114,7 +141,7 @@ class PromotionService
                 'discount' => 0.0, 'final' => (float) $row->effective_price,
             ];
         }
-        if (!$this->isEligibleService($service)) {
+        if (! $this->isEligibleService($service)) {
             return [
                 'applies' => false, 'reason' => 'ineligible',
                 'original' => $original, 'percent' => 0.0,
@@ -123,6 +150,7 @@ class PromotionService
         }
         $percent = $this->percent();
         $discount = round($original * $percent / 100, 2);
+
         return [
             'applies' => true, 'reason' => 'promo',
             'original' => $original, 'percent' => $percent,
@@ -140,17 +168,17 @@ class PromotionService
         if ($quotation->status !== 'draft') {
             abort(422, 'Promotions can only be applied to draft quotations.');
         }
-        if (!empty($quotation->promo_campaign)) {
+        if (! empty($quotation->promo_campaign)) {
             abort(422, 'This quotation already carries a promotion.');
         }
-        if (!$this->isActive()) {
+        if (! $this->isActive()) {
             abort(422, 'No active promotion campaign.');
         }
         $service = Service::findOrFail($serviceId);
         $row = ServiceCountryPrice::where('service_id', $service->id)
             ->where('country_id', $countryId)->where('is_active', true)->firstOrFail();
         $breakdown = $this->priceFor($service, $row);
-        if (!$breakdown['applies']) {
+        if (! $breakdown['applies']) {
             abort(422, 'Service is not eligible for the current promotion.');
         }
 
@@ -183,6 +211,7 @@ class PromotionService
             $quotation->tax_amount = round($quotation->subtotal * ((float) $quotation->tax_rate / 100), 2);
             $quotation->total = round($quotation->subtotal + $quotation->tax_amount, 2);
             $quotation->save();
+
             return $quotation->fresh();
         });
     }

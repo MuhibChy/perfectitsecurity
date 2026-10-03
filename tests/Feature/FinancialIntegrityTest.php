@@ -35,7 +35,7 @@ class FinancialIntegrityTest extends TestCase
     {
         return User::factory()->create([
             'name' => "[TEST] {$tag}", 'role' => $role, 'is_active' => true,
-            'email' => Str::slug($tag) . '.' . Str::random(6) . '@example.test',
+            'email' => Str::slug($tag).'.'.Str::random(6).'@example.test',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
             'verification_status' => 'verified', 'country' => 'GB',
         ]);
@@ -44,7 +44,8 @@ class FinancialIntegrityTest extends TestCase
     private function service(): Service
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 't-integrity'], ['name' => 'Integrity']);
-        return Service::create(['category_id' => $cat->id, 'name' => '[TEST] Website Security Assessment', 'slug' => 't-svc-' . Str::random(6), 'short_description' => 'x', 'starting_price' => 1000, 'is_active' => true]);
+
+        return Service::create(['category_id' => $cat->id, 'name' => '[TEST] Website Security Assessment', 'slug' => 't-svc-'.Str::random(6), 'short_description' => 'x', 'starting_price' => 1000, 'is_active' => true]);
     }
 
     private function order(User $customer, Service $service, float $total): ServiceOrder
@@ -69,7 +70,7 @@ class FinancialIntegrityTest extends TestCase
 
         $before = (float) Payment::where('customer_id', $customer->id)->where('status', 'completed')->sum('amount');
         foreach ([300, 200, 200, 300] as $i => $amount) {
-            $r = $svc->recordPayment($order->fresh(), ['amount' => $amount, 'payment_method' => 'bank_transfer', 'transaction_id' => 'STAGE-' . ($i + 1)], $finance);
+            $r = $svc->recordPayment($order->fresh(), ['amount' => $amount, 'payment_method' => 'bank_transfer', 'transaction_id' => 'STAGE-'.($i + 1)], $finance);
             $order = $r['order'];
         }
         $this->assertEquals(1000.0, (float) $order->amount_paid);
@@ -190,10 +191,10 @@ class FinancialIntegrityTest extends TestCase
         $salaries[] = Salary::create(['user_id' => $employee->id, 'base_salary' => 2000, 'bonus' => 100, 'deductions' => 0, 'net_salary' => 2100, 'period' => 'monthly', 'pay_date' => now()->toDateString(), 'status' => 'approved']);
         foreach ($salaries as $i => $salary) {
             $this->assertNotEmpty($salary->salary_number, 'every payroll row carries a SAL- reference');
-            $t = $bt->request(['beneficiary_id' => $employee->id, 'purpose' => 'salary', 'related_id' => $salary->id, 'amount' => (float) $salary->net_salary, 'currency' => 'USD', 'provider' => 'sandbox', 'idempotency_key' => 'EMP-TEST-' . $salary->id], $finance1);
+            $t = $bt->request(['beneficiary_id' => $employee->id, 'purpose' => 'salary', 'related_id' => $salary->id, 'amount' => (float) $salary->net_salary, 'currency' => 'USD', 'provider' => 'sandbox', 'idempotency_key' => 'EMP-TEST-'.$salary->id], $finance1);
             $t = $bt->approve($t, $finance2);
             $t = $bt->markProcessing($t, $finance2);
-            $bt->complete($t, $finance2, 'SANDBOX-REF-' . $salary->id);
+            $bt->complete($t, $finance2, 'SANDBOX-REF-'.$salary->id);
             $this->assertEquals('paid', $salary->fresh()->status);
         }
 

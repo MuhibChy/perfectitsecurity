@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Country;
-use App\Models\ServiceCategory;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceCountryPrice;
+use Illuminate\Database\Seeder;
 
 class ExtraServicesSeeder extends Seeder
 {
@@ -71,8 +71,12 @@ class ExtraServicesSeeder extends Seeder
 
         foreach ($extras as $s) {
             $cat = ServiceCategory::where('slug', $s['cat'])->first();
-            if (!$cat) continue;
-            if (Service::where('slug', $s['slug'])->exists()) continue;
+            if (! $cat) {
+                continue;
+            }
+            if (Service::where('slug', $s['slug'])->exists()) {
+                continue;
+            }
 
             $svc = Service::create([
                 'name' => $s['name'],

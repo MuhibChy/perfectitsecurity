@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
-use App\Models\TicketCategory;
-use App\Models\SlaPolicy;
 use App\Models\ExpenseCategory;
+use App\Models\Setting;
+use App\Models\SlaPolicy;
+use App\Models\TicketCategory;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -17,6 +17,7 @@ class SettingController extends Controller
         $ticketCategories = TicketCategory::all();
         $slaPolicies = SlaPolicy::all();
         $expenseCategories = ExpenseCategory::all();
+
         return view('admin.settings.index', compact('settings', 'ticketCategories', 'slaPolicies', 'expenseCategories'));
     }
 
@@ -65,6 +66,7 @@ class SettingController extends Controller
         $settings = Setting::pluck('value', 'key')->toArray();
         $providers = \App\Models\PaymentProvider::ordered()->get();
         $bankAccounts = \App\Models\BankAccount::ordered()->get();
+
         return view('admin.settings.payments', compact('settings', 'providers', 'bankAccounts'));
     }
 
@@ -108,6 +110,7 @@ class SettingController extends Controller
         $isActive = $promo->isActive();
         $categories = \App\Models\ServiceCategory::where('is_active', true)->orderBy('sort_order')->get();
         $eligible = $promo->eligibleCategoryIds();
+
         return view('admin.settings.promotion', compact('campaign', 'isActive', 'categories', 'eligible'));
     }
 
@@ -125,7 +128,7 @@ class SettingController extends Controller
             'promo_terms' => 'nullable|string|max:2000',
         ]);
 
-        Setting::set('promo.enabled', !empty($data['promo_enabled']) ? '1' : '0', 'promo');
+        Setting::set('promo.enabled', ! empty($data['promo_enabled']) ? '1' : '0', 'promo');
         Setting::set('promo.name', $data['promo_name'], 'promo');
         Setting::set('promo.percent', (string) $data['promo_percent'], 'promo');
         Setting::set('promo.category_ids', json_encode(array_values($data['promo_category_ids'] ?? [])), 'promo');

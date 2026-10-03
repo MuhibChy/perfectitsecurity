@@ -35,6 +35,7 @@ class AuditService
         if ($from && $to) {
             $query->whereBetween('created_at', [$from, $to]);
         }
+
         return $query->get();
     }
 }

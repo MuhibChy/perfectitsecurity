@@ -8,7 +8,6 @@ use App\Models\Invoice;
 use App\Models\ManualBankPayment;
 use App\Models\PaymentTransaction;
 use App\Notifications\PaymentStatusNotification;
-use App\Services\CurrencyService;
 use App\Services\Money;
 use App\Services\PaymentCheckoutService;
 use App\Services\PaymentProviderService;
@@ -35,6 +34,7 @@ class PaymentCheckoutController extends Controller
             $accounts = BankAccount::active()->ordered()->get();
         }
         $history = PaymentTransaction::forCustomer(auth()->id())->where('invoice_id', $invoice->id)->latestFirst()->take(10)->get();
+
         return view('customer.checkout.show', compact('invoice', 'outstanding', 'methods', 'accounts', 'history'));
     }
 
@@ -48,13 +48,13 @@ class PaymentCheckoutController extends Controller
             'pay_currency' => 'nullable|string|size:3',
             'idempotency_key' => 'nullable|string|max:80',
         ]);
-        if (!empty($data['pay_currency'])) {
+        if (! empty($data['pay_currency'])) {
             abort_unless(Money::isActive(strtoupper($data['pay_currency'])), 422, 'Unsupported currency.');
         }
         $result = $checkout->initiate($invoice, auth()->id(), $data['provider'], [
             'amount' => $data['amount'] ?? null,
             'pay_currency' => $data['pay_currency'] ?? null,
-            'idempotency_key' => $data['idempotency_key'] ?? ('chk_' . Str::uuid()),
+            'idempotency_key' => $data['idempotency_key'] ?? ('chk_'.Str::uuid()),
             'return_url' => route('portal.checkout.callback', ['provider' => strtolower($data['provider'])]),
         ]);
         $txn = $result['transaction'];
@@ -67,13 +67,14 @@ class PaymentCheckoutController extends Controller
             'url' => route('portal.payments.show', $txn->reference),
         ]));
 
-        if (($result['adapter']['redirect_url'] ?? null) && !$result['duplicate']) {
+        if (($result['adapter']['redirect_url'] ?? null) && ! $result['duplicate']) {
             return redirect()->away($result['adapter']['redirect_url']);
         }
         // Bank-transfer / manual rails land on instructions + submission form.
         if ($txn->provider_key === 'bank_transfer') {
             return redirect()->route('portal.bank-transfer.show', ['transaction' => $txn->reference]);
         }
+
         return redirect()->route('portal.payments.show', $txn->reference)
             ->with('success', $result['duplicate'] ? 'This payment was already initiated.' : 'Payment initiated. Complete it with the provider.');
     }
@@ -90,13 +91,14 @@ class PaymentCheckoutController extends Controller
             ->latestFirst()->firstOrFail();
         $adapter = $providers->resolve($txn->provider_key);
         $verdict = $adapter->verifyPayment($txn->provider_reference ?: $txn->reference, $request->all());
-        if (($verdict['status'] ?? 'PENDING') === 'SUCCEEDED' && !$txn->payment_id && !$txn->isTerminal()) {
+        if (($verdict['status'] ?? 'PENDING') === 'SUCCEEDED' && ! $txn->payment_id && ! $txn->isTerminal()) {
             // Test-mode providers confirm via return; live rails settle via webhook.
             // settle() notifies the customer + finance staff on success.
-            if (!$txn->provider || !$txn->provider->isLive()) {
+            if (! $txn->provider || ! $txn->provider->isLive()) {
                 $settlement->settle($txn->fresh(), auth()->id());
             }
         }
+
         return redirect()->route('portal.payments.show', $txn->reference)
             ->with('success', 'Payment status refreshed from the provider.');
     }
@@ -108,6 +110,7 @@ class PaymentCheckoutController extends Controller
         abort_unless($txn->provider_key === 'bank_transfer', 404);
         $accounts = BankAccount::active()->ordered()->get();
         $submission = ManualBankPayment::where('payment_transaction_id', $txn->id)->latest('id')->first();
+
         return view('customer.checkout.bank-transfer', compact('txn', 'accounts', 'submission'));
     }
 
@@ -136,7 +139,7 @@ class PaymentCheckoutController extends Controller
             $receiptPath = $request->file('receipt')->store('bank-transfer-receipts', 'private');
         }
         $submission = ManualBankPayment::firstOrCreate(
-            ['idempotency_key' => $data['idempotency_key'] ?? ('mbp_' . Str::uuid())],
+            ['idempotency_key' => $data['idempotency_key'] ?? ('mbp_'.Str::uuid())],
             [
                 'customer_id' => auth()->id(),
                 'invoice_id' => $txn->invoice_id,
@@ -170,6 +173,7 @@ class PaymentCheckoutController extends Controller
                 'url' => route('admin.bank-transfers.show', $submission->id),
             ]));
         }
+
         return redirect()->route('portal.payments.show', $txn->reference)->with('success', 'Transfer submitted. It will show as paid only after finance verification.');
     }
 
@@ -177,6 +181,7 @@ class PaymentCheckoutController extends Controller
     public function history()
     {
         $transactions = PaymentTransaction::forCustomer(auth()->id())->latestFirst()->paginate(20);
+
         return view('customer.payments.index', compact('transactions'));
     }
 
@@ -184,6 +189,7 @@ class PaymentCheckoutController extends Controller
     {
         $txn = PaymentTransaction::forCustomer(auth()->id())->where('reference', $reference)->firstOrFail();
         $refunds = $txn->refunds()->latest('id')->get();
+
         return view('customer.payments.show', compact('txn', 'refunds'));
     }
 
@@ -202,6 +208,7 @@ class PaymentCheckoutController extends Controller
             'amount' => $refund->amount,
             'currency' => $refund->currency,
         ]));
+
         return back()->with('success', 'Refund requested. Finance will review it.');
     }
 }

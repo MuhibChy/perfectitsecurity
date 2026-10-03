@@ -20,14 +20,18 @@ class SalaryController extends Controller
     public function index(Request $request)
     {
         $query = Salary::with('user')->latest();
-        if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
         $salaries = $query->paginate(20)->withQueryString();
+
         return view('admin.salaries.index', compact('salaries'));
     }
 
     public function create()
     {
         $employees = User::where('is_active', true)->orderBy('name')->limit(100)->get();
+
         return view('admin.salaries.create', compact('employees'));
     }
 
@@ -58,6 +62,7 @@ class SalaryController extends Controller
             'status' => 'pending', 'notes' => $data['notes'] ?? null,
         ]);
         AuditLog::log('salary.created', 'salaries', $salary, "Salary record created for user #{$salary->user_id} (net {$net}).");
+
         return redirect()->route('admin.salaries.show', $salary->id)->with('success', 'Payroll record created (pending approval).');
     }
 
@@ -65,6 +70,7 @@ class SalaryController extends Controller
     {
         $salary->load('user');
         $transfers = \App\Models\BankTransfer::where('purpose', 'salary')->where('related_id', $salary->id)->latest()->get();
+
         return view('admin.salaries.show', compact('salary', 'transfers'));
     }
 
@@ -77,7 +83,8 @@ class SalaryController extends Controller
             'status' => 'approved', 'approved_by' => auth()->id(), 'approved_at' => now(),
             'effective_from' => $salary->effective_from ?? $salary->pay_date,
         ]);
-        AuditLog::log('salary.approved', 'salaries', $salary, "Salary #{$salary->id} approved by " . auth()->user()->name . '.');
+        AuditLog::log('salary.approved', 'salaries', $salary, "Salary #{$salary->id} approved by ".auth()->user()->name.'.');
+
         return back()->with('success', 'Salary approved. Initiate a bank transfer to pay.');
     }
 
@@ -92,12 +99,13 @@ class SalaryController extends Controller
                 'related_id' => $salary->id, 'amount' => (float) $salary->net_salary,
                 'currency' => $data['currency'] ?? 'USD', 'provider' => BankTransferService::PROVIDER_SANDBOX,
                 'destination' => $data['destination'] ?? null,
-                'idempotency_key' => 'SAL-' . $salary->id . '-' . $salary->updated_at->timestamp,
+                'idempotency_key' => 'SAL-'.$salary->id.'-'.$salary->updated_at->timestamp,
             ], auth()->user());
             // Same-actor segregation: approval of the transfer needs a second
             // finance manager — enforced inside approve(). Auto-advance is NOT done.
             return $t;
         });
+
         return redirect()->route('admin.transfers.show', $transfer->id)->with('success', "Transfer {$transfer->reference} created (pending approval by a second finance manager).");
     }
 
@@ -105,6 +113,7 @@ class SalaryController extends Controller
     {
         $salary->load('user');
         abort_unless(auth()->user()->isFinanceManager() || (int) $salary->user_id === (int) auth()->id(), 403);
+
         return view('admin.salaries.payslip', compact('salary'));
     }
 }

@@ -2,13 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Ticket;
-use App\Models\Invoice;
-use App\Models\KbArticle;
 use App\Models\CustomerDocument;
-use App\Models\NotificationPreference;
-use App\Models\TicketTimeEntry;
+use App\Models\KbArticle;
+use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -158,6 +155,7 @@ class NewFeatureTest extends TestCase
         $tickets = Ticket::all();
         if ($tickets->count() < 2) {
             $this->markTestSkipped('Need at least 2 tickets');
+
             return;
         }
 
@@ -179,11 +177,12 @@ class NewFeatureTest extends TestCase
         $this->actingAs($admin);
 
         $ticket = Ticket::where('assigned_to', $admin->id)->first();
-        if (!$ticket) {
+        if (! $ticket) {
             $ticket = Ticket::first();
         }
-        if (!$ticket) {
+        if (! $ticket) {
             $this->markTestSkipped('No tickets available');
+
             return;
         }
 
@@ -202,8 +201,9 @@ class NewFeatureTest extends TestCase
     public function kb_vote_endpoint_works()
     {
         $article = KbArticle::published()->first();
-        if (!$article) {
+        if (! $article) {
             $this->markTestSkipped('No published KB article available');
+
             return;
         }
 
@@ -222,8 +222,9 @@ class NewFeatureTest extends TestCase
         $customers = User::where('role', 'customer')->where('id', '!=', $customer1->id)->get();
         $customer2 = $customers->first();
 
-        if (!$customer2) {
+        if (! $customer2) {
             $this->markTestSkipped('No second customer available');
+
             return;
         }
 

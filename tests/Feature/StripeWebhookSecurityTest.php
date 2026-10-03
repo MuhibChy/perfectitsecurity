@@ -35,9 +35,10 @@ class StripeWebhookSecurityTest extends TestCase
     {
         $cat = ServiceCategory::firstOrCreate(['slug' => 'whsec-cat'], ['name' => 'WHSEC Cat']);
         $service = Service::create([
-            'category_id' => $cat->id, 'name' => 'WHSEC Svc ' . Str::random(6),
-            'slug' => 'whsec-' . Str::random(6), 'starting_price' => 750.00, 'is_active' => true,
+            'category_id' => $cat->id, 'name' => 'WHSEC Svc '.Str::random(6),
+            'slug' => 'whsec-'.Str::random(6), 'starting_price' => 750.00, 'is_active' => true,
         ]);
+
         return app(ServiceOrderWorkflowService::class)->createCustomerOrder([
             'service_id' => $service->id, 'requirements' => 'Webhook security probe order.',
         ], $customer);
@@ -45,8 +46,8 @@ class StripeWebhookSecurityTest extends TestCase
 
     private function sessionPayload($invoice, User $customer, array $over = []): string
     {
-        return json_encode(['id' => 'evt_' . Str::random(8), 'type' => 'checkout.session.completed', 'data' => ['object' => array_merge([
-            'id' => 'cs_' . Str::random(8), 'payment_intent' => 'pi_' . Str::random(8), 'payment_status' => 'paid',
+        return json_encode(['id' => 'evt_'.Str::random(8), 'type' => 'checkout.session.completed', 'data' => ['object' => array_merge([
+            'id' => 'cs_'.Str::random(8), 'payment_intent' => 'pi_'.Str::random(8), 'payment_status' => 'paid',
             'amount_total' => 75000, 'currency' => 'usd', 'customer_email' => $customer->email,
             'metadata' => ['invoice_id' => $invoice->id, 'customer_id' => $customer->id],
         ], $over)]]);
@@ -67,7 +68,8 @@ class StripeWebhookSecurityTest extends TestCase
         $this->postWebhook($this->sessionPayload($invoice, $customer))
             ->assertStatus(200)->assertJsonPath('result.handled', true);
 
-        $invoice->refresh(); $order->refresh();
+        $invoice->refresh();
+        $order->refresh();
         $this->assertEquals('paid', $invoice->status);
         $this->assertEquals(0.0, round((float) $invoice->amount_due, 2));
         $this->assertEquals(750.00, round((float) $invoice->amount_paid, 2));
@@ -87,31 +89,36 @@ class StripeWebhookSecurityTest extends TestCase
         $other = $this->customer('whsec.other@example.test');
 
         // A. Underpaid amount.
-        $o1 = $this->orderFor($customer); $i1 = $o1->invoices()->firstOrFail();
+        $o1 = $this->orderFor($customer);
+        $i1 = $o1->invoices()->firstOrFail();
         $this->postWebhook($this->sessionPayload($i1, $customer, ['amount_total' => 100]))
             ->assertStatus(200)->assertJsonPath('result.handled', false);
         $this->assertEquals(0, Payment::where('invoice_id', $i1->id)->count());
 
         // B. Wrong currency.
-        $o2 = $this->orderFor($customer); $i2 = $o2->invoices()->firstOrFail();
+        $o2 = $this->orderFor($customer);
+        $i2 = $o2->invoices()->firstOrFail();
         $this->postWebhook($this->sessionPayload($i2, $customer, ['currency' => 'eur']))
             ->assertStatus(200)->assertJsonPath('result.handled', false);
         $this->assertEquals(0, Payment::where('invoice_id', $i2->id)->count());
 
         // C. Another customer's identity in metadata/email.
-        $o3 = $this->orderFor($customer); $i3 = $o3->invoices()->firstOrFail();
+        $o3 = $this->orderFor($customer);
+        $i3 = $o3->invoices()->firstOrFail();
         $this->postWebhook($this->sessionPayload($i3, $other, ['metadata' => ['invoice_id' => $i3->id, 'customer_id' => $other->id]]))
             ->assertStatus(200)->assertJsonPath('result.handled', false);
         $this->assertEquals(0, Payment::where('invoice_id', $i3->id)->count());
 
         // D. Unpaid session status.
-        $o4 = $this->orderFor($customer); $i4 = $o4->invoices()->firstOrFail();
+        $o4 = $this->orderFor($customer);
+        $i4 = $o4->invoices()->firstOrFail();
         $this->postWebhook($this->sessionPayload($i4, $customer, ['payment_status' => 'unpaid']))
             ->assertStatus(200)->assertJsonPath('result.handled', false);
         $this->assertEquals(0, Payment::where('invoice_id', $i4->id)->count());
 
         // E. Missing payment_status entirely (never sent by real Stripe).
-        $o5 = $this->orderFor($customer); $i5 = $o5->invoices()->firstOrFail();
+        $o5 = $this->orderFor($customer);
+        $i5 = $o5->invoices()->firstOrFail();
         $data = json_decode($this->sessionPayload($i5, $customer), true);
         unset($data['data']['object']['payment_status']);
         $this->postWebhook(json_encode($data))
@@ -119,7 +126,8 @@ class StripeWebhookSecurityTest extends TestCase
         $this->assertEquals(0, Payment::where('invoice_id', $i5->id)->count());
 
         // F. Cancelled invoice cannot be revived.
-        $o6 = $this->orderFor($customer); $i6 = $o6->invoices()->firstOrFail();
+        $o6 = $this->orderFor($customer);
+        $i6 = $o6->invoices()->firstOrFail();
         $i6->update(['status' => 'cancelled']);
         $this->postWebhook($this->sessionPayload($i6, $customer))
             ->assertStatus(200)->assertJsonPath('result.handled', false);
