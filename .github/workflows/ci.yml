@@ -67,7 +67,7 @@ jobs:
         run: php artisan db:seed --force
 
       - name: Run Tests
-        run: php artisan test --parallel
+        run: php artisan test
 
   security:
     name: Security Audit
