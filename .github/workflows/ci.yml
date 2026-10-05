@@ -56,6 +56,8 @@ jobs:
 
       - name: Prepare Environment
         run: |
+          mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
           cp .env.example .env
           touch database/database.sqlite
           php artisan key:generate
