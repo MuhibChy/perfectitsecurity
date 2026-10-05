@@ -11,6 +11,7 @@ cmds = ["npm run build", "php artisan storage:link || true"]
 cmd = "chmod +x deploy.sh && bash deploy.sh"
 
 [variables]
+NIXPACKS_PHP_VERSION = "8.1"
 APP_ENV = "production"
 APP_DEBUG = "false"
 LOG_CHANNEL = "stack"
