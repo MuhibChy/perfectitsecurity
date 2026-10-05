@@ -433,10 +433,10 @@ class PaymentReadinessService
             }
             $has = ExchangeRate::where(function ($q) use ($c) {
                 $q->where(function ($qq) use ($c) {
-                $qq->where('base_currency', 'USD')->where('target_currency', $c);
+                    $qq->where('base_currency', 'USD')->where('target_currency', $c);
                 })
                   ->orWhere(function ($qq) use ($c) {
-                  $qq->where('base_currency', $c)->where('target_currency', 'USD');
+                      $qq->where('base_currency', $c)->where('target_currency', 'USD');
                   });
             })->exists();
             if (! $has) {

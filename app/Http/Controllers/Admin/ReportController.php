@@ -190,9 +190,9 @@ class ReportController extends Controller
     public function profitability(Request $request)
     {
         $projects = Project::with(['invoices' => function ($q) {
-        $q->where('status', 'paid');
+            $q->where('status', 'paid');
         }, 'tasks' => function ($q) {
-        $q->with('commissions');
+            $q->with('commissions');
         }])->get();
 
         $projectProfitability = $projects->map(function ($project) {
