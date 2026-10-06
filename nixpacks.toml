@@ -1,5 +1,6 @@
 [phases.setup]
-# Install Composer and NPM dependencies
+# Install required system packages
+nixPkgs = ["php81", "php81Packages.composer", "nodejs_20"]
 cmds = ["composer install --no-dev --prefer-dist --optimize-autoloader", "npm ci"]
 
 [phases.build]
