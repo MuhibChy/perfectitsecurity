@@ -8,8 +8,20 @@ set -e
 echo "=== PerfectITSecurity — Cloud Deployment Bootstrap ==="
 
 # --- 1. Ensure required environment variables are present ---
-: "${APP_KEY:?APP_KEY is required. Generate one with: php artisan key:generate --show}"
-: "${APP_URL:?APP_URL is required. Set to the canonical public HTTPS URL.}"
+if [ -z "$APP_KEY" ]; then
+    echo "APP_KEY not provided — generating application key..."
+    APP_KEY=$(php artisan key:generate --show)
+    export APP_KEY
+fi
+
+if [ -z "$APP_URL" ]; then
+    if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
+        export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+    else
+        export APP_URL="http://localhost:${PORT:-8080}"
+    fi
+    echo "APP_URL set to $APP_URL"
+fi
 : "${PORT:=8080}"
 
 # --- 2. Ensure SQLite database file exists (Railway ephemeral storage) ---
