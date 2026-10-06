@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="QwQdBHLvZ53oNm1uVOJO7tOecjW2x4DTVh3SJSfY">
+    <meta name="theme-color" content="#050807">
+
+    <title>PerfectITSecurity — Secure Your Digital World </title>
+    <meta name="description" content="Managed IT support, cybersecurity, penetration testing, secure software development, and cloud/server management. Security operations active.">
+    <meta name="keywords" content="IT support, cybersecurity, penetration testing, managed IT, cloud services, secure software development">
+    <meta name="robots" content="index, follow">
+
+    
+    <meta property="og:title" content="PerfectITSecurity — Secure Your Digital World">
+    <meta property="og:description" content="Managed IT support, cybersecurity, penetration testing, secure software development, and cloud/server management. Security operations active.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="./index.html">
+    <meta property="og:image" content="./favicon.ico">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PerfectITSecurity — Secure Your Digital World">
+    <meta name="twitter:description" content="Managed IT support, cybersecurity, penetration testing, secure software development, and cloud/server management. Security operations active.">
+    <link rel="canonical" href="./index.html">
+    <link rel="icon" href="./favicon.ico">
+
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    
+    <link rel="preload" as="style" href="./build/assets/app-485ef060.css" /><link rel="modulepreload" href="./build/assets/app-ff66dcb6.js" /><link rel="stylesheet" href="./build/assets/app-485ef060.css" /><script type="module" src="./build/assets/app-ff66dcb6.js"></script>
+    
+    
+    
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const dark = saved ? saved === 'dark' : prefersDark;
+                document.documentElement.classList.toggle('dark', dark);
+            } catch (e) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-black text-white min-h-screen flex flex-col relative overflow-x-hidden selection:bg-[#00FF00]/25 selection:text-[#00FF00] font-sans antialiased dark:bg-black dark:text-white"
+      x-data="{ mobileOpen: false }"
+      data-lights="home"
+      data-glove-mode="moving"
+      data-3d="full">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <noscript><style>.reveal,.reveal-left,.reveal-right{opacity:1 !important;transform:none !important;}</style></noscript>
+
+    
+    <div class="term-bg" aria-hidden="true">
+    <div class="term-bg-scan"></div>
+</div>
+
+    
+    <div class="global-3d" aria-hidden="true">
+    <div class="global-3d-fallback"></div>
+    <canvas id="global-3d-canvas" class="global-3d-canvas" aria-hidden="true" data-global-3d></canvas>
+</div>
+<div class="global-3d-fg" aria-hidden="true">
+    <canvas id="global-3d-canvas-fg" class="global-3d-canvas-fg" aria-hidden="true" data-global-3d-fg></canvas>
+</div>
+
+    
+    <div id="global-hud" class="global-hud" aria-hidden="true">
+    <div class="global-hud-box">
+        <span class="global-hud-corner tl"></span>
+        <span class="global-hud-corner tr"></span>
+        <span class="global-hud-corner bl"></span>
+        <span class="global-hud-corner br"></span>
+        <div class="global-hud-ring"></div>
+        <div class="global-hud-ring global-hud-ring-2"></div>
+        <div class="global-hud-core">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.2 12l1.9 1.9L15 10"/></svg>
+        </div>
+        <div class="global-hud-chip chip-a">
+            <span class="term-status-dot"></span><span>24/7 MONITORING</span>
+        </div>
+        <div class="global-hud-chip chip-b">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M5 12.55a11 11 0 0114.08 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg><span>NETWORK SECURE</span>
+        </div>
+        <div class="global-hud-chip chip-c">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg><span>SHIELD ACTIVE</span>
+        </div>
+        <div class="global-hud-chip chip-d">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span>FAST RESPONSE</span>
+        </div>
+    </div>
+</div>
+
+    
+    <nav class="dark-island h-14 w-full bg-black border-b border-[#00FF00]/30 relative z-[1000] overflow-visible" id="main-nav"
+         aria-label="Primary">
+
+        <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+            <div class="flex items-center justify-between h-14 gap-4">
+
+                
+                <a href="./index.html" class="flex items-center gap-2.5 group flex-shrink-0" aria-label="PerfectITSecurity — home">
+                    <div class="w-8 h-8 border border-[#00FF00]/50 bg-[#00FF00]/10 flex items-center justify-center relative" aria-hidden="true">
+                        <span class="absolute -top-px -left-px w-2 h-2 border-t border-l border-[#00FF00]"></span>
+                        <span class="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-[#00FF00]"></span>
+                        <svg class="w-[18px] h-[18px] text-[#00FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.2 12l1.9 1.9L15 10"/>
+                        </svg>
+                    </div>
+                    <div class="leading-none hidden sm:block">
+                        <span class="block font-display font-extrabold text-[14px] tracking-tight text-white">
+                            PERFECT<span class="text-[#00FF00]">IT</span>SECURITY
+                        </span>
+                        <span class="block font-mono text-[8px] tracking-[0.32em] text-gray-400 uppercase mt-1">
+                            Secure // Build // Operate
+                        </span>
+                    </div>
+                </a>
+
+                
+                <div class="hidden xl:flex items-center gap-0.5 2xl:gap-1 flex-nowrap whitespace-nowrap">
+
+                    
+                    <div x-data="{ open: false }" @click.away="open = false" @keydown.escape.window="open = false" class="relative">
+                        <button @click="open = !open" @keydown.escape.window="open = false"
+                                :aria-expanded="open.toString()"
+                                class="header-nav-item flex items-center gap-1 px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors"
+                                aria-haspopup="true">
+                            <span >Services</span>
+                            <svg class="w-3 h-3 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-end="opacity-0 -translate-y-1"
+                             class="absolute top-full left-0 mt-2 w-64 bg-black border border-[#00FF00]/30 p-2 z-50"
+                             style="display: none;">
+                            <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-400 px-2.5 pt-1.5 pb-2">01 / Services</div>
+                            <a href="./services" class="flex items-center justify-between px-2.5 py-2 text-sm font-semibold text-white hover:bg-[#00FF00]/10 hover:text-[#00FF00] transition-colors rounded-sm">
+                                All Services
+                                <svg class="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                            <div class="h-px bg-gray-800 my-1.5"></div>
+                                                        <a href="./services?category=qa-security"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">QA Security</span>
+                            </a>
+                                                        <a href="./services?category=cybersecurity"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Cybersecurity Services</span>
+                            </a>
+                                                        <a href="./services?category=web-development"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Web Development &amp; Design</span>
+                            </a>
+                                                        <a href="./services?category=digital-marketing"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Digital Marketing</span>
+                            </a>
+                                                        <a href="./services?category=managed-it-support"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Managed IT Support</span>
+                            </a>
+                                                        <a href="./services?category=cloud-server-network"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Cloud, Server &amp; Network Services</span>
+                            </a>
+                                                        <a href="./services?category=business-technology"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Business Technology &amp; Automation</span>
+                            </a>
+                                                        <a href="./services?category=microsoft-365-business-it"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Microsoft 365 &amp; Business IT</span>
+                            </a>
+                                                        <a href="./services?category=data-business-intelligence"
+                               class="flex items-center gap-2.5 px-2.5 py-1.5 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">
+                                <span class="w-1.5 h-1.5 bg-gray-600 flex-shrink-0" aria-hidden="true"></span>
+                                <span class="truncate">Data &amp; Business Intelligence</span>
+                            </a>
+                                                    </div>
+                    </div>
+
+                    
+                    <div x-data="{ open: false }" @click.away="open = false" class="relative">
+                        <button @click="open = !open" :aria-expanded="open.toString()" class="header-nav-item flex items-center gap-1 px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors" aria-haspopup="true">
+                            <span >Solutions</span>
+                            <svg class="w-3 h-3 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-end="opacity-0 -translate-y-1"
+                             class="absolute top-full left-0 mt-2 w-60 bg-black border border-[#00FF00]/30 p-2 z-50"
+                             style="display: none;">
+                            <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-400 px-2.5 pt-1.5 pb-2">02 / Solutions</div>
+                                                        <a href="./case-studies" class="block px-2.5 py-2 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">Case Studies</a>
+                                                        <a href="./portfolio" class="block px-2.5 py-2 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">Portfolio</a>
+                                                        <a href="./pricing" class="block px-2.5 py-2 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">Pricing</a>
+                                                        <a href="./get-quote" class="block px-2.5 py-2 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">Get a Quote</a>
+                                                        <a href="./industries" class="block px-2.5 py-2 text-sm text-gray-300 hover:bg-[#00FF00]/10 hover:text-white transition-colors rounded-sm">Industries</a>
+                                                    </div>
+                    </div>
+
+                    
+                    <a href="#security" class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">Security</a>
+
+                    
+                    <a href="#it-support" class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">IT Support</a>
+
+                    
+                    <a href="./portfolio"  class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">Portfolio</a>
+
+                    
+                    <a href="./knowledge-base"  class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">Knowledge Base</a>
+
+                    
+                    <a href="./about"  class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">About</a>
+
+                    
+                    <a href="./contact"  class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">Contact</a>
+                </div>
+
+                
+                <div class="hidden xl:flex items-center gap-1.5 2xl:gap-2 flex-shrink-0">
+
+                    
+                    <div x-data="{ langOpen: false }" class="relative">
+    <button @click="langOpen = !langOpen" :aria-expanded="langOpen.toString()"
+            class="flex items-center gap-1.5 px-2.5 py-2 font-mono text-xs tracking-wider text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors rounded-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        <span>EN</span>
+        <svg class="w-3 h-3 transition-transform duration-200" :class="langOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+
+    <div x-show="langOpen" @click.away="langOpen = false" x-transition
+         class="absolute right-0 mt-2 w-44 bg-black border border-[#00FF00]/30 py-2 z-50 shadow-xl"
+         style="display: none;">
+        <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 px-3.5 pt-1 pb-1.5">Language</div>
+                <a href="./lang/en"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-[#00FF00] bg-[#00FF00]/10">
+            <span class="font-mono text-xs w-6 text-[#00FF00]">EN</span>
+            <span>English</span>
+                        <svg class="w-4 h-4 ml-auto text-[#00FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </a>
+                <a href="./lang/bn"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-6 text-gray-500">BN</span>
+            <span>বাংলা</span>
+                    </a>
+                <a href="./lang/ar"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-6 text-gray-500">AR</span>
+            <span>العربية</span>
+                    </a>
+            </div>
+</div>
+                    <div x-data="{ curOpen: false }" class="relative">
+    <button @click="curOpen = !curOpen" :aria-expanded="curOpen.toString()"
+            class="flex items-center gap-1.5 px-2.5 py-2 font-mono text-xs tracking-wider text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors rounded-sm" aria-label="Switch currency">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 01-18 0 9 9 0 0118 0z"/></svg>
+        <span>USD</span>
+        <svg class="w-3 h-3 transition-transform duration-200" :class="curOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+
+    <div x-show="curOpen" @click.away="curOpen = false" x-transition
+         class="absolute right-0 mt-2 w-44 bg-black border border-[#00FF00]/30 py-2 z-50 shadow-xl"
+         style="display: none;">
+        <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 px-3.5 pt-1 pb-1.5">Currency</div>
+                                <a href="./currency/GBP"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">GBP</span>
+                    </a>
+                                        <a href="./currency/USD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-[#00FF00] bg-[#00FF00]/10">
+            <span class="font-mono text-xs w-8 text-[#00FF00]">USD</span>
+                        <svg class="w-4 h-4 ml-auto text-[#00FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </a>
+                                        <a href="./currency/BDT"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">BDT</span>
+                    </a>
+                                        <a href="./currency/EUR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">EUR</span>
+                    </a>
+                                        <a href="./currency/AED"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">AED</span>
+                    </a>
+                                        <a href="./currency/SAR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">SAR</span>
+                    </a>
+                                        <a href="./currency/QAR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">QAR</span>
+                    </a>
+                                        <a href="./currency/KWD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">KWD</span>
+                    </a>
+                                        <a href="./currency/BHD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">BHD</span>
+                    </a>
+                                        <a href="./currency/OMR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">OMR</span>
+                    </a>
+                                        <a href="./currency/JOD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">JOD</span>
+                    </a>
+                    </div>
+</div>
+                    <button id="theme-toggle"
+                            onclick="window.Alpine && Alpine.store('theme').toggle()"
+                            class="p-2 text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors rounded-sm"
+                            title="Toggle dark mode" aria-label="Toggle dark mode">
+                        <svg class="w-[18px] h-[18px] dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg class="w-[18px] h-[18px] hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </button>
+
+                    <span class="w-px h-5 bg-gray-700" aria-hidden="true"></span>
+
+                    
+                                            <a href="./login" class="header-nav-item px-3 py-2 text-sm font-medium text-white hover:text-[#00FF00] transition-colors">Client Portal</a>
+                    
+                    
+                    <a href="./get-quote" class="header-cta inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-black bg-[#00FF00] hover:bg-[#00CC00] transition-colors rounded-sm flex-shrink-0">
+                        Get Started
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+
+                
+                <div class="xl:hidden flex items-center gap-1">
+                    <button id="mobile-theme-toggle"
+                            onclick="window.Alpine && Alpine.store('theme').toggle()"
+                            class="p-2 text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors"
+                            aria-label="Toggle dark mode">
+                        <svg class="w-5 h-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </button>
+                    <button @click="mobileOpen = !mobileOpen"
+                            @keydown.escape.window="mobileOpen = false"
+                            :aria-expanded="mobileOpen.toString()"
+                            aria-controls="mobile-menu"
+                            class="p-2 text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors"
+                            aria-label="Toggle menu">
+                        <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        <svg x-show="mobileOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            
+            <div x-show="mobileOpen" id="mobile-menu"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="xl:hidden pb-6 border-t border-gray-700 mt-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-black">
+                <div class="pt-4 grid gap-0.5">
+                                                            <a href="./services" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Services</span>
+                        <span class="font-mono text-xs text-gray-500">01</span>
+                    </a>
+                                        <a href="./case-studies" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Solutions</span>
+                        <span class="font-mono text-xs text-gray-500">02</span>
+                    </a>
+                                        <a href="#security" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Security</span>
+                        <span class="font-mono text-xs text-gray-500">03</span>
+                    </a>
+                                        <a href="#it-support" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>IT Support</span>
+                        <span class="font-mono text-xs text-gray-500">04</span>
+                    </a>
+                                        <a href="./portfolio" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Portfolio</span>
+                        <span class="font-mono text-xs text-gray-500">05</span>
+                    </a>
+                                        <a href="./knowledge-base" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Knowledge Base</span>
+                        <span class="font-mono text-xs text-gray-500">06</span>
+                    </a>
+                                        <a href="./about" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>About</span>
+                        <span class="font-mono text-xs text-gray-500">07</span>
+                    </a>
+                                        <a href="./contact" class="flex items-center justify-between px-4 py-3 border-b border-gray-800 text-sm font-medium text-white">
+                        <span>Contact</span>
+                        <span class="font-mono text-xs text-gray-500">08</span>
+                    </a>
+                    
+                    <div class="pt-4 space-y-2.5 px-4">
+                        <div x-data="{ langOpen: false }" class="relative">
+    <button @click="langOpen = !langOpen" :aria-expanded="langOpen.toString()"
+            class="flex items-center gap-1.5 px-2.5 py-2 font-mono text-xs tracking-wider text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors rounded-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        <span>EN</span>
+        <svg class="w-3 h-3 transition-transform duration-200" :class="langOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+
+    <div x-show="langOpen" @click.away="langOpen = false" x-transition
+         class="absolute right-0 mt-2 w-44 bg-black border border-[#00FF00]/30 py-2 z-50 shadow-xl"
+         style="display: none;">
+        <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 px-3.5 pt-1 pb-1.5">Language</div>
+                <a href="./lang/en"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-[#00FF00] bg-[#00FF00]/10">
+            <span class="font-mono text-xs w-6 text-[#00FF00]">EN</span>
+            <span>English</span>
+                        <svg class="w-4 h-4 ml-auto text-[#00FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </a>
+                <a href="./lang/bn"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-6 text-gray-500">BN</span>
+            <span>বাংলা</span>
+                    </a>
+                <a href="./lang/ar"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-6 text-gray-500">AR</span>
+            <span>العربية</span>
+                    </a>
+            </div>
+</div>
+                        <div x-data="{ curOpen: false }" class="relative">
+    <button @click="curOpen = !curOpen" :aria-expanded="curOpen.toString()"
+            class="flex items-center gap-1.5 px-2.5 py-2 font-mono text-xs tracking-wider text-gray-400 hover:text-white hover:bg-[#00FF00]/10 transition-colors rounded-sm" aria-label="Switch currency">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 01-18 0 9 9 0 0118 0z"/></svg>
+        <span>USD</span>
+        <svg class="w-3 h-3 transition-transform duration-200" :class="curOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+
+    <div x-show="curOpen" @click.away="curOpen = false" x-transition
+         class="absolute right-0 mt-2 w-44 bg-black border border-[#00FF00]/30 py-2 z-50 shadow-xl"
+         style="display: none;">
+        <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 px-3.5 pt-1 pb-1.5">Currency</div>
+                                <a href="./currency/GBP"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">GBP</span>
+                    </a>
+                                        <a href="./currency/USD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-[#00FF00] bg-[#00FF00]/10">
+            <span class="font-mono text-xs w-8 text-[#00FF00]">USD</span>
+                        <svg class="w-4 h-4 ml-auto text-[#00FF00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </a>
+                                        <a href="./currency/BDT"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">BDT</span>
+                    </a>
+                                        <a href="./currency/EUR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">EUR</span>
+                    </a>
+                                        <a href="./currency/AED"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">AED</span>
+                    </a>
+                                        <a href="./currency/SAR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">SAR</span>
+                    </a>
+                                        <a href="./currency/QAR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">QAR</span>
+                    </a>
+                                        <a href="./currency/KWD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">KWD</span>
+                    </a>
+                                        <a href="./currency/BHD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">BHD</span>
+                    </a>
+                                        <a href="./currency/OMR"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">OMR</span>
+                    </a>
+                                        <a href="./currency/JOD"
+           class="flex items-center gap-3 px-3.5 py-2 text-sm transition-colors text-gray-300 hover:bg-[#00FF00]/10 hover:text-white">
+            <span class="font-mono text-xs w-8 text-gray-500">JOD</span>
+                    </a>
+                    </div>
+</div>
+                                                    <a href="./login" class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white border border-gray-700 hover:border-[#00FF00] hover:text-[#00FF00] transition-colors rounded-sm">Client Portal / Login</a>
+                                                <a href="./get-quote" class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-black bg-[#00FF00] hover:bg-[#00CC00] transition-colors rounded-sm">Get Started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    
+    
+    
+    
+    
+    
+    <div id="main-content" class="flex-1 relative z-10">
+
+<section class="relative w-full overflow-hidden" aria-labelledby="hero-heading" data-3d-state="hero">
+    <div class="absolute inset-0 bg-cyber-grid opacity-60 pointer-events-none" aria-hidden="true"></div>
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" aria-hidden="true"></div>
+    
+    <div class="absolute top-20 right-6 lg:right-12 font-mono text-[10px] tracking-[0.2em] text-term-700/60 uppercase hidden md:block pointer-events-none select-none" aria-hidden="true">
+        LAT 51.5072 // LON -0.1276<br>NODE: EDGE-01
+    </div>
+    <div class="absolute bottom-24 left-6 lg:left-12 font-mono text-[10px] tracking-[0.2em] text-term-700/60 uppercase hidden md:block pointer-events-none select-none" aria-hidden="true">
+        SESSION: TLS-SECURED
+    </div>
+
+    <div class="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-24 sm:pt-28 lg:pt-36 pb-14 lg:pb-20 grid lg:grid-cols-2 gap-10 lg:gap-6 items-center">
+        <div class="max-w-4xl">
+            
+            <div class="flex flex-wrap items-center gap-2.5 mb-7 reveal">
+                <span class="term-tag term-tag-accent">SYS://PERFECTITSECURITY</span>
+                <span class="term-status text-emerald-700 dark:text-accent-soft"><span class="term-status-dot" aria-hidden="true"></span>Status: Online</span>
+                <span class="term-tag">Security operations active</span>
+            </div>
+
+            <h1 id="hero-heading" class="font-display font-extrabold tracking-tight leading-[1.02] text-4xl sm:text-6xl lg:text-7xl text-navy-900 dark:text-white text-balance reveal">
+                SECURE YOUR<br>
+                DIGITAL WORLD<span class="term-cursor" aria-hidden="true"></span>
+            </h1>
+
+            <p class="mt-6 text-base sm:text-lg lg:text-xl leading-relaxed text-surface-600 dark:text-term-800 max-w-2xl reveal delay-100">
+                PerfectITSecurity provides managed IT support, cybersecurity and penetration
+                testing, secure software development, cloud and server management, web
+                development, and dependable digital solutions — built, secured, and operated
+                by one engineering team.
+            </p>
+
+            <div class="mt-9 flex flex-col sm:flex-row flex-wrap gap-3 reveal delay-200">
+                <a href="./get-quote" class="term-btn term-btn-lg">
+                    Get IT Support
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="./get-quote" class="term-btn term-btn-lg term-btn-ghost">
+                    Request a Service
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="./contact" class="term-btn term-btn-lg term-btn-ghost">
+                    Contact Us
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+            </div>
+            <p class="mt-5 font-mono text-[11px] tracking-[0.18em] uppercase text-slate-500 dark:text-term-700 reveal delay-300">
+                Reliable IT Support <span class="text-accent mx-1" aria-hidden="true">•</span> Fast Response <span class="text-accent mx-1" aria-hidden="true">•</span> Professional Solutions
+            </p>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-ai-chat'))"
+               class="mt-5 inline-flex items-center gap-2 font-mono text-xs tracking-[0.14em] uppercase text-slate-600 hover:text-emerald-700 dark:text-term-700 dark:hover:text-accent-soft transition-colors reveal delay-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                <span class="underline underline-offset-4">Ask the AI assistant</span>
+            </button>
+
+            
+            <dl class="mt-12 pt-6 border-t border-term-300 dark:border-term-400/60 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 font-mono reveal delay-300">
+                                <div class="min-w-0">
+                    <dt class="text-[10px] tracking-[0.24em] text-term-700 uppercase">SUPPORT</dt>
+                    <dd class="mt-1 text-[13px] tracking-wide text-navy-800 dark:text-term-950 truncate">24/7 available</dd>
+                </div>
+                                <div class="min-w-0">
+                    <dt class="text-[10px] tracking-[0.24em] text-term-700 uppercase">APPROACH</dt>
+                    <dd class="mt-1 text-[13px] tracking-wide text-navy-800 dark:text-term-950 truncate">Security first</dd>
+                </div>
+                                <div class="min-w-0">
+                    <dt class="text-[10px] tracking-[0.24em] text-term-700 uppercase">DELIVERY</dt>
+                    <dd class="mt-1 text-[13px] tracking-wide text-navy-800 dark:text-term-950 truncate">Global remote service</dd>
+                </div>
+                                <div class="min-w-0">
+                    <dt class="text-[10px] tracking-[0.24em] text-term-700 uppercase">READY</dt>
+                    <dd class="mt-1 text-[13px] tracking-wide text-navy-800 dark:text-term-950 truncate">Enterprise workflows</dd>
+                </div>
+                            </dl>
+        </div>
+
+        
+        <div class="hidden lg:block" aria-hidden="true"></div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28" aria-labelledby="services-heading" id="services" data-3d-state="services">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">01</span>
+        <span class="term-sec-label">SERVICES://CORE</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Four disciplines. One accountable team.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Every engagement is delivered through the same ticketed, tracked, and documented workflow — request a service, follow its progress, and keep the full record.</p>
+    </div>
+        <span id="services-heading" class="sr-only">Core services</span>
+
+        <div class="mt-10 lg:mt-14 grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4 overflow-hidden">
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-11">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">01 / QA SECURITY</span>
+                    <span class="term-tag">0 modules</span>
+                </div>
+                <h3 id="svc-11" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    QA Security
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Scoped, priced, and delivered through the client portal with full service history.
+                </p>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=qa-security" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-1">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">02 / CYBERSECURITY SERVICES</span>
+                    <span class="term-tag">34 modules</span>
+                </div>
+                <h3 id="svc-1" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Cybersecurity Services
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Professional cybersecurity assessment, testing, and hardening services to protect your digital infrastructure.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Cybersecurity Services">
+                                        <li><a href="./services/api-security-testing" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">API Security Testing</a></li>
+                                        <li><a href="./services/backup-and-disaster-recovery-review" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Backup and Disaster Recovery Review</a></li>
+                                        <li><a href="./services/cloud-security-assessment" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cloud Security Assessment</a></li>
+                                        <li><a href="./services/compliance-readiness-support" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Compliance Readiness Support</a></li>
+                                        <li><a href="./services/cybersecurity-consulting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cybersecurity Consulting</a></li>
+                                        <li><a href="./services/ddos-protection-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">DDoS Protection Setup</a></li>
+                                        <li><a href="./services/email-security-configuration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Email Security Configuration</a></li>
+                                        <li><a href="./services/endpoint-security-support" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Endpoint Security Support</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=cybersecurity" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-2">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">03 / WEB DEVELOPMENT &amp; DESIGN</span>
+                    <span class="term-tag">30 modules</span>
+                </div>
+                <h3 id="svc-2" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Web Development &amp; Design
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Custom website and web application development, from business sites to SaaS platforms and e-commerce solutions.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Web Development &amp; Design">
+                                        <li><a href="./services/api-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">API Development</a></li>
+                                        <li><a href="./services/api-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">API Integration</a></li>
+                                        <li><a href="./services/booking-system-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Booking System Development</a></li>
+                                        <li><a href="./services/business-website-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Business Website Development</a></li>
+                                        <li><a href="./services/crm-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">CRM Development</a></li>
+                                        <li><a href="./services/corporate-website-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Corporate Website Development</a></li>
+                                        <li><a href="./services/custom-web-application-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Custom Web Application Development</a></li>
+                                        <li><a href="./services/customer-portal-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Customer Portal Development</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=web-development" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-3">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">04 / DIGITAL MARKETING</span>
+                    <span class="term-tag">18 modules</span>
+                </div>
+                <h3 id="svc-3" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Digital Marketing
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    SEO, social media, paid advertising, and marketing strategy services to grow your online presence.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Digital Marketing">
+                                        <li><a href="./services/analytics-and-tracking-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Analytics and Tracking Setup</a></li>
+                                        <li><a href="./services/content-strategy" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Content Strategy</a></li>
+                                        <li><a href="./services/cro-optimization" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Conversion Rate Optimization</a></li>
+                                        <li><a href="./services/email-marketing-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Email Marketing Setup</a></li>
+                                        <li><a href="./services/influencer-marketing" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Influencer Marketing Campaign</a></li>
+                                        <li><a href="./services/keyword-research" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Keyword Research</a></li>
+                                        <li><a href="./services/lead-generation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Lead Generation</a></li>
+                                        <li><a href="./services/local-seo" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Local SEO</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=digital-marketing" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-4">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">05 / MANAGED IT SUPPORT</span>
+                    <span class="term-tag">13 modules</span>
+                </div>
+                <h3 id="svc-4" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Managed IT Support
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Comprehensive IT support services including remote, on-site, helpdesk, and managed infrastructure.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Managed IT Support">
+                                        <li><a href="./services/antivirus-deployment" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Antivirus Deployment</a></li>
+                                        <li><a href="./services/backup-management" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Backup Management</a></li>
+                                        <li><a href="./services/cctv-surveillance" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">CCTV &amp; Surveillance Setup</a></li>
+                                        <li><a href="./services/desktop-support" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Desktop Support</a></li>
+                                        <li><a href="./services/disaster-recovery-support" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Disaster Recovery Support</a></li>
+                                        <li><a href="./services/it-health-check" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">IT Health Check</a></li>
+                                        <li><a href="./services/it-infrastructure-review" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">IT Infrastructure Review</a></li>
+                                        <li><a href="./services/laptop-troubleshooting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Laptop Troubleshooting</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=managed-it-support" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-5">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">06 / CLOUD, SERVER &amp; NETWORK SERVICES</span>
+                    <span class="term-tag">13 modules</span>
+                </div>
+                <h3 id="svc-5" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Cloud, Server &amp; Network Services
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Cloud migration, server administration, network infrastructure, and monitoring services.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Cloud, Server &amp; Network Services">
+                                        <li><a href="./services/aws-well-architected" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">AWS Well-Architected Review</a></li>
+                                        <li><a href="./services/cloud-infrastructure-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cloud Infrastructure Setup</a></li>
+                                        <li><a href="./services/cloud-migration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cloud Migration</a></li>
+                                        <li><a href="./services/cloud-security-configuration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cloud Security Configuration</a></li>
+                                        <li><a href="./services/docker-containerization" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Docker Containerization</a></li>
+                                        <li><a href="./services/kubernetes-deployment" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Kubernetes Deployment</a></li>
+                                        <li><a href="./services/linux-server-administration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Linux Server Administration</a></li>
+                                        <li><a href="./services/network-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Network Setup</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=cloud-server-network" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-6">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">07 / BUSINESS TECHNOLOGY &amp; AUTOMATION</span>
+                    <span class="term-tag">12 modules</span>
+                </div>
+                <h3 id="svc-6" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Business Technology &amp; Automation
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    CRM, ERP, workflow automation, AI integration, and business process optimization.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Business Technology &amp; Automation">
+                                        <li><a href="./services/ai-automation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">AI Automation</a></li>
+                                        <li><a href="./services/ai-chatbot-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">AI Chatbot Integration</a></li>
+                                        <li><a href="./services/business-process-automation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Business Process Automation</a></li>
+                                        <li><a href="./services/crm-customization" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">CRM Customization</a></li>
+                                        <li><a href="./services/crm-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">CRM Setup</a></li>
+                                        <li><a href="./services/chatgpt-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">ChatGPT Integration</a></li>
+                                        <li><a href="./services/data-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Data Integration</a></li>
+                                        <li><a href="./services/erp-implementation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">ERP Implementation</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=business-technology" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-7">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">08 / MICROSOFT 365 &amp; BUSINESS IT</span>
+                    <span class="term-tag">10 modules</span>
+                </div>
+                <h3 id="svc-7" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Microsoft 365 &amp; Business IT
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Microsoft 365 deployment, management, and business IT solutions for organizations of all sizes.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Microsoft 365 &amp; Business IT">
+                                        <li><a href="./services/azure-ad-identity-management" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Azure AD &amp; Identity Management</a></li>
+                                        <li><a href="./services/business-it-consultation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Business IT Consultation</a></li>
+                                        <li><a href="./services/email-migration-to-m365" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Email Migration to M365</a></li>
+                                        <li><a href="./services/intune-mdm" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Intune MDM Setup</a></li>
+                                        <li><a href="./services/microsoft-365-administration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Microsoft 365 Administration</a></li>
+                                        <li><a href="./services/microsoft-365-deployment" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Microsoft 365 Deployment</a></li>
+                                        <li><a href="./services/microsoft-365-security-compliance" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Microsoft 365 Security &amp; Compliance</a></li>
+                                        <li><a href="./services/onedrive-migration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">OneDrive Migration</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=microsoft-365-business-it" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-8">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">09 / DATA &amp; BUSINESS INTELLIGENCE</span>
+                    <span class="term-tag">9 modules</span>
+                </div>
+                <h3 id="svc-8" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    Data &amp; Business Intelligence
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Data analytics, business intelligence, database management, and data-driven decision support.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in Data &amp; Business Intelligence">
+                                        <li><a href="./services/business-intelligence-dashboard" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Business Intelligence Dashboard</a></li>
+                                        <li><a href="./services/data-cleansing" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Data Cleansing Service</a></li>
+                                        <li><a href="./services/data-migration-services" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Data Migration Services</a></li>
+                                        <li><a href="./services/data-warehouse-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Data Warehouse Setup</a></li>
+                                        <li><a href="./services/database-design-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Database Design &amp; Development</a></li>
+                                        <li><a href="./services/excel-spreadsheet-automation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Excel &amp; Spreadsheet Automation</a></li>
+                                        <li><a href="./services/power-bi-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Power BI Development</a></li>
+                                        <li><a href="./services/sql-optimization" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">SQL Query Optimization</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=data-business-intelligence" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-9">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">10 / E-COMMERCE &amp; ONLINE BUSINESS</span>
+                    <span class="term-tag">8 modules</span>
+                </div>
+                <h3 id="svc-9" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    E-commerce &amp; Online Business
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Online store setup, payment integration, marketplace development, and e-commerce optimization.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in E-commerce &amp; Online Business">
+                                        <li><a href="./services/amazon-seller-account-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Amazon Seller Account Setup</a></li>
+                                        <li><a href="./services/e-commerce-seo" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">E-commerce SEO</a></li>
+                                        <li><a href="./services/inventory-management-system" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Inventory Management System</a></li>
+                                        <li><a href="./services/magento-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Magento Development</a></li>
+                                        <li><a href="./services/payment-gateway-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Payment Gateway Integration</a></li>
+                                        <li><a href="./services/shopify-store-setup" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Shopify Store Setup</a></li>
+                                        <li><a href="./services/stripe-integration" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Stripe Integration</a></li>
+                                        <li><a href="./services/woocommerce-development" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">WooCommerce Development</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=ecommerce-online-business" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-10">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">11 / IT TRAINING &amp; CONSULTING</span>
+                    <span class="term-tag">8 modules</span>
+                </div>
+                <h3 id="svc-10" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    IT Training &amp; Consulting
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    IT training programs, technical consulting, digital transformation, and technology strategy.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in IT Training &amp; Consulting">
+                                        <li><a href="./services/cloud-training" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cloud Computing Training</a></li>
+                                        <li><a href="./services/cybersecurity-awareness-training" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Cybersecurity Awareness Training</a></li>
+                                        <li><a href="./services/digital-transformation-consulting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Digital Transformation Consulting</a></li>
+                                        <li><a href="./services/gdpr-compliance-consulting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">GDPR Compliance Consulting</a></li>
+                                        <li><a href="./services/iso-27001-implementation" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">ISO 27001 Implementation</a></li>
+                                        <li><a href="./services/it-infrastructure-consulting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">IT Infrastructure Consulting</a></li>
+                                        <li><a href="./services/itil-training" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">ITIL Framework Training</a></li>
+                                        <li><a href="./services/microsoft-365-user-training" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Microsoft 365 User Training</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=it-training-consulting" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                        <article class="term-panel min-w-0 p-5 sm:p-6 group reveal card-3d tilt-3d" aria-labelledby="svc-12">
+                <span class="card-3d-shine" aria-hidden="true"></span>
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <span class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">12 / IT ASSET, ENDPOINT &amp; LIFECYCLE MANAGEMENT</span>
+                    <span class="term-tag">6 modules</span>
+                </div>
+                <h3 id="svc-12" class="font-display text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">
+                    IT Asset, Endpoint &amp; Lifecycle Management
+                </h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">
+                    Device inventory, endpoint configuration, software licence tracking, patch planning, lifecycle management and asset reporting.
+                </p>
+                                <ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Services in IT Asset, Endpoint &amp; Lifecycle Management">
+                                        <li><a href="./services/asset-documentation-reporting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Asset Documentation &amp; Reporting</a></li>
+                                        <li><a href="./services/computer-device-inventory-audit" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Computer &amp; Device Inventory Audit</a></li>
+                                        <li><a href="./services/device-lifecycle-management" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Device Lifecycle Management</a></li>
+                                        <li><a href="./services/endpoint-configuration-maintenance" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Endpoint Configuration &amp; Maintenance</a></li>
+                                        <li><a href="./services/patch-management-planning" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Patch-Management Planning</a></li>
+                                        <li><a href="./services/software-inventory-licence-tracking" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Software Inventory &amp; Licence Tracking</a></li>
+                                    </ul>
+                                <div class="mt-6 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <a href="./services?category=it-asset-endpoint-lifecycle" class="term-link">Learn More
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="./get-quote" class="term-link">Request Service
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </article>
+                    </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="why-heading" data-3d-state="features">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">02</span>
+        <span class="term-sec-label">WHY://OPERATE</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Complexity is the risk. Discipline is the answer.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Digital systems become increasingly complex. We counter that with one operating model across IT, security, and engineering.</p>
+    </div>
+        <span id="why-heading" class="sr-only">Why PerfectITSecurity</span>
+
+        <div class="mt-10 lg:mt-14 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+                        <article class="term-panel p-6 sm:p-7 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft mb-4">01</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white">THE PROBLEM</h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">Websites, servers, cloud accounts, devices, and vendors multiply. Nobody owns the full picture, and small gaps go unnoticed.</p>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft mb-4">02</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white">THE RISK</h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">Security gaps, downtime, poor infrastructure, and uncontrolled access turn into data loss, outages, and unexpected cost.</p>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft mb-4">03</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white">OUR APPROACH</h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">We combine IT operations, cybersecurity, and software engineering in one ticketed workflow with documented scope and sign-off.</p>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft mb-4">04</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white">THE RESULT</h3>
+                <p class="mt-2.5 text-sm leading-relaxed text-surface-600 dark:text-term-800">A more secure, maintainable, and reliable digital environment — with a complete record you can audit at any time.</p>
+            </article>
+                    </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="security-heading" id="security">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">03</span>
+        <span class="term-sec-label">SECURITY://OPERATIONS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Authorized testing. Documented findings. Verified fixes.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">All security work is performed exclusively on systems you own or are explicitly authorized to test, under agreed scope, with written findings and remediation guidance.</p>
+    </div>
+        <span id="security-heading" class="sr-only">Security operations</span>
+
+        <div class="mt-10 lg:mt-14 grid lg:grid-cols-12 gap-4 sm:gap-5">
+            <div class="lg:col-span-7 term-panel p-6 sm:p-8 reveal">
+                <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5">Assessment scope // authorized systems only</div>
+                <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-3.5 text-sm">
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Penetration Testing
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Vulnerability Assessment
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Web Application Security
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>API Security
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Network Security
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Cloud Security
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Security Hardening
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Security Monitoring
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Security Consulting
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 bg-accent flex-shrink-0" aria-hidden="true"></span>Security Documentation
+                    </li>
+                                    </ul>
+                <div class="mt-7 pt-5 border-t border-term-300 dark:border-white/5 flex flex-wrap gap-x-6 gap-y-3">
+                    <a href="./get-quote" class="term-link">Request Assessment
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                    <a href="./contact" class="term-link">Discuss Scope
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+                </div>
+            </div>
+            <div class="lg:col-span-5 flex flex-col gap-4 sm:gap-5">
+                                <div class="term-panel-2 px-5 py-4 flex items-center justify-between gap-4 reveal">
+                    <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">TARGET</span>
+                    <span class="font-mono text-xs tracking-[0.12em] text-accent-soft text-right">YOUR WEB APPLICATION</span>
+                </div>
+                                <div class="term-panel-2 px-5 py-4 flex items-center justify-between gap-4 reveal">
+                    <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">STATUS</span>
+                    <span class="font-mono text-xs tracking-[0.12em] text-accent-soft text-right">ASSESSMENT READY</span>
+                </div>
+                                <div class="term-panel-2 px-5 py-4 flex items-center justify-between gap-4 reveal">
+                    <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">SCOPE</span>
+                    <span class="font-mono text-xs tracking-[0.12em] text-accent-soft text-right">AUTHORIZED SYSTEM</span>
+                </div>
+                                <div class="term-panel-2 p-5 sm:p-6 reveal">
+                    <p class="font-mono text-[11px] leading-relaxed tracking-wider text-term-800">
+                        $ scope --verify-authorization<br>
+                        <span class="text-accent-soft">✓ ownership confirmed → assessment unlocked</span>
+                    </p>
+                    <p class="mt-3 text-xs leading-relaxed text-term-700">No testing begins without written authorization and a defined scope. You receive findings, severity ratings, and remediation steps.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="itsupport-heading" id="it-support">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">04</span>
+        <span class="term-sec-label">IT_SUPPORT://OPERATIONS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Support tickets you can open, track, and audit.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">One queue for every request — hardware, software, accounts, email, network, or server — with status tracking and a full communication record in your portal.</p>
+    </div>
+        <span id="itsupport-heading" class="sr-only">IT support operations</span>
+
+        <div class="mt-10 lg:mt-14 grid lg:grid-cols-12 gap-4 sm:gap-5">
+            <div class="lg:col-span-8 term-panel p-6 sm:p-8 reveal">
+                <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3.5 text-sm">
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Ticket Management
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Remote Support
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Hardware Support
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Software Support
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Microsoft 365
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Windows
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Linux
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Network
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Server
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>User Accounts
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Email
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>Endpoints
+                    </li>
+                                        <li class="flex items-center gap-2.5 text-navy-800 dark:text-term-900">
+                        <span class="w-1.5 h-1.5 flex-shrink-0" style="background:#4DA3FF" aria-hidden="true"></span>IT Asset Management
+                    </li>
+                                    </ul>
+            </div>
+            <div class="lg:col-span-4 term-panel p-6 sm:p-8 flex flex-col justify-between gap-6 reveal delay-100">
+                <div>
+                    <div class="term-status text-accent-soft mb-3"><span class="term-status-dot" aria-hidden="true"></span>Queue: monitored</div>
+                    <p class="text-sm leading-relaxed text-surface-600 dark:text-term-800">Open a request in minutes. Track assignment, replies, and resolution — every step timestamped.</p>
+                </div>
+                <div class="flex flex-col gap-2.5">
+                    <a href="./login" class="term-btn w-full">Open Support Request
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                    <a href="./login" class="term-btn term-btn-ghost w-full">Client Portal →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="portal-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div class="lg:col-span-7">
+            <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">05</span>
+        <span class="term-sec-label">PORTAL://ACCESS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Your IT. Your security. Your record.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Customers work independently in the portal using the platform&#039;s existing authentication — no second login, no parallel system. Your tickets, services, finances, and documents stay in one auditable place.</p>
+    </div>
+            <span id="portal-heading" class="sr-only">Customer portal</span>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 reveal">
+                <a href="./login" class="term-btn">Access Client Portal
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+                <a href="./register" class="term-btn term-btn-ghost">Create Account →</a>
+            </div>
+        </div>
+        <div class="lg:col-span-5 term-panel p-6 sm:p-7 reveal delay-100" aria-label="What the portal contains">
+            <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-4">$ portal --list-records</div>
+            <ul class="space-y-2.5 text-sm text-navy-800 dark:text-term-900">
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Support tickets</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Service history</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Invoices &amp; payments</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Documents &amp; reports</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Security assessments</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Task progress</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                                <li class="flex items-center justify-between gap-3 border-b border-term-300/60 dark:border-white/5 pb-2.5">
+                    <span>Communication history</span><span class="font-mono text-[10px] text-accent-soft">TRACKED</span>
+                </li>
+                            </ul>
+        </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="ops-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">06</span>
+        <span class="term-sec-label">OPS://PLATFORM</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">An internal service-management platform behind every order.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Staff operate from the same system you see — tasks, tickets, customer history, time tracking, assets, reporting, finance, and documentation stay connected. No private employee data is exposed publicly.</p>
+    </div>
+        <span id="ops-heading" class="sr-only">Operations platform</span>
+        <div class="mt-10 grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">TASK MANAGEMENT</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">Scoped work with assignment and approval.</p>
+            </div>
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">TICKET MANAGEMENT</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">SLA-tracked queue with full thread history.</p>
+            </div>
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">CUSTOMER HISTORY</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">Every order, invoice, and message in one view.</p>
+            </div>
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">SERVICE TRACKING</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">Live progress with customer-visible updates.</p>
+            </div>
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">TIME TRACKING</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">Recorded effort attached to tickets and tasks.</p>
+            </div>
+                        <div class="term-panel-2 p-5 sm:p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.18em] text-navy-900 dark:text-white">REPORTING &amp; FINANCE</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 dark:text-term-800">Invoices, payments, and reports from one ledger.</p>
+            </div>
+                    </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="process-heading" data-3d-state="process">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">07</span>
+        <span class="term-sec-label">SECURITY://PROCESS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">From discovery to continuous monitoring.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">A fixed six-stage workflow keeps every assessment scoped, documented, and verified — nothing informal, nothing undocumented.</p>
+    </div>
+        <span id="process-heading" class="sr-only">Security process</span>
+        <ol class="mt-10 lg:mt-14 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-6 lg:gap-0 lg:divide-x lg:divide-term-300 lg:dark:divide-white/5">
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">01</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">DISCOVER</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Map assets and agree the authorized scope in writing.</p>
+            </li>
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">02</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">ASSESS</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Baseline vulnerabilities and configuration weaknesses.</p>
+            </li>
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">03</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">TEST</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Controlled testing strictly inside the agreed scope.</p>
+            </li>
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">04</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">REMEDIATE</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Prioritized fixes with clear severity and guidance.</p>
+            </li>
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">05</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">VERIFY</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Retest fixes and confirm closure with evidence.</p>
+            </li>
+                        <li class="term-panel lg:border-0 lg:bg-transparent lg:rounded-none p-5 sm:p-6 lg:px-6 reveal">
+                <div class="font-mono text-[11px] tracking-[0.24em] text-accent-soft">06</div>
+                <h3 class="mt-2 font-display text-base font-bold tracking-tight text-navy-900 dark:text-white">MONITOR</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-surface-600 dark:text-term-800">Ongoing watch with documented follow-up.</p>
+            </li>
+                    </ol>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="stack-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">08</span>
+        <span class="term-sec-label">STACK://CAPABILITIES</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Capability areas we actively deliver.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Named only where the team genuinely delivers client work today — no invented partnerships or certifications.</p>
+    </div>
+        <span id="stack-heading" class="sr-only">Technology capabilities</span>
+        <div class="mt-10 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        <div class="term-panel p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.2em] text-accent-soft">SECURITY</h3>
+                <p class="mt-3 text-sm leading-relaxed text-surface-600 dark:text-term-800">Testing · Hardening · Monitoring · Documentation</p>
+            </div>
+                        <div class="term-panel p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.2em] text-accent-soft">DEVELOPMENT</h3>
+                <p class="mt-3 text-sm leading-relaxed text-surface-600 dark:text-term-800">Websites · Portals · Business automation · Secure builds</p>
+            </div>
+                        <div class="term-panel p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.2em] text-accent-soft">INFRASTRUCTURE</h3>
+                <p class="mt-3 text-sm leading-relaxed text-surface-600 dark:text-term-800">Servers · Networks · Endpoints · Microsoft 365</p>
+            </div>
+                        <div class="term-panel p-6 reveal">
+                <h3 class="font-mono text-xs tracking-[0.2em] text-accent-soft">CLOUD &amp; DATA</h3>
+                <p class="mt-3 text-sm leading-relaxed text-surface-600 dark:text-term-800">Hosting · Backups · Monitoring · Reporting</p>
+            </div>
+                    </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="compliance-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">09</span>
+        <span class="term-sec-label">COMPLIANCE://FRAMEWORKS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Security practices aligned with recognized frameworks.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">We do not claim certifications we do not hold. Our practices are aligned with widely used frameworks, and we support your compliance preparation with documentation and evidence.</p>
+    </div>
+        <span id="compliance-heading" class="sr-only">Compliance frameworks</span>
+        <ul class="mt-10 flex flex-wrap gap-2.5 reveal" aria-label="Reference frameworks">
+                        <li class="term-tag">Aligned: ISO 27001</li>
+                        <li class="term-tag">Aligned: SOC 2</li>
+                        <li class="term-tag">Aligned: GDPR</li>
+                        <li class="term-tag">Aligned: OWASP</li>
+                        <li class="term-tag">Aligned: NIST</li>
+                        <li class="term-tag">Aligned: CIS Controls</li>
+                    </ul>
+        <p class="mt-5 text-xs leading-relaxed text-term-700 max-w-2xl reveal">Wording is deliberate: “aligned with” and “support for compliance preparation” — never a claim of certification unless verified and published by the company.</p>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="assess-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-5">
+            <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">10</span>
+        <span class="term-sec-label">ASSESSMENT://READINESS</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Check your security readiness in 60 seconds.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Seven quick questions produce an informational readiness signal. This is guidance only — not a penetration test, audit, or certification.</p>
+    </div>
+            <span id="assess-heading" class="sr-only">Security readiness assessment</span>
+        </div>
+        <div class="lg:col-span-7">
+            <form id="readiness-quiz" class="term-panel p-6 sm:p-8 reveal" aria-describedby="quiz-note">
+                <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5">$ readiness --interactive</div>
+                <ol class="space-y-5">
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">01. Do you have a website or business application?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q0" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q0" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">02. Do you have an internal IT team or provider?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q1" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q1" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">03. Have you had a security assessment in the last 12 months?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q2" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q2" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">04. Do you enforce multi-factor authentication (MFA)?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q3" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q3" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">05. Do you maintain tested, off-site backups?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q4" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q4" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">06. Do you have an incident response plan?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q5" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q5" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                        <li>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-navy-900 dark:text-term-950">07. Do you manage company devices centrally?</legend>
+                            <div class="mt-2 flex gap-2">
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q6" value="1" class="sr-only" required> Yes</label>
+                                <label class="term-tag cursor-pointer has-[:checked]:border-accent/60 has-[:checked]:text-accent-soft"><input type="radio" name="q6" value="0" class="sr-only"> No</label>
+                            </div>
+                        </fieldset>
+                    </li>
+                                    </ol>
+                <div class="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <button type="submit" class="term-btn">Generate Result →</button>
+                    <button type="reset" class="term-btn term-btn-ghost" id="quiz-reset">Reset</button>
+                </div>
+                <div id="quiz-result" class="mt-6 hidden" role="status" aria-live="polite"></div>
+                <p id="quiz-note" class="mt-5 text-xs leading-relaxed text-term-700">Informational self-check only. No personal data is collected or transmitted — scoring runs entirely in your browser. For a formal review, <a href="./get-quote" class="underline underline-offset-2 hover:text-accent-soft">request an assessment</a>.</p>
+            </form>
+        </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="work-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">11</span>
+        <span class="term-sec-label">WORK://CASEFILES</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Selected work from the live catalogue.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Pulled directly from the database — administrators manage these records, and the public list always matches.</p>
+    </div>
+            <a href="./portfolio" class="term-link flex-shrink-0 reveal">All casefiles
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+        </div>
+        <span id="work-heading" class="sr-only">Portfolio case files</span>
+        <div class="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_001 // IT SUPPORT / ITSM</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Enterprise IT Support Portal</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">Customer portal concept with service requests, ticketing, technician assignment, SLA tracking, and notifications.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">IT Support / ITSM</dd></div>                                    </dl>
+                <a href="./portfolio/enterprise-it-support-portal-2bBn" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_002 // CYBERSECURITY</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Cybersecurity Assessment Dashboard</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">Assessment management concept: findings dashboard, risk classification, remediation tracking, executive reporting.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">Cybersecurity</dd></div>                                    </dl>
+                <a href="./portfolio/cybersecurity-assessment-dashboard-F9oQ" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_003 // WEB DEVELOPMENT / SECURITY</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Secure Business Website</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">Responsive marketing site concept with secure authentication, CMS, contact forms, and hardened architecture.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">Web Development / Security</dd></div>                                    </dl>
+                <a href="./portfolio/secure-business-website-BhTE" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_004 // MANAGED IT SERVICES</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Managed IT Service Platform</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">Service catalogue, customer management, tickets, SLA policies, technician assignment, and operational reporting concept.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">Managed IT Services</dd></div>                                    </dl>
+                <a href="./portfolio/managed-it-service-platform-0N8g" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_005 // CLOUD / INFRASTRUCTURE</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Cloud Infrastructure Management Portal</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">Infrastructure overview concept: resource monitoring, user access, service requests, reporting. No real infrastructure managed.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">Cloud / Infrastructure</dd></div>                                    </dl>
+                <a href="./portfolio/cloud-infrastructure-management-portal-LMFN" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                        <article class="term-panel p-6 sm:p-7 group reveal">
+                <div class="font-mono text-[11px] tracking-[0.2em] text-term-700 mb-3">FILE_006 // CYBERSECURITY / SOC</div>
+                <h3 class="font-display text-lg font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Security Operations Dashboard</h3>
+                <p class="mt-2 text-sm leading-relaxed text-surface-600 dark:text-term-800 line-clamp-3">SOC concept: security events, alert severities, incident tracking, and metrics.</p>                <dl class="mt-4 space-y-1.5 font-mono text-[11px] tracking-wider">
+                    <div class="flex gap-2"><dt class="text-term-700">CATEGORY:</dt><dd class="text-term-900 dark:text-term-950">Cybersecurity / SOC</dd></div>                                    </dl>
+                <a href="./portfolio/security-operations-dashboard-NtBe" class="term-link mt-5">Open casefile
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a>
+            </article>
+                    </div>
+
+                <div class="mt-8 grid gap-4 sm:gap-5 md:grid-cols-3">
+                        <a href="./case-studies/improving-it-service-desk-operations-tIQG" class="term-panel-2 p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">CASE STUDY // IT SERVICES</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Improving IT Service Desk Operations</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">A walkthrough of Ticket management, SLA, assignment, escalation, knowledge base..</p>            </a>
+                        <a href="./case-studies/building-a-secure-customer-portal-hU14" class="term-panel-2 p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">CASE STUDY // SAAS</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Building a Secure Customer Portal</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">A walkthrough of Authentication, authorization, customer isolation, secure documents, session security..</p>            </a>
+                        <a href="./case-studies/designing-a-cybersecurity-assessment-workflow-VxUR" class="term-panel-2 p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">CASE STUDY // CYBERSECURITY</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors">Designing a Cybersecurity Assessment Workflow</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">A walkthrough of Scope, authorization, findings, risk, remediation..</p>            </a>
+                    </div>
+            </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="kb-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">12</span>
+        <span class="term-sec-label">KNOWLEDGE://BASE</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">Documentation-grade guides, searchable.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">Live articles from the knowledge base — security guides, IT procedures, troubleshooting, and FAQs maintained by the team.</p>
+    </div>
+            <a href="./knowledge-base" class="term-link flex-shrink-0 reveal">Open knowledge base
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+        </div>
+        <span id="kb-heading" class="sr-only">Knowledge base</span>
+
+        <form action="./knowledge-base" method="GET" role="search" class="mt-8 flex flex-col sm:flex-row gap-2.5 max-w-2xl reveal">
+            <label for="home-kb-search" class="sr-only">Search the knowledge base</label>
+            <input id="home-kb-search" name="search" type="search" placeholder="search guides: e.g. MFA, backups, VPN…" class="form-input flex-1 font-mono text-sm" autocomplete="off">
+            <button type="submit" class="term-btn flex-shrink-0">Search →</button>
+        </form>
+
+                <ul class="mt-5 flex flex-wrap gap-1.5 reveal" aria-label="Knowledge base categories">
+                        <li><a href="./knowledge-base?category=getting-started" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Getting Started</a></li>
+                        <li><a href="./knowledge-base?category=troubleshooting" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Troubleshooting</a></li>
+                        <li><a href="./knowledge-base?category=kb-security" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Security</a></li>
+                        <li><a href="./knowledge-base?category=account-billing" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Account &amp; Billing</a></li>
+                        <li><a href="./knowledge-base?category=about-company" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">About PerfectITSecurity</a></li>
+                        <li><a href="./knowledge-base?category=it-support" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">IT Support</a></li>
+                        <li><a href="./knowledge-base?category=microsoft-365" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Microsoft 365</a></li>
+                        <li><a href="./knowledge-base?category=networking" class="term-tag hover:border-accent/50 hover:text-accent-soft transition-colors">Networking</a></li>
+                    </ul>
+        
+        <div class="mt-8 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                        <a href="./knowledge-base/recognizing-phishing-emails" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">SECURITY // BEGINNER</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">Recognizing Phishing Emails</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Learn how to identify and handle phishing email attempts.</p>            </a>
+                        <a href="./knowledge-base/troubleshooting-wifi-connection" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">TROUBLESHOOTING // BEGINNER</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">Troubleshooting WiFi Connection Issues</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Step-by-step guide to diagnosing and fixing WiFi connection problems.</p>            </a>
+                        <a href="./knowledge-base/enable-two-factor-authentication" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">SECURITY // BEGINNER</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">How to Enable Two-Factor Authentication (2FA)</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Guide to setting up two-factor authentication on your account.</p>            </a>
+                        <a href="./knowledge-base/fixing-vpn-connection-drops" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">TROUBLESHOOTING // INTERMEDIATE</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">Fixing VPN Connection Drops</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Solutions for unstable VPN connections that keep dropping.</p>            </a>
+                        <a href="./knowledge-base/how-to-create-support-ticket" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">GETTING STARTED // BEGINNER</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">How to Create a Support Ticket</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Step-by-step guide to creating a support ticket in the customer portal.</p>            </a>
+                        <a href="./knowledge-base/understanding-your-invoice" class="term-panel p-5 sm:p-6 group block reveal">
+                <div class="font-mono text-[10px] tracking-[0.2em] text-term-700 mb-2">ACCOUNT &amp; BILLING // BEGINNER</div>
+                <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">Understanding Your Invoice</h3>
+                <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Guide to understanding the components of your invoice.</p>            </a>
+                    </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="ai-heading">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 grid lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-7">
+            <div class="max-w-3xl reveal">
+    <div class="term-sec-head" aria-hidden="true">
+        <span class="term-sec-num">13</span>
+        <span class="term-sec-label">AI://ASSISTANT</span>
+        <span class="hidden sm:inline-block h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent"></span>
+    </div>
+        <h2 class="term-sec-title text-3xl sm:text-4xl lg:text-5xl text-balance">A support console, not a chatbot toy.</h2>
+            <p class="term-sec-desc mt-4 text-base sm:text-lg max-w-2xl">The assistant answers from the company knowledge base, helps you discover services, guides support requests, and escalates to a human when needed.</p>
+    </div>
+            <span id="ai-heading" class="sr-only">AI customer assistant</span>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 reveal">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-ai-chat'))" class="term-btn">Launch Assistant →</button>
+                <a href="./faq" class="term-btn term-btn-ghost">Read FAQ</a>
+            </div>
+        </div>
+        <div class="lg:col-span-5 term-panel p-0 overflow-hidden reveal delay-100" aria-hidden="true">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-term-300 dark:border-white/5">
+                <span class="font-mono text-[10px] tracking-[0.24em] text-term-700">AI://CONSOLE</span>
+                <span class="term-status text-accent-soft"><span class="term-status-dot"></span>Ready</span>
+            </div>
+            <div class="p-5 font-mono text-xs leading-relaxed space-y-3">
+                <p class="text-term-700">visitor&gt; <span class="text-term-950 dark:text-term-950">how do I reset MFA on my account?</span></p>
+                <p class="text-term-800">assistant&gt; <span class="text-navy-800 dark:text-term-900">Here is the documented procedure from the knowledge base… [escalation to human available]</span></p>
+                <p class="text-term-700">system&gt; <span class="text-accent-soft">knowledge-base linked · no credentials requested</span></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="relative w-full py-16 sm:py-20 lg:py-28 border-t border-term-300 dark:border-white/5" aria-labelledby="contact-heading" data-3d-state="contact">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 text-center">
+        <div class="term-sec-head justify-center" aria-hidden="true">
+            <span class="term-sec-num">14</span>
+            <span class="term-sec-label">CONTACT://SECURE_CHANNEL</span>
+        </div>
+        <h2 id="contact-heading" class="term-sec-title text-3xl sm:text-4xl lg:text-6xl text-balance reveal">LET'S SECURE YOUR<br>NEXT PROJECT.</h2>
+        <p class="term-sec-desc mt-5 max-w-xl mx-auto reveal delay-100">Tell us what you need — support, security, development, or cloud. Requests use the existing contact workflow and land in the same tracked queue.</p>
+        <div class="mt-9 flex flex-col sm:flex-row justify-center gap-3 reveal delay-200">
+            <a href="./contact" class="term-btn term-btn-lg">Send Request
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+            <a href="./get-quote" class="term-btn term-btn-lg term-btn-ghost">Get a Quote →</a>
+        </div>
+                <div class="mt-16 text-left">
+            <div class="font-mono text-[10px] tracking-[0.24em] text-term-700 uppercase mb-5 reveal">LATEST://TRANSMISSIONS</div>
+            <div class="grid gap-4 sm:gap-5 md:grid-cols-3">
+                                <a href="./blog/secure-home-office-network" class="term-panel p-5 sm:p-6 group block reveal">
+                    <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">How to Set Up a Secure Home Office Network</h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Step-by-step guide to securing your home office network for remote work.</p>                </a>
+                                <a href="./blog/proactive-it-support-saves-money" class="term-panel p-5 sm:p-6 group block reveal">
+                    <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">Why Proactive IT Support Saves Money</h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Discover how proactive monitoring and maintenance can reduce your IT costs by up to 40%.</p>                </a>
+                                <a href="./blog/future-of-it-support-2024" class="term-panel p-5 sm:p-6 group block reveal">
+                    <h3 class="font-display text-base font-bold tracking-tight text-navy-900 dark:text-white group-hover:text-accent-soft transition-colors line-clamp-2">The Future of IT Support in 2024</h3>
+                    <p class="mt-2 text-[13px] leading-relaxed text-term-700 line-clamp-2">Explore the emerging trends shaping IT support services including AI-powered helpdesks and predictive maintenance.</p>                </a>
+                            </div>
+        </div>
+            </div>
+</section>
+
+
+</div>
+
+    
+        <footer class="dark-island relative bg-term-0 border-t border-term-300 z-10 overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-cyber-grid opacity-[0.05] pointer-events-none" aria-hidden="true"></div>
+
+        <div class="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-14 lg:pt-16 pb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 mb-12">
+
+                
+                <div class="lg:col-span-4">
+                    <a href="./index.html" class="flex items-center gap-2.5 mb-5">
+                        <div class="w-8 h-8 border border-accent/50 bg-accent/10 flex items-center justify-center relative" aria-hidden="true">
+                            <span class="absolute -top-px -left-px w-2 h-2 border-t border-l border-accent"></span>
+                            <span class="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-accent"></span>
+                            <svg class="w-[18px] h-[18px] text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.2 12l1.9 1.9L15 10"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-extrabold text-[15px] tracking-tight text-white">
+                            PERFECT<span class="text-accent">IT</span>SECURITY
+                        </span>
+                    </a>
+                    <p class="font-mono text-[11px] leading-relaxed text-term-700 uppercase tracking-wider max-w-xs mb-6">
+                        Cybersecurity // IT Operations<br>
+                        Secure Engineering // Cloud
+                    </p>
+                    <p class="text-sm text-term-800 leading-relaxed max-w-xs mb-6">
+                        Managed IT support, ethical security testing, and secure software engineering. We build, secure, and operate the technology your business depends on.
+                    </p>
+                    <div class="flex items-center gap-3">
+                                                <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer"
+                           class="w-9 h-9 border border-term-400 hover:border-accent/60 flex items-center justify-center transition-colors"
+                           aria-label="LinkedIn">
+                            <svg class="w-4 h-4 text-term-700 hover:text-accent-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"/>
+                            </svg>
+                        </a>
+                                                <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer"
+                           class="w-9 h-9 border border-term-400 hover:border-accent/60 flex items-center justify-center transition-colors"
+                           aria-label="Twitter">
+                            <svg class="w-4 h-4 text-term-700 hover:text-accent-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                            </svg>
+                        </a>
+                                                <a href="https://github.com/" target="_blank" rel="noopener noreferrer"
+                           class="w-9 h-9 border border-term-400 hover:border-accent/60 flex items-center justify-center transition-colors"
+                           aria-label="GitHub">
+                            <svg class="w-4 h-4 text-term-700 hover:text-accent-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+                            </svg>
+                        </a>
+                                            </div>
+                </div>
+
+                
+                <div class="lg:col-span-2">
+                    <h4 class="font-mono text-[10px] uppercase tracking-[0.24em] text-term-700 mb-4">// Services</h4>
+                    <ul class="space-y-2.5 text-sm">
+                                                                                <li>
+                                <a href="./services?category=qa-security" class="text-term-800 hover:text-accent-soft transition-colors">QA Security</a>
+                            </li>
+                                                        <li>
+                                <a href="./services?category=cybersecurity" class="text-term-800 hover:text-accent-soft transition-colors">Cybersecurity Services</a>
+                            </li>
+                                                        <li>
+                                <a href="./services?category=web-development" class="text-term-800 hover:text-accent-soft transition-colors">Web Development &amp; Design</a>
+                            </li>
+                                                        <li>
+                                <a href="./services?category=digital-marketing" class="text-term-800 hover:text-accent-soft transition-colors">Digital Marketing</a>
+                            </li>
+                                                        <li>
+                                <a href="./services?category=managed-it-support" class="text-term-800 hover:text-accent-soft transition-colors">Managed IT Support</a>
+                            </li>
+                                                        <li>
+                                <a href="./services?category=cloud-server-network" class="text-term-800 hover:text-accent-soft transition-colors">Cloud, Server &amp; Network Services</a>
+                            </li>
+                                                                            <li><a href="./services" class="text-accent-soft/80 hover:text-accent-soft transition-colors font-mono text-xs tracking-wider">ALL SERVICES →</a></li>
+                    </ul>
+                </div>
+
+                
+                <div class="lg:col-span-2">
+                    <h4 class="font-mono text-[10px] uppercase tracking-[0.24em] text-term-700 mb-4">// Solutions</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="./case-studies" class="text-term-800 hover:text-accent-soft transition-colors">Case Studies</a></li>
+                        <li><a href="./portfolio" class="text-term-800 hover:text-accent-soft transition-colors">Portfolio</a></li>
+                        <li><a href="./pricing" class="text-term-800 hover:text-accent-soft transition-colors">Pricing</a></li>
+                        <li><a href="./get-quote" class="text-term-800 hover:text-accent-soft transition-colors">Get a Quote</a></li>
+                        <li><a href="./industries" class="text-term-800 hover:text-accent-soft transition-colors">Industries</a></li>
+                        <li><a href="./careers" class="text-term-800 hover:text-accent-soft transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+
+                
+                <div class="lg:col-span-2">
+                    <h4 class="font-mono text-[10px] uppercase tracking-[0.24em] text-term-700 mb-4">// Resources</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="./knowledge-base" class="text-term-800 hover:text-accent-soft transition-colors">Knowledge Base</a></li>
+                        <li><a href="./faq" class="text-term-800 hover:text-accent-soft transition-colors">FAQ</a></li>
+                        <li><a href="./blog" class="text-term-800 hover:text-accent-soft transition-colors">Blog</a></li>
+                        <li><a href="./useful-links" class="text-term-800 hover:text-accent-soft transition-colors">Useful Links</a></li>
+                        <li><a href="./offices" class="text-term-800 hover:text-accent-soft transition-colors">Offices</a></li>
+                    </ul>
+                </div>
+
+                
+                <div class="lg:col-span-2">
+                    <h4 class="font-mono text-[10px] uppercase tracking-[0.24em] text-term-700 mb-4">// Contact</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li>
+                            <span class="font-mono text-[10px] uppercase tracking-wider text-term-700 block mb-0.5">Email</span>
+                            <a href="mailto:info@techsupport.com" class="text-term-900 hover:text-accent-soft transition-colors break-all">info@techsupport.com</a>
+                        </li>
+                                                <li>
+                            <span class="font-mono text-[10px] uppercase tracking-wider text-term-700 block mb-0.5">Phone</span>
+                            <a href="tel:+8801816438941" class="text-term-900 hover:text-accent-soft transition-colors">+8801816438941</a>
+                        </li>
+                                                <li>
+                            <span class="font-mono text-[10px] uppercase tracking-wider text-term-700 block mb-0.5">Support</span>
+                            <span class="text-term-900">24/7 Available</span>
+                        </li>
+                    </ul>
+                    <a href="./contact" class="term-btn term-btn-sm w-full mt-5">
+                        Send Request
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            
+            <div class="border-t border-term-300/70 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="font-mono text-[11px] text-term-700 tracking-wider">
+                    &copy; 2026 PERFECTITSECURITY. ALL RIGHTS RESERVED.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[11px] text-term-700">
+                    <a href="./legal/privacy-policy" class="hover:text-term-900 transition-colors">PRIVACY</a>
+                    <a href="./legal/terms-of-service" class="hover:text-term-900 transition-colors">TERMS</a>
+                    <a href="./legal/cookie-policy" class="hover:text-term-900 transition-colors">COOKIES</a>
+                    <a href="./legal/refund-policy" class="hover:text-term-900 transition-colors">REFUNDS</a>
+                    <a href="./legal/service-level-agreement" class="hover:text-term-900 transition-colors">SLA</a>
+                    <a href="./legal/accessibility" class="hover:text-term-900 transition-colors">ACCESSIBILITY</a>
+                </div>
+                <div class="term-status text-term-700">
+                    <span class="term-status-dot" aria-hidden="true"></span>
+                    <span>Status: Online</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div x-data="aiChat()" x-init="init()" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 font-mono" role="complementary" aria-label="AI support assistant">
+    
+    <span class="sr-only">AI Support Assistant</span>
+    
+    <button x-show="!isOpen" @click="toggleChat()" x-transition
+        aria-label="Open AI support assistant"
+        class="ai-widget-trigger w-14 h-14 flex items-center justify-center text-accent transition-all duration-300 hover:scale-105">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-4 3 4 3m8-6l4 3-4 3M14 5l-4 14" />
+        </svg>
+    </button>
+
+    
+    <div x-show="isOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="dark-island fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-4 sm:left-auto w-auto sm:w-[400px] max-w-none sm:max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100dvh-2rem)] bg-term-0 dark:bg-[#0b100e] border border-term-400 backdrop-blur-md shadow-2xl flex flex-col overflow-hidden">
+
+        
+        <div class="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-term-300 dark:border-white/10 bg-term-100 dark:bg-[#0e1411]">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 border border-accent/50 bg-accent/10 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                    <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-4 3 4 3m8-6l4 3-4 3M14 5l-4 14" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-term-950 dark:text-white font-bold text-[11px] tracking-[0.2em]">AI://ASSISTANT</h3>
+                    <p class="text-term-700 text-[10px] tracking-[0.14em] flex items-center gap-1.5"><span class="term-status-dot" style="width:5px;height:5px;" aria-hidden="true"></span>ONLINE · KB-LINKED</p>
+                </div>
+            </div>
+            <button @click="isOpen = false" class="text-term-700 hover:text-white transition-colors p-1.5" aria-label="Close assistant">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        
+        <div x-ref="messagesContainer" class="ai-messages flex-1 overflow-y-auto p-4 space-y-4">
+            
+            <template x-if="needsGuestInfo">
+                <div class="bg-term-200 dark:bg-white/5 border border-term-400 px-4 py-3 max-w-[90%]">
+                    <p class="text-[13px] font-sans font-semibold mb-1 text-term-950 dark:text-white">visitor&gt; identify session</p>
+                    <p class="font-sans text-xs text-term-700 mb-2">Your details stay with this chat session.</p>
+                    <label class="sr-only" for="ai-guest-name">Your name</label>
+                    <input id="ai-guest-name" x-model="guestName" type="text" placeholder="Your name" autocomplete="name" aria-label="Your name" class="form-input w-full mb-2 !text-[13px] font-sans">
+                    <label class="sr-only" for="ai-guest-email">Email address</label>
+                    <input id="ai-guest-email" x-model="guestEmail" type="email" placeholder="Email address" autocomplete="email" aria-label="Email address" class="form-input w-full mb-2 !text-[13px] font-sans">
+                    <button @click="saveGuestInfo()" class="term-btn term-btn-sm w-full">Start Session →</button>
+                </div>
+            </template>
+            
+            <template x-if="messages.length === 0 && !loading">
+                <div class="text-center py-8">
+                    <div class="w-14 h-14 border border-accent/50 bg-accent/10 flex items-center justify-center mx-auto mb-4" aria-hidden="true">
+                        <svg class="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-4 3 4 3m8-6l4 3-4 3M14 5l-4 14" />
+                        </svg>
+                    </div>
+                    <h4 class="font-sans font-bold text-term-950 dark:text-white mb-2 text-[15px]">How can I help?</h4>
+                    <p class="font-sans text-[13px] text-term-700 mb-1">Knowledge-base answers · service discovery · support guidance.</p>
+                    <p class="font-sans text-[11px] text-term-700 mb-4">Escalation to human support available anytime.</p>
+
+                    
+                    <div class="space-y-2">
+                        <template x-for="(q, i) in suggestedQuestions" :key="i">
+                            <button @click="sendMessage(q)" class="font-sans block w-full text-left px-3.5 py-2 text-[13px] text-accent-soft bg-accent/5 border border-accent/25 hover:bg-accent/10 hover:border-accent/50 transition-colors" x-text="q"></button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            
+            <template x-for="(msg, i) in messages" :key="i">
+                <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                    <div :class="msg.role === 'user'
+                        ? 'bg-accent/10 border border-accent/30 text-term-950 dark:text-white px-3.5 py-2.5 max-w-[85%]'
+                        : 'bg-term-200 dark:bg-white/5 border border-term-400 dark:border-white/10 text-term-950 dark:text-term-900 px-3.5 py-2.5 max-w-[85%]'">
+                        <div class="font-sans text-[13px] leading-relaxed whitespace-pre-wrap break-words" x-html="formatMessage(msg.content)"></div>
+                        <template x-if="msg.answer_source === 'internal'">
+                            <div class="mt-1.5"><span class="inline-block font-mono text-[9px] tracking-[0.14em] px-1.5 py-0.5 border border-accent/40 text-accent-soft">✓ KB SOURCE</span></div>
+                        </template>
+                        <template x-if="msg.answer_source === 'general'">
+                            <div class="mt-1.5"><span class="inline-block font-mono text-[9px] tracking-[0.14em] px-1.5 py-0.5 border border-term-400 text-term-700">GENERAL GUIDANCE</span></div>
+                        </template>
+                        <div class="font-mono text-[10px] mt-1 opacity-70" x-text="formatTime(msg.created_at)"></div>
+                    </div>
+                </div>
+            </template>
+
+            
+            <div x-show="loading" class="flex justify-start">
+                <div class="bg-term-200 dark:bg-white/5 border border-term-400 dark:border-white/10 px-4 py-3">
+                    <div class="ai-typing" aria-hidden="true"><span></span><span></span><span></span></div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div x-show="showTicketDraft" class="px-4 py-2 border-t border-term-300 dark:border-white/10 bg-term-100 dark:bg-[#0e1411] flex-shrink-0">
+            <div class="flex gap-2">
+                <button @click="confirmTicket()" class="term-btn term-btn-sm flex-1">Create Ticket</button>
+                <button @click="escalate()" class="term-btn term-btn-sm term-btn-ghost flex-1">Talk to Agent</button>
+            </div>
+        </div>
+
+        
+        <div class="p-3 border-t border-term-300 dark:border-white/10 flex-shrink-0 bg-term-100 dark:bg-[#0e1411]">
+            <form @submit.prevent="sendMessage(input)" class="flex gap-2">
+                <label for="ai-console-input" class="sr-only">Ask the assistant</label>
+                <input id="ai-console-input" x-model="input" type="text" placeholder="visitor> type a question…"
+                    class="form-input flex-1 min-w-0 !font-mono !text-[13px]"
+                    :disabled="loading" autocomplete="off">
+                <button type="submit" :disabled="!input.trim() || loading" aria-label="Send message"
+                    class="term-btn term-btn-sm !px-3.5 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <div x-data="cookieConsent()" x-show="showBanner" x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="translate-y-full opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
+     x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100"
+     x-transition:leave-end="translate-y-full opacity-0"
+     class="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6" style="display: none;">
+    <div class="max-w-6xl mx-auto term-modal p-6 sm:p-8">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 bg-accent/10 border border-accent/30 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                        <svg class="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <h3 class="text-lg font-bold font-display text-slate-900 dark:text-white">Cookie Preferences</h3>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-term-800 leading-relaxed">
+                    We use essential cookies to ensure our platform works correctly. Optional analytics cookies help us improve your experience. You can manage your preferences at any time. See our
+                    <a href="./legal/cookie-policy" class="text-emerald-700 dark:text-accent-soft hover:underline underline underline-offset-2">Cookie Policy</a>
+                    for details.
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto flex-shrink-0">
+                <button @click="rejectAll()"
+                        class="term-btn term-btn-ghost">
+                    Essential Only
+                </button>
+                <button @click="acceptSelected()"
+                        class="term-btn term-btn-ghost">
+                    Accept Selected
+                </button>
+                <button @click="acceptAll()"
+                        class="term-btn">
+                    Accept All →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function cookieConsent() {
+        return {
+            showBanner: false,
+            init() {
+                const consent = localStorage.getItem('cookie_consent');
+                if (!consent) {
+                    setTimeout(() => { this.showBanner = true; }, 1500);
+                }
+            },
+            acceptAll() {
+                localStorage.setItem('cookie_consent', JSON.stringify({
+                    essential: true,
+                    analytics: true,
+                    marketing: true,
+                    timestamp: new Date().toISOString()
+                }));
+                this.showBanner = false;
+            },
+            rejectAll() {
+                localStorage.setItem('cookie_consent', JSON.stringify({
+                    essential: true,
+                    analytics: false,
+                    marketing: false,
+                    timestamp: new Date().toISOString()
+                }));
+                this.showBanner = false;
+            },
+            acceptSelected() {
+                localStorage.setItem('cookie_consent', JSON.stringify({
+                    essential: true,
+                    analytics: true,
+                    marketing: false,
+                    timestamp: new Date().toISOString()
+                }));
+                this.showBanner = false;
+            }
+        };
+    }
+</script>
+
+    <script>
+(function () {
+    var form = document.getElementById('readiness-quiz');
+    if (!form) return;
+    var result = document.getElementById('quiz-result');
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var score = 0, answered = 0;
+        for (var i = 0; i < 7; i++) {
+            var checked = form.querySelector('input[name="q' + i + '"]:checked');
+            if (checked) { answered++; score += parseInt(checked.value, 10); }
+        }
+        if (answered < 7) {
+            result.classList.remove('hidden');
+            result.innerHTML = '<p class="font-mono text-xs tracking-wider text-amber-400">Please answer all 7 questions to generate your signal.</p>';
+            return;
+        }
+        var level, detail, cls;
+        if (score >= 6) { level = 'READINESS: STRONG'; detail = 'Core hygiene looks covered. A periodic professional assessment keeps it that way.'; cls = 'text-accent-soft border-accent/40'; }
+        else if (score >= 4) { level = 'READINESS: DEVELOPING'; detail = 'Foundations exist with clear gaps. Prioritize MFA, backups, and an incident plan.'; cls = 'text-[#4DA3FF] border-[#4DA3FF]/40'; }
+        else { level = 'READINESS: AT RISK'; detail = 'Several fundamentals are missing. Start with backups + MFA, then book a scoped review.'; cls = 'text-[#FFB454] border-[#FFB454]/40'; }
+        result.classList.remove('hidden');
+        // Text is fully static (no user input reflected) — no XSS surface.
+        result.innerHTML = '<div class="border px-5 py-4 ' + cls + '">'
+            + '<p class="font-mono text-xs tracking-[0.18em]">' + level + ' — ' + score + '/7</p>'
+            + '<p class="mt-2 text-sm leading-relaxed text-term-800">' + detail + '</p>'
+            + '<p class="mt-2 font-mono text-[11px] text-term-700">signal informational only · not a penetration test</p></div>';
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    document.getElementById('quiz-reset').addEventListener('click', function () {
+        result.classList.add('hidden');
+        result.innerHTML = '';
+    });
+})();
+</script>
+<script>
+function aiChat() {
+    return {
+        isOpen: false,
+        loading: false,
+        messages: [],
+        input: '',
+        conversationId: null,
+        sessionId: null,
+        suggestedQuestions: [],
+        showTicketDraft: false,
+        ticketDraft: null,
+        isGuest: true,
+        guestName: localStorage.getItem('ai_guest_name') || '',
+        guestEmail: localStorage.getItem('ai_guest_email') || '',
+        needsGuestInfo: false,
+
+        init() {
+            // Load session from localStorage
+            this.sessionId = localStorage.getItem('ai_session_id') || crypto.randomUUID();
+            localStorage.setItem('ai_session_id', this.sessionId);
+            // Allow any page (e.g. home CTA) to open the assistant.
+            window.addEventListener('open-ai-chat', () => {
+                if (!this.isOpen) this.toggleChat();
+            });
+        },
+
+        toggleChat() {
+            this.isOpen = !this.isOpen;
+            if (this.isOpen && !this.conversationId) {
+                if (this.isGuest && (!this.guestName || !this.guestEmail)) {
+                    this.needsGuestInfo = true;
+                    return;
+                }
+                this.startConversation();
+            }
+        },
+
+        saveGuestInfo() {
+            if (!this.guestName.trim() || !/.+@.+\..+/.test(this.guestEmail.trim())) return;
+            localStorage.setItem('ai_guest_name', this.guestName.trim());
+            localStorage.setItem('ai_guest_email', this.guestEmail.trim());
+            this.needsGuestInfo = false;
+            this.startConversation();
+        },
+
+        async startConversation() {
+            try {
+                this.loading = true;
+                const payload = { source: 'public' };
+                if (this.isGuest) {
+                    payload.guest_name = this.guestName;
+                    payload.guest_email = this.guestEmail;
+                }
+                const res = await fetch('/api/ai/conversation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Session-ID': this.sessionId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.conversation_id) {
+                    throw new Error((data && data.message) || 'start-failed');
+                }
+                this.conversationId = data.conversation_id;
+                this.sessionId = data.session_id;
+                this.suggestedQuestions = data.suggested_questions || [];
+
+                if (data.welcome_message) {
+                    this.messages.push({ role: 'assistant', content: data.welcome_message, created_at: new Date() });
+                }
+            } catch (e) {
+                console.error('Failed to start conversation', e);
+                this.messages.push({ role: 'assistant', content: 'Sorry, the AI assistant is temporarily unavailable. You can still contact our support team.', created_at: new Date() });
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async sendMessage(text) {
+            if (!text || !text.trim()) return;
+            const msg = text.trim();
+            this.input = '';
+            this.messages.push({ role: 'user', content: msg, created_at: new Date() });
+            this.scrollToBottom();
+            this.loading = true;
+
+            try {
+                const res = await fetch('/api/ai/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Session-ID': this.sessionId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ conversation_id: this.conversationId, message: msg }),
+                });
+                const data = await res.json();
+                if (!res.ok || typeof data.message !== 'string') {
+                    const friendly = (data && typeof data.error === 'string' && data.error)
+                        || 'Sorry, the AI assistant is temporarily unavailable. You can still contact our support team.';
+                    this.messages.push({ role: 'assistant', content: friendly, created_at: new Date() });
+                    return;
+                }
+                this.messages.push({ role: 'assistant', content: data.message, created_at: new Date(), answer_source: data.answer_source || null });
+
+                if (data.ticket_draft) {
+                    this.showTicketDraft = true;
+                    this.ticketDraft = data.draft_data;
+                }
+
+                if (data.escalated) {
+                    this.showTicketDraft = false;
+                }
+            } catch (e) {
+                this.messages.push({ role: 'assistant', content: 'Sorry, something went wrong. Please try again.', created_at: new Date() });
+            } finally {
+                this.loading = false;
+                this.scrollToBottom();
+            }
+        },
+
+        async confirmTicket() {
+            if (!this.ticketDraft) return;
+            this.loading = true;
+            try {
+                const res = await fetch('/api/ai/ticket/confirm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ conversation_id: this.conversationId, ...this.ticketDraft }),
+                });
+                const data = await res.json();
+                this.messages.push({ role: 'assistant', content: data.message, created_at: new Date() });
+                this.showTicketDraft = false;
+                this.ticketDraft = null;
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loading = false;
+                this.scrollToBottom();
+            }
+        },
+
+        async escalate() {
+            this.loading = true;
+            try {
+                const res = await fetch('/api/ai/escalate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ conversation_id: this.conversationId, reason: 'Customer requested human support' }),
+                });
+                const data = await res.json();
+                this.messages.push({ role: 'assistant', content: data.message, created_at: new Date() });
+                this.showTicketDraft = false;
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loading = false;
+                this.scrollToBottom();
+            }
+        },
+
+        formatMessage(text) {
+            if (!text) return '';
+            // Escape HTML first (AI/KB content is untrusted for rendering),
+            // then apply basic markdown: **bold**, bullet points, newlines.
+            const escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            return escaped
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        },
+
+        formatTime(time) {
+            if (!time) return '';
+            return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                if (this.$refs.messagesContainer) {
+                    this.$refs.messagesContainer.scrollTop = this.$refs.messagesContainer.scrollHeight;
+                }
+            });
+        }
+    };
+}
+</script>
+
+    
+    <script>
+        window.addEventListener('error', function(e) {
+            try {
+                fetch('./api/health/frontend-error', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': 'QwQdBHLvZ53oNm1uVOJO7tOecjW2x4DTVh3SJSfY' },
+                    body: JSON.stringify({ message: e.message || 'JS Error', url: e.filename || window.location.href, line: e.lineno || null, col: e.colno || null, stack: e.error?.stack || null })
+                });
+            } catch(err) {}
+        });
+    </script>
+</body>
+</html>
