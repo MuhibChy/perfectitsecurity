@@ -74,6 +74,7 @@ auth.json
 /public/build
 /public/hot
 /public/storage
+/dist/
 
 # Testing, coverage, and caches
 .phpunit.result.cache
